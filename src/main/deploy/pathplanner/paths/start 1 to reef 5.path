@@ -3,35 +3,51 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.749176431196998,
-        "y": 6.705578453142218
+        "x": 8.096765697001876,
+        "y": 7.252752751758624
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.1392683942876776,
-        "y": 7.135555190474359
+        "x": 6.721958716324286,
+        "y": 7.243603695821674
       },
       "isLocked": false,
-      "linkedName": "i side"
+      "linkedName": "start p1"
     },
     {
       "anchor": {
-        "x": 2.9,
-        "y": 7.0
+        "x": 7.047752745378151,
+        "y": 7.253
       },
       "prevControl": {
-        "x": 2.6608569753353333,
-        "y": 6.922445854795059
+        "x": 8.040299796616239,
+        "y": 7.253
+      },
+      "nextControl": {
+        "x": 6.797752745378151,
+        "y": 7.253
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 3.7848292093937888,
+        "y": 5.2087019638122705
+      },
+      "prevControl": {
+        "x": 3.4683291041139634,
+        "y": 5.9696490254424885
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "1"
+      "linkedName": "reef p5"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.31780632666111963,
-      "rotationDegrees": -169.72025402199392
+      "waypointRelativePos": 1.000000000000001,
+      "rotationDegrees": -90.0
     }
   ],
   "constraintZones": [],
@@ -47,13 +63,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -174.72185423058775
+    "rotation": -59.99999999999999
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -119.99999999999999
+    "rotation": -89.91134040809216
   },
   "useDefaultConstraints": true
 }
