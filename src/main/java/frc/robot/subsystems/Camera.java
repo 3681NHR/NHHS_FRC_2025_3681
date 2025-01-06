@@ -1,9 +1,12 @@
 package frc.robot.subsystems;
 
+import java.util.Optional;
+
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -68,7 +71,10 @@ public class Camera {
         return camera;
     }
     public EstimatedRobotPose update(){
-        var out = poseEstimator.update();
+        Optional<EstimatedRobotPose> out = Optional.empty();
+        for(PhotonPipelineResult p : camera.getAllUnreadResults()){
+            out = poseEstimator.update(p);
+        }
         SmartDashboard.putBoolean(camera.getName()+" connected", camera.isConnected());
         if(out.isPresent()){
             return out.get();

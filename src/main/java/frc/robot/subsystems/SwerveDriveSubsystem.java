@@ -7,8 +7,11 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
-import com.pathplanner.lib.util.ReplanningConfig;
+import com.pathplanner.lib.commands.PathfindingCommand;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -46,10 +49,7 @@ public class SwerveDriveSubsystem extends SubsystemBase {
     drive.setChassisDiscretization(true, 0.02);
     drive.setHeadingCorrection(false);
     drive.setMotorIdleMode(false);
-    //drive.pushOffsetsToEncoders();
-
-    //correct skew caused when rotating and translating at the same time
-    //drive.setAngularVelocityCompensation(true, true, 0.1);
+    drive.setAngularVelocityCompensation(true, true, 0.1);
 
     SwerveDriveTelemetry.verbosity = TelemetryVerbosity.MACHINE;
 
@@ -106,16 +106,16 @@ public class SwerveDriveSubsystem extends SubsystemBase {
         rotateX.getAsDouble(),
         rotateY.getAsDouble(),
         drive.getOdometryHeading().getRadians(),
-        drive.getMaximumVelocity())
+        drive.getMaximumChassisVelocity())
       );
     } else {
       drive.setHeadingCorrection(false);// normaly false and needs to be false for simultaion
       
         // Make the robot move
         drive.drive(new Translation2d(
-          translationX.getAsDouble() * drive.getMaximumVelocity(),
-          translationY.getAsDouble() * drive.getMaximumVelocity()),
-          rotateX.getAsDouble() * drive.getMaximumAngularVelocity(),
+          translationX.getAsDouble() * drive.getMaximumChassisVelocity(),
+          translationY.getAsDouble() * drive.getMaximumChassisVelocity()),
+          rotateX.getAsDouble() * drive.getMaximumChassisAngularVelocity(),
           fieldOriented.getAsBoolean(),
           false
         );
@@ -129,29 +129,70 @@ public class SwerveDriveSubsystem extends SubsystemBase {
    */
   public void setupPathPlanner()
   {
-    AutoBuilder.configureHolonomic(
-        this::getPose,
-        this::resetOdometry,
-        this::getRobotVelocity,
-        this::setChassisSpeeds,
-        new HolonomicPathFollowerConfig(
-                                         Constants.AutoConstants.TRANSLATION_PID,
-                                         Constants.AutoConstants.ANGLE_PID,
-                                         4.5,
-                                         // Max module speed, in m/s
-                                         drive.swerveDriveConfiguration.getDriveBaseRadiusMeters(),
-                                         // Drive base radius in meters. Distance from robot center to furthest module.
-                                         new ReplanningConfig()
-        ),
-        () -> {
-          // Boolean supplier that controls when the path will be mirrored for the red alliance
-          // This will flip the path being followed to the red side of the field.
-          // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
-          var alliance = DriverStation.getAlliance();
-          return alliance.isPresent() ? alliance.get() == DriverStation.Alliance.Red : false;
-        },
-        this // Reference to this subsystem to set requirements
-                                  );
+    // Load the RobotConfig from the GUI settings. You should probably
+    // store this in your Constants file
+    RobotConfig config;
+    try
+    {
+      config = RobotConfig.fromGUISettings();
+
+      final boolean enableFeedforward = true;
+      // Configure AutoBuilder last
+      AutoBuilder.configure(
+          this::getPose,
+          // Robot pose supplier
+          this::resetOdometry,
+          // Method to reset odometry (will be called if your auto has a starting pose)
+          this::getRobotVelocity,
+          // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
+          (speedsRobotRelative, moduleFeedForwards) -> {
+            if (enableFeedforward)
+            {
+              drive.drive(
+                  speedsRobotRelative,
+                  drive.kinematics.toSwerveModuleStates(speedsRobotRelative),
+                  moduleFeedForwards.linearForces()
+                               );
+            } else
+            {
+              drive.setChassisSpeeds(speedsRobotRelative);
+            }
+          },
+          // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds. Also optionally outputs individual module feedforwards
+          new PPHolonomicDriveController(
+              // PPHolonomicController is the built in path following controller for holonomic drive trains
+              new PIDConstants(1.0, 0.0, 0.0),
+              // Translation PID constants
+              new PIDConstants(0.4, 0.0, 0.01)
+              // Rotation PID constants
+          ),
+          config,
+          // The robot configuration
+          () -> {
+            // Boolean supplier that controls when the path will be mirrored for the red alliance
+            // This will flip the path being followed to the red side of the field.
+            // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+            var alliance = DriverStation.getAlliance();
+            if (alliance.isPresent())
+            {
+              return alliance.get() == DriverStation.Alliance.Red;
+            }
+            return false;
+          },
+          this
+          // Reference to this subsystem to set requirements
+                           );
+
+    } catch (Exception e)
+    {
+      // Handle exception as needed
+      e.printStackTrace();
+    }
+
+    //Preload PathPlanner Path finding
+    // IF USING CUSTOM PATHFINDER ADD BEFORE THIS LINE
+    PathfindingCommand.warmupCommand().schedule();
   }
   
   public ChassisSpeeds getRobotVelocity(){return drive.getRobotVelocity();}

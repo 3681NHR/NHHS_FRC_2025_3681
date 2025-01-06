@@ -4,10 +4,10 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.util.PIDConstants;
-
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import swervelib.math.Matter;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -21,6 +21,12 @@ public final class Constants {
 
   public static final double AUTO_TIME = 15;
   public static final double TELEOP_TIME = 135;//2:15
+  public static final double ENDGAME_TIME = 20;//time remaining in teleop when endgame starts
+
+  
+  public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
+  public static final Matter CHASSIS    = new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), ROBOT_MASS);
+  public static final double LOOP_TIME  = 0.13; //s, 20ms + 110ms sprk max velocity lag
 
   public static class OperatorConstants
   {
@@ -50,10 +56,4 @@ public final class Constants {
     public static final boolean STARTING_DIRECT_ANGLE = false;
   }
 
-  public static final class AutoConstants
-  {
-    //PID constants for auto
-    public static final PIDConstants TRANSLATION_PID = new PIDConstants(0.7, 0, 0);
-    public static final PIDConstants ANGLE_PID       = new PIDConstants(0.4, 0, 0.01);
-  }
 }
