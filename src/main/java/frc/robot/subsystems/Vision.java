@@ -12,7 +12,7 @@ import swervelib.SwerveDrive;
 
 public class Vision
 {
-  private AprilTagFieldLayout layout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+  private AprilTagFieldLayout layout;
   
   private final double maxError = 10;
   private final double maxRotError = 90;
@@ -28,7 +28,11 @@ public class Vision
   };
 
   public Vision(){
-    
+    try{
+      layout = new AprilTagFieldLayout("2025-reefscape.json");
+    } catch(Exception e){
+
+    }
   }
   public EstimatedRobotPose[] getEstimatedRobotPoses(){
     ArrayList<EstimatedRobotPose> poses = new ArrayList<>();

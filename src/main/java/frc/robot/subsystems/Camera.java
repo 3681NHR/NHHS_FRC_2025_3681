@@ -37,7 +37,7 @@ public class Camera {
         private PhotonCamera camera;
 
         public builder(){
-            layout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+            layout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
             angle = new Rotation3d();
             translation = new Translation3d();
             camera = new PhotonCamera("");
