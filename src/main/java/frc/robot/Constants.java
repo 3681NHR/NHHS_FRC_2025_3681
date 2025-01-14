@@ -24,9 +24,17 @@ public final class Constants {
   public static final double ENDGAME_TIME = 20;//time remaining in teleop when endgame starts
 
   
-  public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
-  public static final Matter CHASSIS    = new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), ROBOT_MASS);
-  public static final double LOOP_TIME  = 0.13; //s, 20ms + 110ms sprk max velocity lag
+  public static class robotDims{
+    public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
+    public static final Matter CHASSIS    = new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), ROBOT_MASS);
+    
+    public static final Translation3d ROBOT_SIZE = new Translation3d(
+                                                                    Units.inchesToMeters(26),
+                                                                    Units.inchesToMeters(30),
+                                                                    Units.feetToMeters(6)
+                                                                    );
+  }
+  public static final double LOOP_TIME  = 0.13; //s, 20ms + 110ms spark max velocity lag
 
   public static class OperatorConstants
   {
@@ -52,8 +60,53 @@ public final class Constants {
   public static class drive {
     public static final double MAX_SPEED = Units.feetToMeters(15); //max drive speed, m/s
 
-    public static final boolean STARTING_FOD = true;
-    public static final boolean STARTING_DIRECT_ANGLE = false;
+    public static final boolean STARTING_FOD = true;//is FOD enabled on start
+    public static final boolean STARTING_DIRECT_ANGLE = false;// is direct angle enabled on start
+  }
+
+  public static class arm {
+    public class gains{
+      //pid gains
+      public static final double EXTENTION_KP = 0;
+      public static final double EXTENTION_KI = 0;
+      public static final double EXTENTION_KD = 0;
+      //ff gains
+      public static final double EXTENTION_KS = 0;
+      public static final double EXTENTION_KG = 0;
+      public static final double EXTENTION_KV = 0;
+
+      //pid gains
+      public static final double ANGLE_KP = 0;
+      public static final double ANGLE_KI = 0;
+      public static final double ANGLE_KD = 0;
+      //ff gains
+      public static final double ANGLE_KS = 0;
+      public static final double ANGLE_KG = 0;
+      public static final double ANGLE_KV = 0;
+
+
+      public static final double ANGLE_FACTOR = 360;
+      public static final double EXTENTION_FACTOR = 1;
+    }
+    public static class ids {
+      public static final int EXTENTION_1_ID = 0;
+      public static final int EXTENTION_2_ID = 0;
+
+      public static final int ANGLE_1_ID = 0;
+      public static final int ANGLE_2_ID = 0;
+    }
+    public static class limits {
+      public static final double MAX_EXTENTION = Integer.MAX_VALUE;//meters
+      public static final double MIN_EXTENTION = Integer.MIN_VALUE;//meters
+      
+      public static final double MAX_ANGLE = Integer.MAX_VALUE;//degrees
+      public static final double MIN_ANGLE = Integer.MIN_VALUE;//degrees
+
+      public static final double EXTENTION_LIMIT = Integer.MAX_VALUE;//max distance the arm is allowed to extend past the perimiter, meters
+    }
+    public static final double ANGLE_OFFSET = 0; //added to encoder value
+    public static final double EXTENTION_OFFSET = 0; //added to encoder value
+
   }
 
 }
