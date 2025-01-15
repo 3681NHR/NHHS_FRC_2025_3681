@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import frc.robot.subsystems.ArmPosition;
 import swervelib.math.Matter;
 
 /**
@@ -56,6 +57,12 @@ public final class Constants {
     //usb port of driver controller, remember to assign controller to port in driverstation
     public static final int DRIVER_CONTROLLER_PORT = 0;
     public static final int OPERATOR_CONTROLLER_PORT = 1;
+
+    public static final double ARM_ANGLE_SENSITIVITY = 90*0.02;//deg/0.02sec
+    public static final double ARM_EXTENTION_SENSITIVITY = 1*0.02;//m/0.02sec
+    public static final double WRIST_ANGLE_SENSITIVITY = 180*0.02;//deg/0.02sec
+
+    public static final double OPERATOR_TRIGGER_DEADBAND = 0.1;
   }
   public static class drive {
     public static final double MAX_SPEED = Units.feetToMeters(15); //max drive speed, m/s
@@ -84,11 +91,22 @@ public final class Constants {
       public static final double ANGLE_KG = 0;
       public static final double ANGLE_KV = 0;
 
+      //pid gains
+      public static final double WRIST_KP = 0;
+      public static final double WRIST_KI = 0;
+      public static final double WRIST_KD = 0;
+      //ff gains
+      public static final double WRIST_KS = 0;
+      public static final double WRIST_KG = 0;
+      public static final double WRIST_KV = 0;
+
       public static final double ANGLE_FACTOR = 360;
       public static final double EXTENTION_FACTOR = 1;
+      public static final double WRIST_FACTOR = 360;
 
       public static final boolean ANGLE_ENCODER_INVERTED = false;
       public static final boolean EXTENTION_ENCODER_INVERTED = false;
+      public static final boolean WRIST_ENCODER_INVERTED = false;
     }
     public static class ids {
       public static final int EXTENTION_1_ID = 0;
@@ -97,6 +115,10 @@ public final class Constants {
       public static final int ANGLE_1_ID = 0;
       public static final int ANGLE_2_ID = 0;
 
+      public static final int WRIST_ID = 0;
+      public static final int WRIST_ROLLERS_ID = 0;
+
+      public static final int WRIST_ENCODER = 0;
       public static final int ANGLE_ENCODER = 0;
       public static final int EXTENTION_ENCODER = 0;
     }
@@ -107,10 +129,26 @@ public final class Constants {
       public static final double MAX_ANGLE = Integer.MAX_VALUE;//degrees
       public static final double MIN_ANGLE = Integer.MIN_VALUE;//degrees
 
+      public static final double MAX_WRIST = Integer.MAX_VALUE;//degrees
+      public static final double MIN_WRIST = Integer.MIN_VALUE;//degrees
+
       public static final double EXTENTION_LIMIT = Integer.MAX_VALUE;//max distance the arm is allowed to extend past the perimiter, meters
+    }
+    public static class positions{
+      public static final ArmPosition CORAL_GROUND = new ArmPosition(0, 0, 0);
+      public static final ArmPosition CORAL_STATION = new ArmPosition(0, 0, 0);
+      public static final ArmPosition CORAL_L1 = new ArmPosition(0, 0, 0);
+      public static final ArmPosition CORAL_L2 = new ArmPosition(0, 0, 0);
+      public static final ArmPosition CORAL_L3 = new ArmPosition(0, 0, 0);
+      public static final ArmPosition CORAL_L4 = new ArmPosition(0, 0, 0);
+      public static final ArmPosition ALGE_L2 = new ArmPosition(0, 0, 0);
+      public static final ArmPosition ALGE_L3 = new ArmPosition(0, 0, 0);
+      public static final ArmPosition PROSESSOR = new ArmPosition(0, 0, 0);
+
     }
     //motor controller settings are set in frc/robot/subsystems/ArmSubsystem.java
     public static final double ANGLE_OFFSET = 0; //added to encoder value
+    public static final double WRIST_OFFSET = 0; //added to encoder value
     public static final double EXTENTION_OFFSET = 0; //added to encoder value
 
     public static final Translation3d OFFSET = new Translation3d( Units.inchesToMeters(0),

@@ -1,6 +1,8 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.OpperatorDefaultControlCommand;
+import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.SwerveDriveSubsystem;
 import frc.utils.rumble.ControllerRumble;
 import frc.utils.rumble.RumbleType;
@@ -26,7 +28,10 @@ public class RobotContainer {
 
 
   private final SwerveDriveSubsystem swerveDriveSubsystem = new SwerveDriveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve"));
+  private final ArmSubsystem armSubsystem = new ArmSubsystem();
 
+  private final OpperatorDefaultControlCommand opperatorDefaultControlCommand;
+  
   private final SendableChooser<Command> autoChooser;
 
   private boolean fod = Constants.drive.STARTING_FOD;
@@ -35,8 +40,12 @@ public class RobotContainer {
   private Trigger lockPose;
   private Trigger rstGyro;
 
+
   private final XboxController m_driverController =
       new XboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
+
+  private final XboxController m_operatorController =
+      new XboxController(OperatorConstants.OPERATOR_CONTROLLER_PORT);
 
   private ControllerRumble rumbler = new ControllerRumble(m_driverController);
 
@@ -74,7 +83,10 @@ public class RobotContainer {
     );
 
     swerveDriveSubsystem.setDefaultCommand(RobotBase.isReal() ? driveAngulerVelocity : driveAngulerVelocitySim);
-    
+
+    opperatorDefaultControlCommand = new OpperatorDefaultControlCommand(armSubsystem, m_operatorController);
+
+    armSubsystem.setDefaultCommand(opperatorDefaultControlCommand);
 
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Auto Chooser", autoChooser);
@@ -93,18 +105,16 @@ public class RobotContainer {
       new Trigger(m_driverController::getLeftStickButton).onTrue(Commands.runOnce(() -> {this.fod = !this.fod;}));
       new Trigger(m_driverController::getRightStickButton).onTrue(Commands.runOnce(() -> {this.directAngle = !this.directAngle;}));
       new Trigger(m_driverController::getYButton).onTrue(Commands.runOnce(() -> rumbler.addRumble(RumblePreset.RING.load(), RumbleType.OVERLAY)));
+    
+      new Trigger(() -> m_operatorController.getPOV()==180).onTrue(null);//TODO
     } else {
       lockPose = new Trigger(() -> m_driverController.getRawButton(3));
       rstGyro = new Trigger(() -> m_driverController.getRawButton(1));
       new Trigger(() -> m_driverController.getRawButton(9)).onTrue(Commands.runOnce(() -> {this.fod = !this.fod;}));
       new Trigger(() -> m_driverController.getRawButton(10)).onTrue(Commands.runOnce(() -> {this.directAngle = !this.directAngle;}));
-      
-      
     }
-      lockPose.whileTrue(Commands.runOnce(swerveDriveSubsystem::lock, swerveDriveSubsystem).repeatedly());
-      rstGyro.onTrue(Commands.runOnce(swerveDriveSubsystem::zeroGyro, swerveDriveSubsystem));
-      lockPose.whileTrue(Commands.runOnce(() -> rumbler.addRumble(0.1, 0.1, RumbleType.OVERLAY)).repeatedly());
-      rstGyro.onTrue(Commands.runOnce(() -> rumbler.addRumble(RumblePreset.TAP.load(), RumbleType.OVERLAY)));
+      lockPose.whileTrue(Commands.runOnce(swerveDriveSubsystem::lock, swerveDriveSubsystem).alongWith(Commands.runOnce(() -> rumbler.addRumble(0.1, 0.1, RumbleType.OVERLAY))).repeatedly());
+      rstGyro.onTrue(Commands.runOnce(swerveDriveSubsystem::zeroGyro, swerveDriveSubsystem).alongWith(Commands.runOnce(() -> rumbler.addRumble(RumblePreset.TAP.load(), RumbleType.OVERLAY))));
 
       new Trigger(() -> TimerHandler.getTeleopRemaining()<30.0).or(
         new Trigger(() -> TimerHandler.getAutoRemaining()<3.0)
