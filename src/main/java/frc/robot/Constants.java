@@ -84,9 +84,11 @@ public final class Constants {
       public static final double ANGLE_KG = 0;
       public static final double ANGLE_KV = 0;
 
-
       public static final double ANGLE_FACTOR = 360;
       public static final double EXTENTION_FACTOR = 1;
+
+      public static final boolean ANGLE_ENCODER_INVERTED = false;
+      public static final boolean EXTENTION_ENCODER_INVERTED = false;
     }
     public static class ids {
       public static final int EXTENTION_1_ID = 0;
@@ -94,19 +96,27 @@ public final class Constants {
 
       public static final int ANGLE_1_ID = 0;
       public static final int ANGLE_2_ID = 0;
+
+      public static final int ANGLE_ENCODER = 0;
+      public static final int EXTENTION_ENCODER = 0;
     }
     public static class limits {
-      public static final double MAX_EXTENTION = Integer.MAX_VALUE;//meters
-      public static final double MIN_EXTENTION = Integer.MIN_VALUE;//meters
+      public static final double MAX_EXTENTION = Units.inchesToMeters(70.2);//meters
+      public static final double MIN_EXTENTION = Units.inchesToMeters(26.8);//meters
       
       public static final double MAX_ANGLE = Integer.MAX_VALUE;//degrees
       public static final double MIN_ANGLE = Integer.MIN_VALUE;//degrees
 
       public static final double EXTENTION_LIMIT = Integer.MAX_VALUE;//max distance the arm is allowed to extend past the perimiter, meters
     }
+    //motor controller settings are set in frc/robot/subsystems/ArmSubsystem.java
     public static final double ANGLE_OFFSET = 0; //added to encoder value
     public static final double EXTENTION_OFFSET = 0; //added to encoder value
 
+    public static final Translation3d OFFSET = new Translation3d( Units.inchesToMeters(0),
+                                                                  Units.inchesToMeters(-12),
+                                                                  Units.inchesToMeters(12)
+    );
   }
 
 }
