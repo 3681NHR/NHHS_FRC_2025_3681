@@ -33,14 +33,19 @@ public class ArmSubsystem extends SubsystemBase {
     private SparkMax extention1 = new SparkMax(ids.EXTENTION_1_ID, MotorType.kBrushless);
     private SparkMax extention2 = new SparkMax(ids.EXTENTION_2_ID, MotorType.kBrushless);
 
+    private SparkMax wrist = new SparkMax(ids.WRIST_ID, MotorType.kBrushless);
+
     private DutyCycleEncoder angleEncoder = new DutyCycleEncoder(ids.ANGLE_ENCODER);
     private DutyCycleEncoder extentionEncoder = new DutyCycleEncoder(ids.EXTENTION_ENCODER);
+    private DutyCycleEncoder wristEncoder = new DutyCycleEncoder(ids.WRIST_ENCODER);
 
     private SparkMaxConfig angleConfig = new SparkMaxConfig();
     private SparkMaxConfig angleFollowConfig = new SparkMaxConfig();
     
     private SparkMaxConfig extentionConfig = new SparkMaxConfig();
     private SparkMaxConfig extentionFollowConfig = new SparkMaxConfig();
+
+    private SparkMaxConfig wristConfig = new SparkMaxConfig();
 
     private ProfiledPIDController anglePID = new ProfiledPIDController( gains.ANGLE_KP,
                                                                         gains.ANGLE_KI,
@@ -58,11 +63,22 @@ public class ArmSubsystem extends SubsystemBase {
                                                             gains.EXTENTION_KG,
                                                             gains.EXTENTION_KV);
 
+    private ProfiledPIDController wristPID = new ProfiledPIDController( gains.WRIST_KP,
+                                                                        gains.WRIST_KI,
+                                                                        gains.WRIST_KD,
+                                                        null);
+    private ArmFeedforward wristFF = new ArmFeedforward(gains.WRIST_KS,
+                                                        gains.WRIST_KG,
+                                                        gains.WRIST_KV);
+
     private double angleCurrent;
     private double angleSetpoint;
     
     private double extentionCurrent;
     private double extentionSetpoint;
+
+    private double wristCurrent;
+    private double wristSetpoint;
 
     private State state = State.MAN;
     private Action action = Action.MOVING_TO_SETPOINT;
@@ -84,26 +100,38 @@ public class ArmSubsystem extends SubsystemBase {
             .apply(extentionConfig)
             .follow(extention1);
 
+        wristConfig
+            .idleMode(IdleMode.kBrake)
+            .smartCurrentLimit(20)
+            .voltageCompensation(12);
+
         angle1.configure(angleConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         angle2.configure(angleFollowConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         
         extention1.configure(extentionConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         extention2.configure(extentionFollowConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
+        wrist.configure(wristConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+
         angleEncoder.setInverted(gains.ANGLE_ENCODER_INVERTED);
         extentionEncoder.setInverted(gains.EXTENTION_ENCODER_INVERTED);
+        wristEncoder.setInverted(gains.WRIST_ENCODER_INVERTED);
     }
 
     @Override
     public void periodic() {
         updateEncoders();
         updateSetpoints();
+        updateAction();
         if(RobotState.isDisabled()){
             angleSetpoint = angleCurrent;
+            extentionSetpoint = extentionCurrent;
+            wristSetpoint = wristCurrent;
         }
 
 
         angleSetpoint = MathUtil.clamp(angleSetpoint, limits.MIN_ANGLE, limits.MAX_ANGLE);
+        wristSetpoint = MathUtil.clamp(wristSetpoint, limits.MIN_WRIST, limits.MAX_WRIST);
         //clamp extention within extention limit of robot perimiter, as defined in constants
         //if the arm is reaching out too much at min, womp womp
         double a =Constants.robotDims.ROBOT_SIZE.getY()/2;
@@ -116,12 +144,29 @@ public class ArmSubsystem extends SubsystemBase {
             //move
             angle1.set(anglePID.calculate(angleCurrent, angleSetpoint) + angleFF.calculate(angleCurrent, anglePID.getSetpoint().velocity));
             extention1.set(extentionPID.calculate(extentionCurrent, extentionSetpoint) + extentionFF.calculate(extentionCurrent, extentionPID.getSetpoint().velocity));
+            wrist.set(wristPID.calculate(wristCurrent, wristSetpoint) + wristFF.calculate(wristCurrent, wristPID.getSetpoint().velocity));
         }
 
     }
     public void updateEncoders(){
         angleCurrent = angleEncoder.get()*gains.ANGLE_FACTOR + arm.ANGLE_OFFSET;
         extentionCurrent = extentionEncoder.get()*gains.EXTENTION_FACTOR + arm.EXTENTION_OFFSET;
+        wristCurrent = wristEncoder.get()*gains.WRIST_FACTOR + arm.WRIST_OFFSET;
+    }
+    public void updateAction(){
+        if(action != Action.DISABLED){
+            action = Action.MOVING_TO_SETPOINT;
+            if(MathUtil.isNear(extentionCurrent, extentionSetpoint, limits.EXTENTION_NEAR_RANGE)
+            && MathUtil.isNear(angleCurrent, angleSetpoint, limits.ANGLE_NEAR_RANGE)
+            && MathUtil.isNear(wristCurrent, wristSetpoint, limits.WRIST_NEAR_RANGE)){
+                action = Action.NEAR_SETPOINT;
+            }
+            if(MathUtil.isNear(extentionCurrent, extentionSetpoint, limits.EXTENTION_DEADBAND)
+            && MathUtil.isNear(angleCurrent, angleSetpoint, limits.ANGLE_DEADBAND)
+            && MathUtil.isNear(wristCurrent, wristSetpoint, limits.WRIST_DEADBAND)){
+                action = Action.HOLD_AT_SETPOINT;
+            }
+        }
     }
     public void updateSetpoints(){
         switch (state) {
@@ -158,15 +203,18 @@ public class ArmSubsystem extends SubsystemBase {
     }
     public double getAngle(){return angleCurrent;}
     public double getExtention(){return extentionCurrent;}
+    public double getWrist(){return wristCurrent;}
     public Action getAction(){return action;}
     public State getState(){return state;}
     public void setAngle(double a){angleSetpoint = a;}
     public void setExtention(double e){extentionSetpoint = e;}
+    public void setWrist(double w){wristSetpoint = w;}
     public void setState(State s){state = s;}
     public void setAction(Action a){action = a;}
     public void setPosition(ArmPosition p){
         setAngle(p.angle);
         setExtention(p.extention);
+        setWrist(p.wrist);
     }
     
     @Override
@@ -179,6 +227,9 @@ public class ArmSubsystem extends SubsystemBase {
 
         builder.addDoubleProperty("current extention", this::getExtention, null);
         builder.addDoubleProperty("target extention", () -> angleSetpoint, this::setExtention);
+    
+        builder.addDoubleProperty("current wrist angle", this::getWrist, null);
+        builder.addDoubleProperty("target wrist angle", () -> wristSetpoint, this::setWrist);
     }
 
     public enum State{
@@ -197,6 +248,7 @@ public class ArmSubsystem extends SubsystemBase {
         HOLD_AT_SETPOINT,//at setpoint deadband
         MOVING_TO_SETPOINT,//moving to setpoint
         NEAR_SETPOINT,//within near range of setpoint
-        DISABLED//will not move
+        DISABLED,//will not move
+        ENABLED//set to re enable, do not use as condition
     }
 }

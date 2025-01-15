@@ -116,7 +116,6 @@ public final class Constants {
       public static final int ANGLE_2_ID = 0;
 
       public static final int WRIST_ID = 0;
-      public static final int WRIST_ROLLERS_ID = 0;
 
       public static final int WRIST_ENCODER = 0;
       public static final int ANGLE_ENCODER = 0;
@@ -133,6 +132,14 @@ public final class Constants {
       public static final double MIN_WRIST = Integer.MIN_VALUE;//degrees
 
       public static final double EXTENTION_LIMIT = Integer.MAX_VALUE;//max distance the arm is allowed to extend past the perimiter, meters
+
+      public static final double EXTENTION_DEADBAND = 0;//when current reading is within this much of the target, it is consitered "at setpoint", note the pid and ff will not stop within this range
+      public static final double ANGLE_DEADBAND = 0;//when current reading is within this much of the target, it is consitered "at setpoint", note the pid and ff will not stop within this range
+      public static final double WRIST_DEADBAND = 0;//when current reading is within this much of the target, it is consitered "at setpoint", note the pid and ff will not stop within this range
+    
+      public static final double EXTENTION_NEAR_RANGE = 0;//when current reading is within this much of the target, it is consitered "near setpoint"
+      public static final double ANGLE_NEAR_RANGE = 0;//when current reading is within this much of the target, it is consitered "near setpoint"
+      public static final double WRIST_NEAR_RANGE = 0;//when current reading is within this much of the target, it is consitered "near setpoint"
     }
     public static class positions{
       public static final ArmPosition CORAL_GROUND = new ArmPosition(0, 0, 0);

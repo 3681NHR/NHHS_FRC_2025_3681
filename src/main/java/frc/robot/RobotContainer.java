@@ -14,10 +14,12 @@ import java.io.File;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -40,6 +42,7 @@ public class RobotContainer {
   private Trigger lockPose;
   private Trigger rstGyro;
 
+  private Alert brownout = new Alert("brownout", AlertType.kError);
 
   private final XboxController m_driverController =
       new XboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
@@ -90,6 +93,10 @@ public class RobotContainer {
 
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Auto Chooser", autoChooser);
+
+    SmartDashboard.putData("arm", armSubsystem);
+
+    
   }
 
   private void configureBindings() {
@@ -126,6 +133,13 @@ public class RobotContainer {
   public void Periodic(){
     SmartDashboard.putBoolean("fod", getFOD());
     SmartDashboard.putBoolean("direct angle", directAngle);
+    SmartDashboard.putNumber("voltage", pdp.getVoltage());
+
+    if(pdp.getVoltage() <= 8){
+      brownout.set(true);
+    } else {
+      brownout.set(false);
+    }
 
     rumbler.update();
   }
