@@ -1,7 +1,5 @@
 package frc.robot;
 
-import org.photonvision.proto.Photon.ProtobufPhotonTrackedTarget;
-
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
