@@ -113,7 +113,11 @@ public class RobotContainer {
       new Trigger(m_driverController::getRightStickButton).onTrue(Commands.runOnce(() -> {this.directAngle = !this.directAngle;}));
       new Trigger(m_driverController::getYButton).onTrue(Commands.runOnce(() -> rumbler.addRumble(RumblePreset.RING.load(), RumbleType.OVERLAY)));
     
-      new Trigger(() -> m_operatorController.getPOV()==180).onTrue(null);//TODO
+      new Trigger(() -> m_operatorController.getPOV()==180).onTrue(Commands.runOnce(() -> armSubsystem.setPosition(Constants.arm.positions.CORAL_GROUND)));
+      new Trigger(() -> m_operatorController.getPOV()==0).onTrue(Commands.runOnce(() -> armSubsystem.setPosition(Constants.arm.positions.CORAL_STATION)));
+      new Trigger(() -> m_operatorController.getPOV()==90).onTrue(Commands.runOnce(() -> armSubsystem.setPosition(Constants.arm.positions.CORAL_L1)));
+      new Trigger(() -> m_operatorController.getPOV()==270).onTrue(Commands.runOnce(() -> armSubsystem.setPosition(Constants.arm.positions.CORAL_L3)));
+    
     } else {
       lockPose = new Trigger(() -> m_driverController.getRawButton(3));
       rstGyro = new Trigger(() -> m_driverController.getRawButton(1));

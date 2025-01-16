@@ -109,17 +109,17 @@ public final class Constants {
       public static final boolean WRIST_ENCODER_INVERTED = false;
     }
     public static class ids {
-      public static final int EXTENTION_1_ID = 0;
-      public static final int EXTENTION_2_ID = 0;
+      public static final int EXTENTION_1_ID = 41;
+      public static final int EXTENTION_2_ID = 42;
 
-      public static final int ANGLE_1_ID = 0;
-      public static final int ANGLE_2_ID = 0;
+      public static final int ANGLE_1_ID = 51;
+      public static final int ANGLE_2_ID = 52;
 
-      public static final int WRIST_ID = 0;
+      public static final int WRIST_ID = 61;
 
-      public static final int WRIST_ENCODER = 0;
-      public static final int ANGLE_ENCODER = 0;
-      public static final int EXTENTION_ENCODER = 0;
+      public static final int WRIST_ENCODER = 31;
+      public static final int ANGLE_ENCODER = 32;
+      public static final int EXTENTION_ENCODER = 33;
     }
     public static class limits {
       public static final double MAX_EXTENTION = Units.inchesToMeters(70.2);//meters
@@ -133,24 +133,24 @@ public final class Constants {
 
       public static final double EXTENTION_LIMIT = Integer.MAX_VALUE;//max distance the arm is allowed to extend past the perimiter, meters
 
-      public static final double EXTENTION_DEADBAND = 0;//when current reading is within this much of the target, it is consitered "at setpoint", note the pid and ff will not stop within this range
-      public static final double ANGLE_DEADBAND = 0;//when current reading is within this much of the target, it is consitered "at setpoint", note the pid and ff will not stop within this range
-      public static final double WRIST_DEADBAND = 0;//when current reading is within this much of the target, it is consitered "at setpoint", note the pid and ff will not stop within this range
+      public static final double EXTENTION_DEADBAND = .05;//when current reading is within this much of the target, it is consitered "at setpoint", note the pid and ff will not stop within this range
+      public static final double ANGLE_DEADBAND = 5;//when current reading is within this much of the target, it is consitered "at setpoint", note the pid and ff will not stop within this range
+      public static final double WRIST_DEADBAND = 2.5;//when current reading is within this much of the target, it is consitered "at setpoint", note the pid and ff will not stop within this range
     
-      public static final double EXTENTION_NEAR_RANGE = 0;//when current reading is within this much of the target, it is consitered "near setpoint"
-      public static final double ANGLE_NEAR_RANGE = 0;//when current reading is within this much of the target, it is consitered "near setpoint"
-      public static final double WRIST_NEAR_RANGE = 0;//when current reading is within this much of the target, it is consitered "near setpoint"
+      public static final double EXTENTION_NEAR_RANGE = 0.25;//when current reading is within this much of the target, it is consitered "near setpoint"
+      public static final double ANGLE_NEAR_RANGE = 10;//when current reading is within this much of the target, it is consitered "near setpoint"
+      public static final double WRIST_NEAR_RANGE = 5;//when current reading is within this much of the target, it is consitered "near setpoint"
     }
     public static class positions{
-      public static final ArmPosition CORAL_GROUND = new ArmPosition(0, 0, 0);
-      public static final ArmPosition CORAL_STATION = new ArmPosition(0, 0, 0);
-      public static final ArmPosition CORAL_L1 = new ArmPosition(0, 0, 0);
-      public static final ArmPosition CORAL_L2 = new ArmPosition(0, 0, 0);
-      public static final ArmPosition CORAL_L3 = new ArmPosition(0, 0, 0);
-      public static final ArmPosition CORAL_L4 = new ArmPosition(0, 0, 0);
-      public static final ArmPosition ALGE_L2 = new ArmPosition(0, 0, 0);
-      public static final ArmPosition ALGE_L3 = new ArmPosition(0, 0, 0);
-      public static final ArmPosition PROSESSOR = new ArmPosition(0, 0, 0);
+      public static final ArmPosition CORAL_GROUND  = new ArmPosition(-4.3, 0, -63.3);
+      public static final ArmPosition CORAL_STATION = new ArmPosition(44.3, 0, 0);
+      public static final ArmPosition CORAL_L1      = new ArmPosition(24, 0, -53);
+      public static final ArmPosition CORAL_L2      = new ArmPosition(103.3, 0, 122);
+      public static final ArmPosition CORAL_L3      = new ArmPosition(95, 0, 115);
+      public static final ArmPosition CORAL_L4      = new ArmPosition(97, 0, 138);
+      public static final ArmPosition ALGE_L2       = new ArmPosition(0, 0, 0);
+      public static final ArmPosition ALGE_L3       = new ArmPosition(0, 0, 0);
+      public static final ArmPosition PROSESSOR     = new ArmPosition(0, 0, 0);
 
     }
     //motor controller settings are set in frc/robot/subsystems/ArmSubsystem.java
