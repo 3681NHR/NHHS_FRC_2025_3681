@@ -6,13 +6,18 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Camera {
@@ -22,11 +27,28 @@ public class Camera {
     private PhotonPoseEstimator poseEstimator;
     private AprilTagFieldLayout layout;
 
+    private PhotonCameraSim simCamera;
+    private VisionSystemSim visionSystemSim;
+    private SimCameraProperties simprop = new SimCameraProperties();
+
     public Camera(builder b){
         this.angle = b.angle;
         this.translation = b.translation;
         this.camera = b.camera;
         this.layout = b.layout;
+
+        if(RobotBase.isSimulation()){
+            simprop.setFPS(50);
+            simprop.setAvgLatencyMs(10);
+            visionSystemSim = new VisionSystemSim("sim vision");
+            simCamera = new PhotonCameraSim(camera, simprop);
+
+            simCamera.enableProcessedStream(true);
+            simCamera.enableDrawWireframe(true);
+
+            visionSystemSim.addAprilTags(layout);
+            visionSystemSim.addCamera(simCamera, getRobotToCam());
+        }
 
         poseEstimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, new Transform3d(translation, angle));   
     }
@@ -37,10 +59,10 @@ public class Camera {
         private PhotonCamera camera;
 
         public builder(){
-            layout = AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
+            layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
             angle = new Rotation3d();
             translation = new Translation3d();
-            camera = new PhotonCamera("");
+            camera = new PhotonCamera("camera");
         }
 
         public builder withAngle(Rotation3d rot){
@@ -76,6 +98,20 @@ public class Camera {
             out = poseEstimator.update(p);
         }
         SmartDashboard.putBoolean(camera.getName()+" connected", camera.isConnected());
+        if(out.isPresent()){
+            return out.get();
+        } else {
+            return null;
+        }
+    }
+    public EstimatedRobotPose updateSim(Pose3d robotPose){
+        SmartDashboard.putBoolean(camera.getName()+" connected(sim)", camera.isConnected());
+        visionSystemSim.update(robotPose);
+
+        Optional<EstimatedRobotPose> out = Optional.empty();
+        for(PhotonPipelineResult p : camera.getAllUnreadResults()){
+            out = poseEstimator.update(p);
+        }
         if(out.isPresent()){
             return out.get();
         } else {
