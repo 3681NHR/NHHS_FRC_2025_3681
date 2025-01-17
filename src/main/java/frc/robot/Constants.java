@@ -117,9 +117,9 @@ public final class Constants {
 
       public static final int WRIST_ID = 61;
 
-      public static final int WRIST_ENCODER = 31;
-      public static final int ANGLE_ENCODER = 32;
-      public static final int EXTENTION_ENCODER = 33;
+      public static final int WRIST_ENCODER = 1;
+      public static final int ANGLE_ENCODER = 2;
+      public static final int EXTENTION_ENCODER = 3;
     }
     public static class limits {
       public static final double MAX_EXTENTION = Units.inchesToMeters(70.2);//meters

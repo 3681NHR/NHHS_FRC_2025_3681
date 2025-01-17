@@ -1,6 +1,9 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkBase.ResetMode;
+
+import java.util.logging.Logger;
+
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -10,11 +13,13 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.arm;
@@ -45,7 +50,7 @@ public class ArmSubsystem extends SubsystemBase {
     private ProfiledPIDController anglePID = new ProfiledPIDController( gains.ANGLE_KP,
                                                                         gains.ANGLE_KI,
                                                                         gains.ANGLE_KD,
-                                                                        new Constraints(100, 10));
+                                                                        new Constraints(720, 720));
     private ArmFeedforward angleFF = new ArmFeedforward(gains.ANGLE_KS,
                                                         gains.ANGLE_KG,
                                                         gains.ANGLE_KV);
@@ -53,7 +58,7 @@ public class ArmSubsystem extends SubsystemBase {
     private ProfiledPIDController extentionPID = new ProfiledPIDController( gains.EXTENTION_KP,
                                                                             gains.EXTENTION_KI,
                                                                             gains.EXTENTION_KD,
-                                                        null);
+                                                                            new Constraints(100, 10));
     private ArmFeedforward extentionFF = new ArmFeedforward(gains.EXTENTION_KS,
                                                             gains.EXTENTION_KG,
                                                             gains.EXTENTION_KV);
@@ -61,7 +66,7 @@ public class ArmSubsystem extends SubsystemBase {
     private ProfiledPIDController wristPID = new ProfiledPIDController( gains.WRIST_KP,
                                                                         gains.WRIST_KI,
                                                                         gains.WRIST_KD,
-                                                        null);
+                                                                        new Constraints(800, 800));
     private ArmFeedforward wristFF = new ArmFeedforward(gains.WRIST_KS,
                                                         gains.WRIST_KG,
                                                         gains.WRIST_KV);

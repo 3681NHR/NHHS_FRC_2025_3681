@@ -1,5 +1,13 @@
 package frc.robot;
 
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -13,7 +21,7 @@ import frc.utils.TimerHandler;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
@@ -26,13 +34,17 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
-    DataLogManager.start();
+    //DataLogManager.start();
     m_robotContainer = new RobotContainer();
 
     if(!RobotBase.isSimulation()){
       DataLogManager.start();
     }
     TimerHandler.init();
+
+    Logger.addDataReceiver(new NT4Publisher());
+    Logger.start();
+
   }
 
   /**
@@ -51,6 +63,7 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
     TimerHandler.update();
 
+    Logger.recordOutput("mech/zero", new Pose3d());
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
