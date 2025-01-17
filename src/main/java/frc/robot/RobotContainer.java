@@ -12,8 +12,14 @@ import frc.utils.rumble.RumblePreset;
 
 import java.io.File;
 
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralAlgaeStack;
+import org.littletonrobotics.junction.Logger;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -96,6 +102,13 @@ public class RobotContainer {
 
     SmartDashboard.putData("arm", armSubsystem);
 
+    SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralAlgaeStack(new Translation2d(1.220, 5.85)));
+    SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralAlgaeStack(new Translation2d(1.220, 4)));
+    SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralAlgaeStack(new Translation2d(1.220, 2)));
+
+    SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralAlgaeStack(new Translation2d(15.690, 5.85)));
+    SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralAlgaeStack(new Translation2d(15.690, 4)));
+    SimulatedArena.getInstance().addGamePiece(new ReefscapeCoralAlgaeStack(new Translation2d(15.690, 2)));
     
   }
 
@@ -113,10 +126,6 @@ public class RobotContainer {
       new Trigger(m_driverController::getRightStickButton).onTrue(Commands.runOnce(() -> {this.directAngle = !this.directAngle;}));
       new Trigger(m_driverController::getYButton).onTrue(Commands.runOnce(() -> rumbler.addRumble(RumblePreset.RING.load(), RumbleType.OVERLAY)));
     
-      new Trigger(() -> m_operatorController.getPOV()==180).onTrue(Commands.runOnce(() -> armSubsystem.setPosition(Constants.arm.positions.CORAL_GROUND)));
-      new Trigger(() -> m_operatorController.getPOV()==0).onTrue(Commands.runOnce(() -> armSubsystem.setPosition(Constants.arm.positions.CORAL_STATION)));
-      new Trigger(() -> m_operatorController.getPOV()==90).onTrue(Commands.runOnce(() -> armSubsystem.setPosition(Constants.arm.positions.CORAL_L1)));
-      new Trigger(() -> m_operatorController.getPOV()==270).onTrue(Commands.runOnce(() -> armSubsystem.setPosition(Constants.arm.positions.CORAL_L3)));
     
     } else {
       lockPose = new Trigger(() -> m_driverController.getRawButton(3));
@@ -132,7 +141,12 @@ public class RobotContainer {
       ).onTrue(Commands.runOnce(() -> {
         rumbler.addRumble(RumblePreset.DOUBLE_TAP.load(), RumbleType.OVERRIDE);
       }));
-  }
+
+      new Trigger(() -> m_operatorController.getPOV()==180).onTrue(Commands.runOnce(() -> armSubsystem.setPosition(Constants.arm.positions.CORAL_GROUND)));
+      new Trigger(() -> m_operatorController.getPOV()==0).onTrue(Commands.runOnce(() -> armSubsystem.setPosition(Constants.arm.positions.CORAL_STATION)));
+      new Trigger(() -> m_operatorController.getPOV()==90).onTrue(Commands.runOnce(() -> armSubsystem.setPosition(Constants.arm.positions.CORAL_L1)));
+      new Trigger(() -> m_operatorController.getPOV()==270).onTrue(Commands.runOnce(() -> armSubsystem.setPosition(Constants.arm.positions.CORAL_L3)));
+    }
 
   public void Periodic(){
     SmartDashboard.putBoolean("fod", getFOD());
@@ -146,6 +160,7 @@ public class RobotContainer {
     }
 
     rumbler.update();
+
   }
   public void SimPeriodic(){
   }

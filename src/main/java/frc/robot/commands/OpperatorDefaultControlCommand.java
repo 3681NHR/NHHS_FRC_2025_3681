@@ -11,7 +11,6 @@ public class OpperatorDefaultControlCommand extends Command {
   ArmSubsystem arm;
   XboxController x;
 
-  //TODO: add wrist subsystem interface
   public OpperatorDefaultControlCommand(ArmSubsystem a, XboxController x) {
     arm = a;
     this.x = x;
@@ -26,11 +25,11 @@ public class OpperatorDefaultControlCommand extends Command {
     if(x.getLeftTriggerAxis()>=Constants.OperatorConstants.OPERATOR_TRIGGER_DEADBAND || x.getRightTriggerAxis()>=Constants.OperatorConstants.OPERATOR_TRIGGER_DEADBAND){
       arm.setState(State.MAN);
       if(x.getLeftBumperButton()){
-        arm.setExtention(arm.getExtention() + (x.getRightTriggerAxis()-x.getLeftTriggerAxis())*Constants.OperatorConstants.ARM_EXTENTION_SENSITIVITY);
+        arm.setExtention(arm.getExtentionSetpoint() + (x.getRightTriggerAxis()-x.getLeftTriggerAxis())*Constants.OperatorConstants.ARM_EXTENTION_SENSITIVITY);
       } else if(x.getRightBumperButton()){
-        //TODO: move wrist angle based on triggers and sensitivity in constants(see 2 lines up)
+        arm.setWrist(arm.getWristSetpoint() + (x.getRightTriggerAxis()-x.getLeftTriggerAxis())*Constants.OperatorConstants.WRIST_ANGLE_SENSITIVITY);
       } else {
-        arm.setAngle(arm.getAngle() + (x.getRightTriggerAxis()-x.getLeftTriggerAxis())*Constants.OperatorConstants.ARM_ANGLE_SENSITIVITY);
+        arm.setAngle(arm.getAngleSetpoint() + (x.getRightTriggerAxis()-x.getLeftTriggerAxis())*Constants.OperatorConstants.ARM_ANGLE_SENSITIVITY);
       }
     }
   }

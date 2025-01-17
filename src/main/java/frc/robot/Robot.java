@@ -1,5 +1,6 @@
 package frc.robot;
 
+import org.ironmaple.simulation.SimulatedArena;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -63,7 +64,11 @@ public class Robot extends LoggedRobot {
     CommandScheduler.getInstance().run();
     TimerHandler.update();
 
-    Logger.recordOutput("mech/zero", new Pose3d());
+
+    Logger.recordOutput("FieldSimulation/Algae", 
+    SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+    Logger.recordOutput("FieldSimulation/Coral", 
+    SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

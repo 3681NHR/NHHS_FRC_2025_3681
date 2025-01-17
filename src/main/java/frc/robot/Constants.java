@@ -34,6 +34,7 @@ public final class Constants {
                                                                     Units.inchesToMeters(30),
                                                                     Units.feetToMeters(6)
                                                                     );
+    public static final double ROBOT_HEIGHT_OFF_GROUND = 0.09;
   }
   public static final double LOOP_TIME  = 0.13; //s, 20ms + 110ms spark max velocity lag
 
@@ -59,10 +60,10 @@ public final class Constants {
     public static final int OPERATOR_CONTROLLER_PORT = 1;
 
     public static final double ARM_ANGLE_SENSITIVITY = 90*0.02;//deg/0.02sec
-    public static final double ARM_EXTENTION_SENSITIVITY = 1*0.02;//m/0.02sec
-    public static final double WRIST_ANGLE_SENSITIVITY = 180*0.02;//deg/0.02sec
+    public static final double ARM_EXTENTION_SENSITIVITY = 0.5*0.02;//m/0.02sec
+    public static final double WRIST_ANGLE_SENSITIVITY = 90*0.02;//deg/0.02sec
 
-    public static final double OPERATOR_TRIGGER_DEADBAND = 0.1;
+    public static final double OPERATOR_TRIGGER_DEADBAND = 0.01;
   }
   public static class drive {
     public static final double MAX_SPEED = Units.feetToMeters(15); //max drive speed, m/s

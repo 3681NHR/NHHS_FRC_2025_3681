@@ -145,7 +145,8 @@ public class ArmSubsystem extends SubsystemBase {
         double a =Constants.robotDims.ROBOT_SIZE.getY()/2;
         double allowedExtention = (a-(a-arm.OFFSET.getY())+a+limits.EXTENTION_LIMIT)/Math.cos(Units.degreesToRadians(angleCurrent));//dont change this math, it took me forever
         //clamp allowed extention so it will be a valid max
-        allowedExtention = MathUtil.clamp(allowedExtention, limits.MIN_EXTENTION, limits.MAX_EXTENTION);
+        //allowedExtention = MathUtil.clamp(allowedExtention, limits.MIN_EXTENTION, limits.MAX_EXTENTION);
+        allowedExtention = limits.MAX_EXTENTION;
         extentionSetpoint = MathUtil.clamp(extentionSetpoint, limits.MIN_EXTENTION, allowedExtention);
 
         if(action != Action.DISABLED){
@@ -210,10 +211,10 @@ public class ArmSubsystem extends SubsystemBase {
         }
     }
     public void updatePose(){
-        arm1pose = new Pose3d(arm.OFFSET, new Rotation3d(angleSetpoint, 0, 0));
-        arm2pose = new Pose3d(arm.OFFSET, new Rotation3d(angleSetpoint, 0, 0));
-        arm3pose = new Pose3d(arm.OFFSET, new Rotation3d(angleSetpoint, 0, 0));
-        wristpose = new Pose3d(arm.OFFSET.plus(getArmPoint(extentionSetpoint, angleSetpoint)), new Rotation3d(angleSetpoint+wristSetpoint, 0, 0));
+        arm1pose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)), new Rotation3d(0, -Units.degreesToRadians(angleSetpoint), 0));
+        arm2pose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)).plus(getArmPoint((extentionSetpoint-positions.ARM_3_LENGTH)/2, angleSetpoint)), new Rotation3d(0, -Units.degreesToRadians(angleSetpoint), 0));
+        arm3pose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)).plus(getArmPoint(extentionSetpoint-(positions.ARM_3_LENGTH), angleSetpoint)), new Rotation3d(0, -Units.degreesToRadians(angleSetpoint), 0));
+        wristpose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)).plus(getArmPoint(extentionSetpoint, angleSetpoint)), new Rotation3d(0, -Units.degreesToRadians(angleSetpoint+wristSetpoint), 0));
 
 
         Logger.recordOutput("arm/1", arm1pose);
@@ -222,13 +223,16 @@ public class ArmSubsystem extends SubsystemBase {
         Logger.recordOutput("arm/wrist", wristpose);
         
     }
-    private Translation3d getArmPoint(double angleDeg, double dist){
+    private Translation3d getArmPoint(double dist, double angleDeg){
         double angleRad = Units.degreesToRadians(angleDeg);
         return new Translation3d(dist*Math.cos(angleRad), 0, dist*Math.sin(angleRad));
     }
     public double getAngle(){return angleCurrent;}
+    public double getAngleSetpoint(){return angleSetpoint;}
     public double getExtention(){return extentionCurrent;}
+    public double getExtentionSetpoint(){return extentionSetpoint;}
     public double getWrist(){return wristCurrent;}
+    public double getWristSetpoint(){return wristSetpoint;}
     public Action getAction(){return action;}
     public State getState(){return state;}
     public void setAngle(double a){angleSetpoint = a;}
@@ -251,7 +255,7 @@ public class ArmSubsystem extends SubsystemBase {
         builder.addDoubleProperty("target angle", () -> angleSetpoint, this::setAngle);
 
         builder.addDoubleProperty("current extention", this::getExtention, null);
-        builder.addDoubleProperty("target extention", () -> angleSetpoint, this::setExtention);
+        builder.addDoubleProperty("target extention", () -> extentionSetpoint, this::setExtention);
     
         builder.addDoubleProperty("current wrist angle", this::getWrist, null);
         builder.addDoubleProperty("target wrist angle", () -> wristSetpoint, this::setWrist);
