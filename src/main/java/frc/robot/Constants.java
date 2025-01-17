@@ -7,7 +7,8 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import frc.robot.subsystems.ArmPosition;
+import edu.wpi.first.wpilibj.RobotBase;
+import frc.robot.subsystems.arm.ArmPosition;
 import swervelib.math.Matter;
 
 /**
@@ -24,6 +25,19 @@ public final class Constants {
   public static final double TELEOP_TIME = 135;//2:15
   public static final double ENDGAME_TIME = 20;//time remaining in teleop when endgame starts
 
+  public static final Mode simMode = Mode.SIM;
+  public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
+
+  public static enum Mode {
+    /** Running on a real robot. */
+    REAL,
+
+    /** Running a physics simulator. */
+    SIM,
+
+    /** Replaying from a log file. */
+    REPLAY
+  }
   
   public static class robotDims{
     public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
@@ -169,5 +183,4 @@ public final class Constants {
                                                                   Units.inchesToMeters(12)
     );
   }
-
 }

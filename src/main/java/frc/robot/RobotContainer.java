@@ -2,8 +2,10 @@ package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.OpperatorDefaultControlCommand;
-import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.SwerveDriveSubsystem;
+import frc.robot.subsystems.arm.ArmIONeo;
+import frc.robot.subsystems.arm.ArmIOSim;
+import frc.robot.subsystems.arm.ArmSubsystem;
 import frc.utils.rumble.ControllerRumble;
 import frc.utils.rumble.RumbleType;
 import frc.utils.TimerHandler;
@@ -14,19 +16,17 @@ import java.io.File;
 
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.seasonspecific.reefscape2025.ReefscapeCoralAlgaeStack;
-import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -36,11 +36,11 @@ public class RobotContainer {
 
 
   private final SwerveDriveSubsystem swerveDriveSubsystem = new SwerveDriveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve"));
-  private final ArmSubsystem armSubsystem = new ArmSubsystem();
+  private final ArmSubsystem armSubsystem;
 
   private final OpperatorDefaultControlCommand opperatorDefaultControlCommand;
   
-  private final SendableChooser<Command> autoChooser;
+  private final LoggedDashboardChooser<Command> autoChooser;
 
   private boolean fod = Constants.drive.STARTING_FOD;
   private boolean directAngle = Constants.drive.STARTING_DIRECT_ANGLE;
@@ -61,6 +61,13 @@ public class RobotContainer {
   private PowerDistribution pdp = new PowerDistribution();
 
   public RobotContainer() {
+    if(RobotBase.isReal()){
+      armSubsystem = new ArmSubsystem(new ArmIONeo());
+    } else {
+      armSubsystem = new ArmSubsystem(new ArmIOSim());
+    }
+
+
     configureBindings();
 
     SmartDashboard.putData("PDP", pdp);
@@ -97,8 +104,7 @@ public class RobotContainer {
 
     armSubsystem.setDefaultCommand(opperatorDefaultControlCommand);
 
-    autoChooser = AutoBuilder.buildAutoChooser();
-    SmartDashboard.putData("Auto Chooser", autoChooser);
+    autoChooser = new LoggedDashboardChooser<Command>("auto", AutoBuilder.buildAutoChooser());
 
     SmartDashboard.putData("arm", armSubsystem);
 
@@ -166,7 +172,7 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    Command auto = autoChooser.getSelected();
+    Command auto = autoChooser.get();
     return auto;
   }
 

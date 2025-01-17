@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.arm;
 
 public class ArmPosition {
     public double angle = 0;
