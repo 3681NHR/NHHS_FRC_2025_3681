@@ -2,7 +2,7 @@ package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkBase.ResetMode;
 
-import java.util.logging.Logger;
+import org.littletonrobotics.junction.Logger;
 
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -14,6 +14,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -83,6 +84,11 @@ public class ArmSubsystem extends SubsystemBase {
     private State state = State.MAN;
     private Action action = Action.MOVING_TO_SETPOINT;
 
+    private Pose3d arm1pose = new Pose3d(arm.OFFSET, new Rotation3d());
+    private Pose3d arm2pose = new Pose3d(arm.OFFSET, new Rotation3d());
+    private Pose3d arm3pose = new Pose3d(arm.OFFSET, new Rotation3d());
+    private Pose3d wristpose = new Pose3d(arm.OFFSET, new Rotation3d());
+
     public ArmSubsystem(){
         angleConfig
             .idleMode(IdleMode.kBrake)
@@ -123,6 +129,7 @@ public class ArmSubsystem extends SubsystemBase {
         updateEncoders();
         updateSetpoints();
         updateAction();
+        updatePose();
         if(RobotState.isDisabled()){
             angleSetpoint = angleCurrent;
             extentionSetpoint = extentionCurrent;
@@ -200,6 +207,19 @@ public class ArmSubsystem extends SubsystemBase {
             default:
             break;
         }
+    }
+    public void updatePose(){
+        arm1pose = new Pose3d(arm.OFFSET, new Rotation3d(angleSetpoint, 0, 0));
+        arm2pose = new Pose3d(arm.OFFSET, new Rotation3d(angleSetpoint, 0, 0));
+        arm3pose = new Pose3d(arm.OFFSET, new Rotation3d(angleSetpoint, 0, 0));
+        wristpose = new Pose3d(arm.OFFSET, new Rotation3d(angleSetpoint+wristSetpoint, 0, 0));
+
+
+        Logger.recordOutput("arm/1", arm1pose);
+        Logger.recordOutput("arm/2", arm2pose);
+        Logger.recordOutput("arm/3", arm3pose);
+        Logger.recordOutput("arm/wrist", wristpose);
+        
     }
     public double getAngle(){return angleCurrent;}
     public double getExtention(){return extentionCurrent;}

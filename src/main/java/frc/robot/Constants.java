@@ -158,8 +158,8 @@ public final class Constants {
     public static final double WRIST_OFFSET = 0; //added to encoder value
     public static final double EXTENTION_OFFSET = 0; //added to encoder value
 
-    public static final Translation3d OFFSET = new Translation3d( Units.inchesToMeters(0),
-                                                                  Units.inchesToMeters(-12),
+    public static final Translation3d OFFSET = new Translation3d( Units.inchesToMeters(-12),
+                                                                  Units.inchesToMeters(0),
                                                                   Units.inchesToMeters(12)
     );
   }
