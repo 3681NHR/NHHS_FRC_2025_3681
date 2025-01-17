@@ -146,7 +146,7 @@ public class ArmSubsystem extends SubsystemBase {
         Logger.recordOutput("arm/wristPose", wristpose);
 
         Logger.recordOutput("arm/targetArmP1Pose", targetArm1pose);
-        Logger.recordOutput("arm/targetArmP3Pose", targetArm2pose);
+        Logger.recordOutput("arm/targetArmP2Pose", targetArm2pose);
         Logger.recordOutput("arm/targetArmP3Pose", targetArm3pose);
         Logger.recordOutput("arm/targetWristPose", targetWristpose);
     }

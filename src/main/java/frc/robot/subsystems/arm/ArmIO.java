@@ -2,6 +2,8 @@ package frc.robot.subsystems.arm;
 
 import org.littletonrobotics.junction.AutoLog;
 
+import edu.wpi.first.math.geometry.Pose3d;
+
 public interface ArmIO {
     default void updateInputs(ArmIOInputs inputs){}
     public void setAngleSetpoint(double setpoint);
@@ -13,6 +15,11 @@ public interface ArmIO {
         public double angle;
         public double extention;
         public double wrist;
+
+        public Pose3d armP1Pose;
+        public Pose3d armP2Pose;
+        public Pose3d armP3Pose;
+        public Pose3d wristPose;
 
         public double angleMotor1Temp;
         public double angleMotor2Temp;
