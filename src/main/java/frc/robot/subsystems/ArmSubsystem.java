@@ -15,6 +15,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -212,7 +213,7 @@ public class ArmSubsystem extends SubsystemBase {
         arm1pose = new Pose3d(arm.OFFSET, new Rotation3d(angleSetpoint, 0, 0));
         arm2pose = new Pose3d(arm.OFFSET, new Rotation3d(angleSetpoint, 0, 0));
         arm3pose = new Pose3d(arm.OFFSET, new Rotation3d(angleSetpoint, 0, 0));
-        wristpose = new Pose3d(arm.OFFSET, new Rotation3d(angleSetpoint+wristSetpoint, 0, 0));
+        wristpose = new Pose3d(arm.OFFSET.plus(getArmPoint(extentionSetpoint, angleSetpoint)), new Rotation3d(angleSetpoint+wristSetpoint, 0, 0));
 
 
         Logger.recordOutput("arm/1", arm1pose);
@@ -220,6 +221,10 @@ public class ArmSubsystem extends SubsystemBase {
         Logger.recordOutput("arm/3", arm3pose);
         Logger.recordOutput("arm/wrist", wristpose);
         
+    }
+    private Translation3d getArmPoint(double angleDeg, double dist){
+        double angleRad = Units.degreesToRadians(angleDeg);
+        return new Translation3d(dist*Math.cos(angleRad), 0, dist*Math.sin(angleRad));
     }
     public double getAngle(){return angleCurrent;}
     public double getExtention(){return extentionCurrent;}

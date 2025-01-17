@@ -152,6 +152,11 @@ public final class Constants {
       public static final ArmPosition ALGE_L3       = new ArmPosition(0, 0, 0);
       public static final ArmPosition PROSESSOR     = new ArmPosition(0, 0, 0);
 
+      public static final double ARM_1_LENGTH = Units.inchesToMeters(26.8);
+      public static final double ARM_2_LENGTH = Units.inchesToMeters(26.8);
+      public static final double ARM_3_LENGTH = Units.inchesToMeters(26.8);
+
+      public static final double ARM_3_OFFSET = Units.inchesToMeters(26.8);
     }
     //motor controller settings are set in frc/robot/subsystems/ArmSubsystem.java
     public static final double ANGLE_OFFSET = 0; //added to encoder value
