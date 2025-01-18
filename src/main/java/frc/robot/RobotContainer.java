@@ -3,9 +3,9 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.OpperatorDefaultControlCommand;
 import frc.robot.subsystems.SwerveDriveSubsystem;
-import frc.robot.subsystems.arm.ArmIONeo;
-import frc.robot.subsystems.arm.ArmIOSim;
-import frc.robot.subsystems.arm.ArmSubsystem;
+import frc.robot.subsystems.elevator.ElevatorIONeo;
+import frc.robot.subsystems.elevator.ElevatorIOSim;
+import frc.robot.subsystems.elevator.ElevatorSubsystem;
 import frc.utils.rumble.ControllerRumble;
 import frc.utils.rumble.RumbleType;
 import frc.utils.TimerHandler;
@@ -39,7 +39,7 @@ public class RobotContainer {
 
 
   private final SwerveDriveSubsystem swerveDriveSubsystem = new SwerveDriveSubsystem(new File(Filesystem.getDeployDirectory(), "swerve"));
-  private final ArmSubsystem armSubsystem;
+  private final ElevatorSubsystem armSubsystem;
 
   private final OpperatorDefaultControlCommand opperatorDefaultControlCommand;
   
@@ -65,9 +65,9 @@ public class RobotContainer {
 
   public RobotContainer() {
     if(RobotBase.isReal()){
-      armSubsystem = new ArmSubsystem(new ArmIONeo());
+      armSubsystem = new ElevatorSubsystem(new ElevatorIONeo());
     } else {
-      armSubsystem = new ArmSubsystem(new ArmIOSim());
+      armSubsystem = new ElevatorSubsystem(new ElevatorIOSim());
       swerveDriveSubsystem.resetOdometry(new Pose2d(new Translation2d(1.8, 4), new Rotation2d()));
     }
 

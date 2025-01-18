@@ -8,7 +8,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
-import frc.robot.subsystems.arm.ArmPosition;
+import frc.robot.subsystems.elevator.ElevatorPosition;
 import swervelib.math.Matter;
 
 /**
@@ -193,15 +193,15 @@ public final class Constants {
       public static final double WRIST_NEAR_RANGE = 5;//when current reading is within this much of the target, it is consitered "near setpoint"
     }
     public static class positions{
-      public static final ArmPosition CORAL_GROUND  = new ArmPosition(-4.3, 0, -63.3);
-      public static final ArmPosition CORAL_STATION = new ArmPosition(44.3, 0, 0);
-      public static final ArmPosition CORAL_L1      = new ArmPosition(24, 0, -53);
-      public static final ArmPosition CORAL_L2      = new ArmPosition(103.3, 0, 122);
-      public static final ArmPosition CORAL_L3      = new ArmPosition(95, 0, 115);
-      public static final ArmPosition CORAL_L4      = new ArmPosition(97, 0, 138);
-      public static final ArmPosition ALGE_L2       = new ArmPosition(0, 0, 0);
-      public static final ArmPosition ALGE_L3       = new ArmPosition(0, 0, 0);
-      public static final ArmPosition PROSESSOR     = new ArmPosition(0, 0, 0);
+      public static final ElevatorPosition CORAL_GROUND  = new ElevatorPosition(-4.3, 0, -63.3);
+      public static final ElevatorPosition CORAL_STATION = new ElevatorPosition(44.3, 0, 0);
+      public static final ElevatorPosition CORAL_L1      = new ElevatorPosition(24, 0, -53);
+      public static final ElevatorPosition CORAL_L2      = new ElevatorPosition(103.3, 0, 122);
+      public static final ElevatorPosition CORAL_L3      = new ElevatorPosition(95, 0, 115);
+      public static final ElevatorPosition CORAL_L4      = new ElevatorPosition(97, 0, 138);
+      public static final ElevatorPosition ALGE_L2       = new ElevatorPosition(0, 0, 0);
+      public static final ElevatorPosition ALGE_L3       = new ElevatorPosition(0, 0, 0);
+      public static final ElevatorPosition PROSESSOR     = new ElevatorPosition(0, 0, 0);
 
       public static final double ARM_1_LENGTH = Units.inchesToMeters(26.8);
       public static final double ARM_2_LENGTH = Units.inchesToMeters(26.8);

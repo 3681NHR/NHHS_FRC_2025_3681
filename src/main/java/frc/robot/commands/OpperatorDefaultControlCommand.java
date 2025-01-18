@@ -3,15 +3,15 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
-import frc.robot.subsystems.arm.ArmSubsystem;
-import frc.robot.subsystems.arm.ArmSubsystem.State;
+import frc.robot.subsystems.elevator.ElevatorSubsystem;
+import frc.robot.subsystems.elevator.ElevatorSubsystem.State;
 
 public class OpperatorDefaultControlCommand extends Command {
 
-  ArmSubsystem arm;
+  ElevatorSubsystem arm;
   XboxController x;
 
-  public OpperatorDefaultControlCommand(ArmSubsystem a, XboxController x) {
+  public OpperatorDefaultControlCommand(ElevatorSubsystem a, XboxController x) {
     arm = a;
     this.x = x;
     addRequirements(arm);

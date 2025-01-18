@@ -1,4 +1,4 @@
-package frc.robot.subsystems.arm;
+package frc.robot.subsystems.elevator;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.sim.SparkMaxSim;
@@ -18,7 +18,7 @@ import frc.robot.Constants.arm.*;
 import frc.robot.Constants;
 import frc.robot.Constants.arm;
 
-public class ArmIOSim implements ArmIO{
+public class ElevatorIOSim implements Elevator{
     private DCMotor neo2 = new DCMotor(12, 2.6, 105, 1.8, Units.rotationsPerMinuteToRadiansPerSecond(5676), 2);
     private DCMotor neo = new DCMotor(12, 2.6, 105, 1.8, Units.rotationsPerMinuteToRadiansPerSecond(5676), 1);
 
@@ -71,7 +71,7 @@ public class ArmIOSim implements ArmIO{
     private Pose3d arm3pose = new Pose3d(arm.OFFSET, new Rotation3d());
     private Pose3d wristpose = new Pose3d(arm.OFFSET, new Rotation3d());
 
-    public ArmIOSim(){
+    public ElevatorIOSim(){
     }
     @Override
     public void updateInputs(ArmIOInputs input){
@@ -115,7 +115,7 @@ public class ArmIOSim implements ArmIO{
     }
 
     @Override
-    public void setPositionSetpoint(ArmPosition a){
+    public void setPositionSetpoint(ElevatorPosition a){
         setAngleSetpoint(a.angle);
         setExtentionSetpoint(a.extention);
         setWristSetpoint(a.wrist);

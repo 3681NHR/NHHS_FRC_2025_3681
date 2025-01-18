@@ -1,4 +1,4 @@
-package frc.robot.subsystems.arm;
+package frc.robot.subsystems.elevator;
 
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -19,7 +19,7 @@ import frc.robot.Constants.arm.*;
 import frc.robot.Constants;
 import frc.robot.Constants.arm;
 
-public class ArmIONeo implements ArmIO{
+public class ElevatorIONeo implements Elevator{
 
     private SparkMax angle1 = new SparkMax(ids.ANGLE_1_ID, MotorType.kBrushless);
     private SparkMax angle2 = new SparkMax(ids.ANGLE_2_ID, MotorType.kBrushless);
@@ -79,7 +79,7 @@ public class ArmIONeo implements ArmIO{
     private Pose3d arm3pose = new Pose3d(arm.OFFSET, new Rotation3d());
     private Pose3d wristpose = new Pose3d(arm.OFFSET, new Rotation3d());
 
-    public ArmIONeo(){
+    public ElevatorIONeo(){
         angleConfig
             .idleMode(IdleMode.kBrake)
             .smartCurrentLimit(40)
@@ -156,7 +156,7 @@ public class ArmIONeo implements ArmIO{
     }
 
     @Override
-    public void setPositionSetpoint(ArmPosition a){
+    public void setPositionSetpoint(ElevatorPosition a){
         setAngleSetpoint(a.angle);
         setExtentionSetpoint(a.extention);
         setWristSetpoint(a.wrist);

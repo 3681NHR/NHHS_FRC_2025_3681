@@ -1,15 +1,15 @@
-package frc.robot.subsystems.arm;
+package frc.robot.subsystems.elevator;
 
 import org.littletonrobotics.junction.AutoLog;
 
 import edu.wpi.first.math.geometry.Pose3d;
 
-public interface ArmIO {
+public interface Elevator {
     default void updateInputs(ArmIOInputs inputs){}
     public void setAngleSetpoint(double setpoint);
     public void setExtentionSetpoint(double setpoint);
     public void setWristSetpoint(double setpoint);
-    public void setPositionSetpoint(ArmPosition a);
+    public void setPositionSetpoint(ElevatorPosition a);
     @AutoLog
     public class ArmIOInputs{
         public double angle;

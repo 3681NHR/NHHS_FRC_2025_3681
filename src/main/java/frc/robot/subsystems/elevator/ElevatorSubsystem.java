@@ -1,4 +1,4 @@
-package frc.robot.subsystems.arm;
+package frc.robot.subsystems.elevator;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -13,8 +13,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.arm;
 import frc.robot.Constants.arm.*;
+import frc.robot.subsystems.arm.ArmIOInputsAutoLogged;
 
-public class ArmSubsystem extends SubsystemBase {
+public class ElevatorSubsystem extends SubsystemBase {
 
     private double angleCurrent;
     private double angleSetpoint;
@@ -29,7 +30,7 @@ public class ArmSubsystem extends SubsystemBase {
     private Action action = Action.MOVING_TO_SETPOINT;
 
 
-    private ArmIO io;
+    private Elevator io;
     private ArmIOInputsAutoLogged input = new ArmIOInputsAutoLogged();
 
     private Pose3d targetArm1pose = new Pose3d(arm.OFFSET, new Rotation3d());
@@ -37,7 +38,7 @@ public class ArmSubsystem extends SubsystemBase {
     private Pose3d targetArm3pose = new Pose3d(arm.OFFSET, new Rotation3d());
     private Pose3d targetWristpose = new Pose3d(arm.OFFSET, new Rotation3d());
    
-    public ArmSubsystem(ArmIO io){
+    public ElevatorSubsystem(Elevator io){
         this.io = io;
     }
 
@@ -154,7 +155,7 @@ public class ArmSubsystem extends SubsystemBase {
     public void setWrist(double w){wristSetpoint = w;}
     public void setState(State s){state = s;}
     public void setAction(Action a){action = a;}
-    public void setPosition(ArmPosition p){
+    public void setPosition(ElevatorPosition p){
         setAngle(p.angle);
         setExtention(p.extention);
         setWrist(p.wrist);
