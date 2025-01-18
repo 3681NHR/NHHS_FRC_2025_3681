@@ -75,10 +75,6 @@ public class ArmIOSim implements ArmIO{
     }
     @Override
     public void updateInputs(ArmIOInputs input){
-        //armSim.setInput(angleSim.getAppliedOutput()*RoboRioSim.getVInVoltage());
-        //armSim.update(0.02);
-        
-        RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(angleSim.getMotorCurrent()));
         updateEncoders();
         //move
         
