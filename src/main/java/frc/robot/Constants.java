@@ -40,7 +40,7 @@ public final class Constants {
   }
   
   public static class robotDims{
-    public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
+    public static final double ROBOT_MASS = (100) * 0.453592; // 32lbs * kg per pound
     public static final Matter CHASSIS    = new Matter(new Translation3d(0, 0, Units.inchesToMeters(8)), ROBOT_MASS);
     
     public static final Translation3d ROBOT_SIZE = new Translation3d(
@@ -108,6 +108,42 @@ public final class Constants {
 
       //pid gains
       public static final double WRIST_KP = 0;
+      public static final double WRIST_KI = 0;
+      public static final double WRIST_KD = 0;
+      //ff gains
+      public static final double WRIST_KS = 0;
+      public static final double WRIST_KG = 0;
+      public static final double WRIST_KV = 0;
+
+      public static final double ANGLE_FACTOR = 360;
+      public static final double EXTENTION_FACTOR = 1;
+      public static final double WRIST_FACTOR = 360;
+
+      public static final boolean ANGLE_ENCODER_INVERTED = false;
+      public static final boolean EXTENTION_ENCODER_INVERTED = false;
+      public static final boolean WRIST_ENCODER_INVERTED = false;
+    }
+    public class simGains{
+      //pid gains
+      public static final double EXTENTION_KP = 1;
+      public static final double EXTENTION_KI = 0;
+      public static final double EXTENTION_KD = 0;
+      //ff gains
+      public static final double EXTENTION_KS = 0;
+      public static final double EXTENTION_KG = 0;
+      public static final double EXTENTION_KV = 0;
+
+      //pid gains
+      public static final double ANGLE_KP = 1;
+      public static final double ANGLE_KI = 0;
+      public static final double ANGLE_KD = 0;
+      //ff gains
+      public static final double ANGLE_KS = 0;
+      public static final double ANGLE_KG = 0;
+      public static final double ANGLE_KV = 0;
+
+      //pid gains
+      public static final double WRIST_KP = 1;
       public static final double WRIST_KI = 0;
       public static final double WRIST_KD = 0;
       //ff gains

@@ -9,9 +9,14 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import frc.robot.Constants.arm.*;
+import frc.robot.Constants;
 import frc.robot.Constants.arm;
 
 public class ArmIONeo implements ArmIO{
@@ -69,6 +74,11 @@ public class ArmIONeo implements ArmIO{
     private double wristCurrent;
     private double wristSetpoint;
 
+    private Pose3d arm1pose = new Pose3d(arm.OFFSET, new Rotation3d());
+    private Pose3d arm2pose = new Pose3d(arm.OFFSET, new Rotation3d());
+    private Pose3d arm3pose = new Pose3d(arm.OFFSET, new Rotation3d());
+    private Pose3d wristpose = new Pose3d(arm.OFFSET, new Rotation3d());
+
     public ArmIONeo(){
         angleConfig
             .idleMode(IdleMode.kBrake)
@@ -111,7 +121,10 @@ public class ArmIONeo implements ArmIO{
         extention1.set(extentionPID.calculate(extentionCurrent, extentionSetpoint) + extentionFF.calculate(extentionCurrent, extentionPID.getSetpoint().velocity));
         wrist.set(wristPID.calculate(wristCurrent, wristSetpoint) + wristFF.calculate(wristCurrent, wristPID.getSetpoint().velocity));
         
-
+        input.armP1Pose = arm1pose;
+        input.armP2Pose = arm2pose;
+        input.armP3Pose = arm3pose;
+        input.wristPose = wristpose;
 
         input.angleMotor1Temp = angle1.getMotorTemperature();
         input.angleMotor2Temp = angle2.getMotorTemperature();
@@ -153,5 +166,16 @@ public class ArmIONeo implements ArmIO{
         angleCurrent = angleEncoder.get()*gains.ANGLE_FACTOR + arm.ANGLE_OFFSET;
         extentionCurrent = extentionEncoder.get()*gains.EXTENTION_FACTOR + arm.EXTENTION_OFFSET;
         wristCurrent = wristEncoder.get()*gains.WRIST_FACTOR + arm.WRIST_OFFSET;
+    }
+    public void updateArmPose(){
+        arm1pose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)), new Rotation3d(0, -Units.degreesToRadians(angleSetpoint), 0));
+        arm2pose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)).plus(getArmPoint((extentionCurrent-positions.ARM_3_LENGTH)/2, angleCurrent)), new Rotation3d(0, -Units.degreesToRadians(angleCurrent), 0));
+        arm3pose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)).plus(getArmPoint(extentionCurrent-(positions.ARM_3_LENGTH), angleCurrent)), new Rotation3d(0, -Units.degreesToRadians(angleCurrent), 0));
+        wristpose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)).plus(getArmPoint(extentionCurrent, angleCurrent)), new Rotation3d(0, -Units.degreesToRadians(angleCurrent+wristCurrent), 0));            
+    }
+    
+    private Translation3d getArmPoint(double dist, double angleDeg){
+        double angleRad = Units.degreesToRadians(angleDeg);
+        return new Translation3d(dist*Math.cos(angleRad), 0, dist*Math.sin(angleRad));
     }
 }

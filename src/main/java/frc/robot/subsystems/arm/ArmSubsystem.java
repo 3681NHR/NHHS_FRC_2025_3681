@@ -32,11 +32,6 @@ public class ArmSubsystem extends SubsystemBase {
     private ArmIO io;
     private ArmIOInputsAutoLogged input = new ArmIOInputsAutoLogged();
 
-    private Pose3d arm1pose = new Pose3d(arm.OFFSET, new Rotation3d());
-    private Pose3d arm2pose = new Pose3d(arm.OFFSET, new Rotation3d());
-    private Pose3d arm3pose = new Pose3d(arm.OFFSET, new Rotation3d());
-    private Pose3d wristpose = new Pose3d(arm.OFFSET, new Rotation3d());
-
     private Pose3d targetArm1pose = new Pose3d(arm.OFFSET, new Rotation3d());
     private Pose3d targetArm2pose = new Pose3d(arm.OFFSET, new Rotation3d());
     private Pose3d targetArm3pose = new Pose3d(arm.OFFSET, new Rotation3d());
@@ -130,20 +125,11 @@ public class ArmSubsystem extends SubsystemBase {
         }
     }
     public void updatePose(){
-        arm1pose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)), new Rotation3d(0, -Units.degreesToRadians(angleSetpoint), 0));
-        arm2pose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)).plus(getArmPoint((extentionCurrent-positions.ARM_3_LENGTH)/2, angleCurrent)), new Rotation3d(0, -Units.degreesToRadians(angleCurrent), 0));
-        arm3pose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)).plus(getArmPoint(extentionCurrent-(positions.ARM_3_LENGTH), angleCurrent)), new Rotation3d(0, -Units.degreesToRadians(angleCurrent), 0));
-        wristpose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)).plus(getArmPoint(extentionCurrent, angleCurrent)), new Rotation3d(0, -Units.degreesToRadians(angleCurrent+wristCurrent), 0));        
-    
+        
         targetArm1pose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)), new Rotation3d(0, -Units.degreesToRadians(angleSetpoint), 0));
         targetArm2pose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)).plus(getArmPoint((extentionSetpoint-positions.ARM_3_LENGTH)/2, angleSetpoint)), new Rotation3d(0, -Units.degreesToRadians(angleSetpoint), 0));
         targetArm3pose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)).plus(getArmPoint(extentionSetpoint-(positions.ARM_3_LENGTH), angleSetpoint)), new Rotation3d(0, -Units.degreesToRadians(angleSetpoint), 0));
         targetWristpose = new Pose3d(arm.OFFSET.plus(new Translation3d(0, 0, Constants.robotDims.ROBOT_HEIGHT_OFF_GROUND)).plus(getArmPoint(extentionSetpoint, angleSetpoint)), new Rotation3d(0, -Units.degreesToRadians(angleSetpoint+wristSetpoint), 0));        
-    
-        Logger.recordOutput("arm/armP1Pose", arm1pose);
-        Logger.recordOutput("arm/armP3Pose", arm2pose);
-        Logger.recordOutput("arm/armP3Pose", arm3pose);
-        Logger.recordOutput("arm/wristPose", wristpose);
 
         Logger.recordOutput("arm/targetArmP1Pose", targetArm1pose);
         Logger.recordOutput("arm/targetArmP2Pose", targetArm2pose);
