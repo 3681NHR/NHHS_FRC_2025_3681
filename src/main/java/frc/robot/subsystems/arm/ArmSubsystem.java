@@ -64,11 +64,11 @@ public class ArmSubsystem extends SubsystemBase {
         wristSetpoint = MathUtil.clamp(wristSetpoint, limits.MIN_WRIST, limits.MAX_WRIST);
         //clamp extention within extention limit of robot perimiter, as defined in constants
         //if the arm is reaching out too much at min, womp womp
-        double a =Constants.robotDims.ROBOT_SIZE.getY()/2;
-        double allowedExtention = (a-(a-arm.OFFSET.getY())+a+limits.EXTENTION_LIMIT)/Math.cos(Units.degreesToRadians(angleCurrent));//dont change this math, it took me forever
+        //double a =Constants.robotDims.ROBOT_SIZE.getY()/2;
+        //double allowedExtention = (a-(a-arm.OFFSET.getY())+a+limits.EXTENTION_LIMIT)/Math.cos(Units.degreesToRadians(angleCurrent));//dont change this math, it took me forever
         //clamp allowed extention so it will be a valid max
         //allowedExtention = MathUtil.clamp(allowedExtention, limits.MIN_EXTENTION, limits.MAX_EXTENTION);
-        allowedExtention = limits.MAX_EXTENTION;
+        double allowedExtention = limits.MAX_EXTENTION;
         extentionSetpoint = MathUtil.clamp(extentionSetpoint, limits.MIN_EXTENTION, allowedExtention);
 
         io.setAngleSetpoint(getAngleSetpoint());

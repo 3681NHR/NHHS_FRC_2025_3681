@@ -1,13 +1,8 @@
 package frc.robot.subsystems.arm;
 
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
-
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -16,10 +11,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import edu.wpi.first.wpilibj.simulation.DutyCycleEncoderSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.Constants.arm.*;
@@ -83,8 +75,8 @@ public class ArmIOSim implements ArmIO{
     }
     @Override
     public void updateInputs(ArmIOInputs input){
-        armSim.setInput(angleSim.getAppliedOutput()*RoboRioSim.getVInVoltage());
-        armSim.update(0.02);
+        //armSim.setInput(angleSim.getAppliedOutput()*RoboRioSim.getVInVoltage());
+        //armSim.update(0.02);
         
         RoboRioSim.setVInVoltage(BatterySim.calculateDefaultBatteryLoadedVoltage(angleSim.getMotorCurrent()));
         updateEncoders();

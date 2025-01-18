@@ -30,7 +30,7 @@ public class SwerveDriveSubsystem extends SubsystemBase {
   
   private final SwerveDrive drive;
 
-  private boolean visionOn = false;
+  private boolean visionOn = true;
   private Vision vision;
 
   public SwerveDriveSubsystem(File directory) {
