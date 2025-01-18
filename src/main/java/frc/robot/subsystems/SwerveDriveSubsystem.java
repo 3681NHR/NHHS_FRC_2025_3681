@@ -13,11 +13,9 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import swervelib.SwerveDrive;
@@ -32,7 +30,7 @@ public class SwerveDriveSubsystem extends SubsystemBase {
   
   private final SwerveDrive drive;
 
-  private boolean visionOn = false;
+  private boolean visionOn = true;
   private Vision vision;
 
   public SwerveDriveSubsystem(File directory) {
@@ -45,11 +43,11 @@ public class SwerveDriveSubsystem extends SubsystemBase {
       throw new RuntimeException(e);
     }
     //cosine compensator is very helpfull, but works weird in simulation
-    drive.setCosineCompensator(!RobotBase.isSimulation());
+    drive.setCosineCompensator(RobotBase.isReal());
     drive.setChassisDiscretization(true, 0.02);
     drive.setHeadingCorrection(false);
     drive.setMotorIdleMode(false);
-    drive.setAngularVelocityCompensation(true, true, 0.1);
+    drive.setAngularVelocityCompensation(true, true, -0.1);
 
     SwerveDriveTelemetry.verbosity = TelemetryVerbosity.MACHINE;
 
@@ -111,17 +109,18 @@ public class SwerveDriveSubsystem extends SubsystemBase {
     } else {
       drive.setHeadingCorrection(false);// normaly false and needs to be false for simultaion
       
-        // Make the robot move
-        drive.drive(new Translation2d(
-          translationX.getAsDouble() * drive.getMaximumChassisVelocity(),
-          translationY.getAsDouble() * drive.getMaximumChassisVelocity()),
-          rotateX.getAsDouble() * drive.getMaximumChassisAngularVelocity(),
-          fieldOriented.getAsBoolean(),
-          false
-        );
+      ChassisSpeeds s = new ChassisSpeeds(
+        translationY.getAsDouble() * drive.getMaximumChassisVelocity(),
+        translationX.getAsDouble() * drive.getMaximumChassisVelocity(),
+        rotateX.getAsDouble() * drive.getMaximumChassisAngularVelocity());
+      
+      if(fieldOriented.getAsBoolean()){
+        s = ChassisSpeeds.fromFieldRelativeSpeeds(s, drive.getOdometryHeading());
+      }
+      drive.drive(s);
     }
-  });
-    
+
+    });
   }
 
   /**
@@ -182,7 +181,7 @@ public class SwerveDriveSubsystem extends SubsystemBase {
           },
           this
           // Reference to this subsystem to set requirements
-                           );
+          );
 
     } catch (Exception e)
     {
