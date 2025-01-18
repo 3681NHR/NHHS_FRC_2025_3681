@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import swervelib.SwerveDrive;
 
@@ -15,12 +16,12 @@ public class Vision
 {
   private AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
   
-  private final double maxError = 10;
+  private final double maxError = 5;
   private final double maxRotError = 90;
 
   private Camera[] cameras = {
     new Camera.builder()
-              .withPosition(new Translation3d(0, 14, 6))
+              .withPosition(new Translation3d(Units.inchesToMeters(14), 0, Units.inchesToMeters(6)))
               .withAngle(new Rotation3d())
               .withCamera(new PhotonCamera("front"))
               .withField(layout)
