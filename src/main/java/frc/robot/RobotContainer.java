@@ -6,8 +6,8 @@ import frc.robot.subsystems.SwerveDriveSubsystem;
 import frc.robot.subsystems.elevator.ElevatorIONeo;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorSubsystem;
-import frc.utils.rumble.ControllerRumble;
-import frc.utils.rumble.RumbleType;
+import frc.utils.rumble.Rumble;
+import frc.utils.rumble.RumbleHandler;
 import frc.utils.TimerHandler;
 import frc.utils.ExtraMath;
 import frc.utils.rumble.RumblePreset;
@@ -28,7 +28,6 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -59,7 +58,7 @@ public class RobotContainer {
   private final XboxController m_operatorController =
       new XboxController(OperatorConstants.OPERATOR_CONTROLLER_PORT);
 
-  private ControllerRumble rumbler = new ControllerRumble(m_driverController);
+  private RumbleHandler rumbler = new RumbleHandler(m_driverController);
 
   private PowerDistribution pdp = new PowerDistribution();
 
@@ -133,9 +132,7 @@ public class RobotContainer {
       lockPose = new Trigger(m_driverController::getXButton);
       rstGyro = new Trigger(m_driverController::getAButton);
       new Trigger(m_driverController::getLeftStickButton).onTrue(Commands.runOnce(() -> {this.fod = !this.fod;}));
-      new Trigger(m_driverController::getRightStickButton).onTrue(Commands.runOnce(() -> {this.directAngle = !this.directAngle;}));
-      new Trigger(m_driverController::getYButton).onTrue(Commands.runOnce(() -> rumbler.addRumble(RumblePreset.RING.load(), RumbleType.OVERLAY)));
-    
+      new Trigger(m_driverController::getRightStickButton).onTrue(Commands.runOnce(() -> {this.directAngle = !this.directAngle;}));    
     
     } else {
       lockPose = new Trigger(() -> m_driverController.getRawButton(3));
@@ -143,13 +140,20 @@ public class RobotContainer {
       new Trigger(() -> m_driverController.getRawButton(9)).onTrue(Commands.runOnce(() -> {this.fod = !this.fod;}));
       new Trigger(() -> m_driverController.getRawButton(10)).onTrue(Commands.runOnce(() -> {this.directAngle = !this.directAngle;}));
     }
-      lockPose.whileTrue(Commands.runOnce(swerveDriveSubsystem::lock, swerveDriveSubsystem).alongWith(Commands.runOnce(() -> rumbler.addRumble(0.1, 0.1, RumbleType.OVERLAY))).repeatedly());
-      rstGyro.onTrue(Commands.runOnce(swerveDriveSubsystem::zeroGyro, swerveDriveSubsystem).alongWith(Commands.runOnce(() -> rumbler.addRumble(RumblePreset.TAP.load(), RumbleType.OVERLAY))));
+      lockPose.whileTrue(Commands.runOnce(() -> {
+        swerveDriveSubsystem.lock();
+        rumbler.overrideQue(new Rumble(.1, 0.25));
+      }, swerveDriveSubsystem).repeatedly());
 
-      new Trigger(() -> TimerHandler.getTeleopRemaining()<30.0).or(
+      rstGyro.onTrue(Commands.runOnce(() -> {
+        swerveDriveSubsystem.zeroGyro();
+        rumbler.overrideQue(RumblePreset.TAP.load());
+      }));
+
+      new Trigger(() -> TimerHandler.getTeleopRemaining()<Constants.ENDGAME_TIME).or(
         new Trigger(() -> TimerHandler.getAutoRemaining()<3.0)
       ).onTrue(Commands.runOnce(() -> {
-        rumbler.addRumble(RumblePreset.DOUBLE_TAP.load(), RumbleType.OVERRIDE);
+        rumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());;
       }));
 
       new Trigger(() -> m_operatorController.getPOV()==180).onTrue(Commands.runOnce(() -> armSubsystem.setPosition(Constants.arm.positions.CORAL_GROUND)));
@@ -173,7 +177,7 @@ public class RobotContainer {
       brownout.set(false);
     }
 
-    rumbler.update();
+    rumbler.update(0.02);
 
   }
   public void SimPeriodic(){
