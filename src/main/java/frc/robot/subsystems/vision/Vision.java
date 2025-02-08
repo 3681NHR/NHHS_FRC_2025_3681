@@ -1,0 +1,225 @@
+// Copyright 2021-2025 FRC 6328
+// http://github.com/Mechanical-Advantage
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// version 3 as published by the Free Software Foundation or
+// available in the root directory of this project.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+
+package frc.robot.subsystems.vision;
+
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.DriveConstants;
+import frc.robot.subsystems.vision.CameraIO.PoseObservationType;
+
+import static frc.robot.constants.VisionConstants.*;
+
+import java.util.LinkedList;
+import java.util.List;
+import org.littletonrobotics.junction.Logger;
+
+public class Vision extends SubsystemBase {
+  private final VisionConsumer consumer;
+  private final CameraIO[] io;
+  private final CameraIOInputsAutoLogged[] inputs;
+  private final Alert[] disconnectedAlerts;
+
+  private SlewRateLimiter xLim = new SlewRateLimiter(DriveConstants.MAX_SPEED * 1.5);
+  private SlewRateLimiter yLim = new SlewRateLimiter(DriveConstants.MAX_SPEED * 1.5);
+  private SlewRateLimiter tLim = new SlewRateLimiter(Math.PI*2 * 10);
+
+  public Vision(VisionConsumer consumer, CameraIO... io) {
+    this.consumer = consumer;
+    this.io = io;
+
+    // Initialize inputs
+    this.inputs = new CameraIOInputsAutoLogged[io.length];
+    for (int i = 0; i < inputs.length; i++) {
+      inputs[i] = new CameraIOInputsAutoLogged();
+    }
+
+    // Initialize disconnected alerts
+    this.disconnectedAlerts = new Alert[io.length];
+    for (int i = 0; i < inputs.length; i++) {
+      disconnectedAlerts[i] =
+          new Alert(
+              "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
+    }
+  }
+
+  /**
+   * Returns the X angle to the best target, which can be used for simple servoing with vision.
+   *
+   * @param cameraIndex The index of the camera to use.
+   */
+  public Rotation2d getTargetX(int cameraIndex) {
+    return inputs[cameraIndex].latestTargetObservation.tx();
+  }
+
+  @Override
+  public void periodic() {
+    for (int i = 0; i < io.length; i++) {
+      io[i].updateInputs(inputs[i]);
+      Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
+    }
+
+    // Initialize logging values
+    List<Pose3d> allTagPoses = new LinkedList<>();
+    List<Pose3d> allRobotPoses = new LinkedList<>();
+    List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
+    List<Pose3d> allRobotPosesRejected = new LinkedList<>();
+
+    // Initialize logging values
+    List<Pose3d> tagPoses = new LinkedList<>();
+    List<Pose3d> robotPoses = new LinkedList<>();
+    List<Pose3d> robotPosesAccepted = new LinkedList<>();
+    List<Pose3d> robotPosesRejected = new LinkedList<>();
+    // Loop over cameras
+    for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
+      // Update disconnected alert
+      disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
+
+
+      // Add tag poses
+      for (int tagId : inputs[cameraIndex].tagIds) {
+        var tagPose = aprilTagLayout.getTagPose(tagId);
+        if (tagPose.isPresent()) {
+          tagPoses.add(tagPose.get());
+        }
+      }
+
+      // Loop over pose observations
+      for (var observation : inputs[cameraIndex].poseObservations) {
+        // Check whether to reject pose
+        boolean rejectPose =
+            observation.tagCount() == 0 // Must have at least one tag
+                || (observation.tagCount() == 1
+                    && observation.ambiguity() > maxAmbiguity) // Cannot be too high ambiguity
+                || Math.abs(observation.pose().getZ())
+                    > maxZError // Must have realistic Z coordinate
+
+                // Must be within the field boundaries
+                || observation.pose().getX() < 0.0
+                || observation.pose().getX() > aprilTagLayout.getFieldLength()
+                || observation.pose().getY() < 0.0
+                || observation.pose().getY() > aprilTagLayout.getFieldWidth();
+
+        // Add pose to log
+        robotPoses.add(observation.pose());
+        if (rejectPose) {
+          robotPosesRejected.add(observation.pose());
+        } else {
+          robotPosesAccepted.add(observation.pose());
+        }
+
+        // Skip if rejected
+        if (rejectPose) {
+          continue;
+        }
+
+        // Calculate standard deviations
+        double stdDevFactor =
+            Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount();
+        double linearStdDev = linearStdDevBaseline * stdDevFactor;
+        double angularStdDev = angularStdDevBaseline * stdDevFactor;
+        if (observation.type() == PoseObservationType.MEGATAG_2) {
+          linearStdDev *= linearStdDevMegatag2Factor;
+          angularStdDev *= angularStdDevMegatag2Factor;
+        }
+        if (cameraIndex < cameraStdDevFactors.length) {
+          linearStdDev *= cameraStdDevFactors[cameraIndex];
+          angularStdDev *= cameraStdDevFactors[cameraIndex];
+        }
+
+        // Send vision observation
+        consumer.accept(
+            rateLim(observation.pose().toPose2d()),
+            observation.timestamp(),
+            VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
+      }
+
+      // Log camera data
+      if (tagPoses.size() > 0) {
+        Logger.recordOutput(
+            "Vision/Camera" + cameraIndex + "/TagPoses",
+            tagPoses.toArray(new Pose3d[0]));
+      }
+      if (robotPoses.size() > 0) {
+        Logger.recordOutput(
+            "Vision/Camera" + cameraIndex + "/RobotPoses",
+            robotPoses.toArray(new Pose3d[0]));
+      }
+      if (robotPosesAccepted.size() > 0) {
+        Logger.recordOutput(
+            "Vision/Camera" + cameraIndex + "/RobotPosesAccepted",
+            robotPosesAccepted.toArray(new Pose3d[0]));
+      }
+      if (robotPosesRejected.size() > 0) {
+        Logger.recordOutput(
+            "Vision/Camera" + cameraIndex + "/RobotPosesRejected",
+            robotPosesRejected.toArray(new Pose3d[0]));
+      }
+
+      allTagPoses.addAll(tagPoses);
+      allRobotPoses.addAll(robotPoses);
+      allRobotPosesAccepted.addAll(robotPosesAccepted);
+
+      tagPoses.clear();
+      robotPoses.clear();
+      robotPosesAccepted.clear();
+      robotPosesRejected.clear();
+    }
+
+    // Log summary data
+    Logger.recordOutput(
+        "Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[allTagPoses.size()]));
+    Logger.recordOutput(
+        "Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[allRobotPoses.size()]));
+    Logger.recordOutput(
+        "Vision/Summary/RobotPosesAccepted",
+        allRobotPosesAccepted.toArray(new Pose3d[allRobotPosesAccepted.size()]));
+    Logger.recordOutput(
+        "Vision/Summary/RobotPosesRejected",
+        allRobotPosesRejected.toArray(new Pose3d[allRobotPosesRejected.size()]));
+
+    
+    allTagPoses.clear();
+    allRobotPoses.clear();
+    allRobotPosesAccepted.clear();
+    allRobotPosesRejected.clear();
+  }
+
+  @FunctionalInterface
+  public static interface VisionConsumer {
+    public void accept(
+        Pose2d visionRobotPoseMeters,
+        double timestampSeconds,
+        Matrix<N3, N1> visionMeasurementStdDevs);
+  }
+
+  private Pose2d rateLim(Pose2d p){
+    return new Pose2d(
+      new Translation2d(
+        xLim.calculate(p.getTranslation().getX()),
+        yLim.calculate(p.getTranslation().getY())
+      ),
+      new Rotation2d(tLim.calculate(p.getRotation().getRadians()))
+    );
+  }
+}

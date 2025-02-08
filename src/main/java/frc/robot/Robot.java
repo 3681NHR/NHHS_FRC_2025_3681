@@ -10,9 +10,10 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.constants.Constants;
+import frc.utils.BatteryVoltageSim;
 import frc.utils.TimerHandler;
 
 /**
@@ -26,7 +27,14 @@ public class Robot extends LoggedRobot {
 
   private RobotContainer m_robotContainer;
 
-  public Robot(){
+  /**
+   * This function is run when the robot is first started up and should be used for any
+   * initialization code.
+   */
+  @Override
+  public void robotInit() {
+    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
+    // autonomous chooser on the dashboard.
 
     // Record metadata
     Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
@@ -47,10 +55,10 @@ public class Robot extends LoggedRobot {
     }
 
     // Set up data receivers & replay source
-    switch (Constants.currentMode) {
+    switch (Constants.MODE) {
       case REAL:
         // Running on a real robot, log to a USB stick ("/U/logs")
-        Logger.addDataReceiver(new WPILOGWriter());
+        Logger.addDataReceiver(new WPILOGWriter("/U/logs/"));
         Logger.addDataReceiver(new NT4Publisher());
         break;
 
@@ -64,20 +72,12 @@ public class Robot extends LoggedRobot {
         setUseTiming(false); // Run as fast as possible
         String logPath = LogFileUtil.findReplayLog();
         Logger.setReplaySource(new WPILOGReader(logPath));
-        Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+        Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_replay")));
         break;
-      }
+    }
+
+    // Start AdvantageKit logger
     Logger.start();
-  }
-  /**
-   * This function is run when the robot is first started up and should be used for any
-   * initialization code.
-   */
-  @Override
-  public void robotInit() {
-    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-    // autonomous chooser on the dashboard.
-    //DataLogManager.start();
     m_robotContainer = new RobotContainer();
 
     if(!RobotBase.isSimulation()){
@@ -95,25 +95,13 @@ public class Robot extends LoggedRobot {
    */
   @Override
   public void robotPeriodic() {
-    // Switch thread to high priority to improve loop timing
-    Threads.setCurrentThreadPriority(true, 99);
-
-    // Runs the Scheduler. This is responsible for polling buttons, adding
-    // newly-scheduled commands, running already-scheduled commands, removing
-    // finished or interrupted commands, and running subsystem periodic() methods.
-    // This must be called from the robot's periodic block in order for anything in
-    // the Command-based framework to work.
+    // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
+    // commands, running already-scheduled commands, removing finished or interrupted commands,
+    // and running subsystem periodic() methods.  This must be called from the robot's periodic
+    // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-
-    // Return to normal thread priority
-    Threads.setCurrentThreadPriority(false, 10);
-
     TimerHandler.update();
 
-    Logger.recordOutput("FieldSimulation/Algae", 
-    SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
-    Logger.recordOutput("FieldSimulation/Coral", 
-    SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -133,6 +121,10 @@ public class Robot extends LoggedRobot {
       m_autonomousCommand.schedule();
     }
     TimerHandler.initAuto();
+
+    if(RobotBase.isSimulation()){
+      SimulatedArena.getInstance().resetFieldForAuto();
+    }
   }
   /** This function is called periodically during autonomous. */
   @Override
@@ -181,5 +173,7 @@ public class Robot extends LoggedRobot {
   public void simulationPeriodic() {
     m_robotContainer.SimPeriodic();
 
+    //update battery voltage(set as roborio input voltage)
+    BatteryVoltageSim.getInstance().calculateVoltage();
   }
 }

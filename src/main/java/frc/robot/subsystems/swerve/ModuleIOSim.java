@@ -1,0 +1,133 @@
+package frc.robot.subsystems.swerve;
+
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+import static frc.robot.constants.DriveConstants.*;
+
+import java.util.Arrays;
+
+import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
+import org.ironmaple.simulation.motorsims.SimulatedMotorController;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import frc.utils.BatteryVoltageSim;
+import frc.utils.SparkUtil;
+
+/** Physics sim implementation of module IO. */
+public class ModuleIOSim implements ModuleIO {
+
+  private final SwerveModuleSimulation moduleSim;
+
+  private final SimulatedMotorController.GenericMotorController driveSim;
+  private final SimulatedMotorController.GenericMotorController turnSim;
+
+  private boolean driveClosedLoop = false;
+  private boolean turnClosedLoop = false;
+
+  private PIDController driveController = new PIDController(DRIVE_SIM_P, DRIVE_SIM_I, DRIVE_SIM_D);
+  private ProfiledPIDController turnController = new ProfiledPIDController(TURN_SIM_P, TURN_SIM_I, TURN_SIM_D, new Constraints(TURN_MAX_SPEED, TURN_MAX_ACCEL));
+
+  private final SimpleMotorFeedforward driveFF = new SimpleMotorFeedforward(DRIVE_SIM_S, DRIVE_SIM_V, DRIVE_SIM_A);
+
+  private double driveAppliedVolts = 0.0;
+  private double turnAppliedVolts = 0.0;
+
+  private double turnGoal = 0.0;
+  private double driveGoal = 0.0;
+
+  private double turnPosRad = 0.0;
+
+  public ModuleIOSim(SwerveModuleSimulation moduleSim) {
+    this.moduleSim = moduleSim;
+    // Create drive and turn sim models
+    driveSim = moduleSim
+                .useGenericMotorControllerForDrive()
+                .withCurrentLimit(Amps.of(40));
+    turnSim = moduleSim
+                .useGenericControllerForSteer()
+                .withCurrentLimit(Amps.of(40));
+
+    // Enable wrapping for turn PID
+    turnController.enableContinuousInput(TURN_MIN_POS, TURN_MAX_POS);
+
+    BatteryVoltageSim.getInstance().addCurrentSource(() -> moduleSim.getDriveMotorSupplyCurrent().in(Amps));
+    BatteryVoltageSim.getInstance().addCurrentSource(() -> moduleSim.getSteerMotorSupplyCurrent().in(Amps));
+  }
+
+  @Override
+  public void updateInputs(ModuleIOInputs inputs) {
+
+    turnPosRad = MathUtil.inputModulus(moduleSim.getSteerAbsoluteFacing().getRadians(), TURN_MIN_POS, TURN_MAX_POS);
+    turnGoal = MathUtil.inputModulus(turnGoal, TURN_MIN_POS, TURN_MAX_POS);
+
+    // Run closed-loop control
+    if (driveClosedLoop) {
+      driveAppliedVolts = driveFF.calculate(driveGoal) + driveController.calculate(moduleSim.getDriveWheelFinalSpeed().in(RadiansPerSecond),  driveGoal);
+    } else {
+      driveController.reset();
+    }
+    if (turnClosedLoop) {
+      turnAppliedVolts = TURN_SIM_F * Math.signum(turnController.getSetpoint().position) + turnController.calculate(turnPosRad, turnGoal);
+    } else {
+      turnController.reset(turnPosRad);;
+    }
+
+    // Update simulation state
+    turnSim.requestVoltage(Volts.of(MathUtil.clamp(turnAppliedVolts, -RoboRioSim.getVInVoltage(), RoboRioSim.getVInVoltage())));
+    driveSim.requestVoltage(Volts.of(MathUtil.clamp(driveAppliedVolts, -RoboRioSim.getVInVoltage(), RoboRioSim.getVInVoltage())));
+
+    // Update drive inputs
+    inputs.driveConnected = true;
+    inputs.drivePositionRad = moduleSim.getDriveWheelFinalPosition().in(Radians);
+    inputs.driveVelocityRadPerSec = moduleSim.getDriveWheelFinalSpeed().in(RadiansPerSecond);
+    inputs.driveAppliedVolts = driveAppliedVolts;
+    inputs.driveCurrentAmps = Math.abs(moduleSim.getDriveMotorSupplyCurrent().in(Amps));
+
+    // Update turn inputs
+    inputs.turnConnected = true;
+    inputs.turnPositionRad = turnPosRad;
+    inputs.turnVelocityRadPerSec = moduleSim.getSteerAbsoluteEncoderSpeed().in(RadiansPerSecond);
+    inputs.turnAppliedVolts = turnAppliedVolts;
+    inputs.turnCurrentAmps = Math.abs(moduleSim.getSteerMotorSupplyCurrent().in(Amps));
+
+    // Update odometry inputs
+    inputs.odometryTimestamps = SparkUtil.getSimulationOdometryTimeStamps();
+    inputs.odometryDrivePositionsRad = Arrays.stream(moduleSim.getCachedDriveWheelFinalPositions())
+                .mapToDouble(angle -> angle.in(Radians))
+                .toArray();
+    inputs.odometryTurnPositionsRad = inputs.odometryTurnPositionsRad = Arrays.stream(moduleSim.getCachedSteerAbsolutePositions())
+                .mapToDouble(angle -> angle.getRadians())
+                .toArray();
+  }
+
+  @Override
+  public void setDriveOpenLoop(double output) {
+    driveClosedLoop = false;
+    driveAppliedVolts = output;
+  }
+
+  @Override
+  public void setTurnOpenLoop(double output) {
+    turnClosedLoop = false;
+    turnAppliedVolts = output;
+  }
+
+  @Override
+  public void setDriveVelocity(double velocityRadPerSec) {
+    driveClosedLoop = true;
+    driveGoal = velocityRadPerSec;
+  }
+
+  @Override
+  public void setTurnPosition(Rotation2d rotation) {
+    turnClosedLoop = true;
+    turnGoal = rotation.getRadians();
+  }
+}

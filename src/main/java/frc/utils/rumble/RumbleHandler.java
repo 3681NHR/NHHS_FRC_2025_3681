@@ -64,13 +64,18 @@ public class RumbleHandler {
             controller.setRumble(RumbleType.kBothRumble, que.get(0).pow);
             Logger.recordOutput("haptics/rumble: "+port+"/currentStrength", que.get(0).pow);
             Logger.recordOutput("haptics/rumble: "+port+"/que", getPows());
+        } else {
+            controller.setRumble(RumbleType.kBothRumble, 0);
+            Logger.recordOutput("haptics/rumble: "+port+"/currentStrength", 0);
+            Logger.recordOutput("haptics/rumble: "+port+"/que", new double[0][0]);
         }
     } 
-    private double[] getPows(){
-        double[] pows = new double[que.size()];
+    private double[][] getPows(){
+        double[][] pows = new double[que.size()][2];
         for(int i=0; i < que.size(); i++){
             Rumble d = que.get(i);
-            pows[i] = d.pow;
+            pows[i][0] = d.pow;
+            pows[i][1] = d.time;
         }
         return pows;
     }
