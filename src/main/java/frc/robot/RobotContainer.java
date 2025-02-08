@@ -78,7 +78,7 @@ public class RobotContainer {
 
   private RumbleHandler rumbler = new RumbleHandler(driverController);
 
-  private PowerDistribution pdp = new PowerDistribution();
+  private PowerDistribution pdp = new PowerDistribution(1  , ModuleType.kRev);
 
   private Rotation2d povDRot = new Rotation2d();
   private Rotation2d povRRot = new Rotation2d();
@@ -180,7 +180,7 @@ public class RobotContainer {
 
     configureBindings();
 
-    LoggedPowerDistribution.getInstance(pdp.getModule(), ModuleType.kCTRE);
+    LoggedPowerDistribution.getInstance(pdp.getModule(), ModuleType.kRev);
     
     // left stick controls translation
     // right stick controls the angular velocity of the robot

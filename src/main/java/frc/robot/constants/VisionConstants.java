@@ -37,7 +37,7 @@ public class VisionConstants {
         new Rotation3d(
             Units.degreesToRadians(0),
             Units.degreesToRadians(-20),
-            Units.degreesToRadians(0)
+            Units.degreesToRadians(45)
         )
     );
 

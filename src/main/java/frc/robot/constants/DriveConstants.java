@@ -36,7 +36,7 @@ public class DriveConstants {
     public static final double ANGLE_MAX_VELOCITY = Math.PI*2*100;
     public static final double ANGLE_MAX_ACCELERATION = ANGLE_MAX_VELOCITY*100;//1/10 sec to full speed
 
-    public static final double MAX_SPEED = 3.75;//3.8Rad/sec
+    public static final double MAX_SPEED = 4.8;
     public static final double ODOMETRY_FREQ = 100.0; // Hz
     public static final double WIDTH = Units.inchesToMeters(22);
     public static final double LENGTH = Units.inchesToMeters(25);
@@ -96,7 +96,7 @@ public class DriveConstants {
   public static final double DRIVE_SIM_A = 0.1;
 
   // Turn motor configuration
-  public static final boolean TURN_INVERT = false;
+  public static final boolean TURN_INVERT = true;
   public static final int TURN_CURRENT_LIM = 10;
   public static final double TURN_REDUCTION = 21.428;
   public static final DCMotor TURN_GEARBOX = DCMotor.getNEO(1);

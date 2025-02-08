@@ -272,11 +272,11 @@ public class YAGSLWidget {
   /**
    * An array of rotation and velocity values describing the measured state of each swerve module
    */
-  public static        double[]             measuredStates;
+  public static        double[]             measuredStates = new double[8];
   /**
    * An array of rotation and velocity values describing the desired state of each swerve module
    */
-  public static        double[]             desiredStates;
+  public static        double[]             desiredStates = new double[8];
   /**
    * The robot's current rotation based on odometry or gyro readings
    */
