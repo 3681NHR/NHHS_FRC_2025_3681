@@ -8,8 +8,6 @@ public interface CameraIO {
     @AutoLog
     public static class CameraIOInputs {
     public boolean connected = false;
-    public TargetObservation latestTargetObservation =
-        new TargetObservation(new Rotation2d(), new Rotation2d());
     public PoseObservation[] poseObservations = new PoseObservation[0];
     public int[] tagIds = new int[0];
   }
@@ -23,14 +21,9 @@ public interface CameraIO {
       Pose3d pose,
       double ambiguity,
       int tagCount,
-      double averageTagDistance,
-      PoseObservationType type) {}
-
-  public static enum PoseObservationType {
-    MEGATAG_1,
-    MEGATAG_2,
-    PHOTONVISION
-  }
+      double averageTagDistance) {}
 
   public default void updateInputs(CameraIOInputs inputs) {}
+
+  public default String getName() {return null;}
 }

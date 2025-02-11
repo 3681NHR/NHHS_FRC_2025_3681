@@ -7,10 +7,6 @@ import frc.robot.constants.DriveConstants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.swerve.*;
-import frc.robot.subsystems.vision.CameraIO;
-import frc.robot.subsystems.vision.CameraIOPhoton;
-import frc.robot.subsystems.vision.CameraIOPhotonSim;
-import frc.robot.subsystems.vision.Vision;
 import frc.utils.rumble.*;
 import frc.utils.TimerHandler;
 import frc.utils.BatteryVoltageSim;
@@ -53,7 +49,6 @@ public class RobotContainer {
   private SwerveDriveSimulation driveSim;
 
   private Drive drive;
-  private Vision vision;
 
   private LoggedNetworkBoolean resetOdometry = new LoggedNetworkBoolean("resetOdometry", false);
 
@@ -124,10 +119,8 @@ public class RobotContainer {
                 new ModuleIOSpark(0),
                 new ModuleIOSpark(1),
                 new ModuleIOSpark(2),
-                new ModuleIOSpark(3));
-        //vision = new Vision(
-        //         drive::addVisionMeasurement,
-        //         new CameraIOPhoton(VisionConstants.camera0Name, VisionConstants.robotToCamera0));
+                new ModuleIOSpark(3),
+                null);
         break;
 
       case SIM:
@@ -139,11 +132,9 @@ public class RobotContainer {
                   new ModuleIOSim(driveSim.getModules()[0]),
                   new ModuleIOSim(driveSim.getModules()[1]),
                   new ModuleIOSim(driveSim.getModules()[2]),
-                  new ModuleIOSim(driveSim.getModules()[3]));
+                  new ModuleIOSim(driveSim.getModules()[3]),
+                  null);
         }
-        vision = new Vision(
-                 drive::addVisionMeasurement,
-                 new CameraIOPhotonSim(VisionConstants.camera0Name, VisionConstants.robotToCamera0, driveSim::getSimulatedDriveTrainPose));
         break;
 
       default:
@@ -154,10 +145,8 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {},
-                new ModuleIO() {});
-        vision = new Vision(
-                  drive::addVisionMeasurement,
-                  new CameraIO() {});
+                new ModuleIO() {},
+                null);
         break;
     }
 
