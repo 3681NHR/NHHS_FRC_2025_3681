@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -30,6 +31,7 @@ import frc.robot.constants.Constants;
 import frc.robot.constants.Constants.RobotMode;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionEstimate;
+import frc.utils.LoggedField2d;
 import frc.utils.SparkOdometryThread;
 
 import java.util.concurrent.locks.Lock;
@@ -45,6 +47,7 @@ public class Drive extends SubsystemBase {
   private final SysIdRoutine driveSysId;
   private final SysIdRoutine steerSysId;
   private final Vision vision;
+  private LoggedField2d field = new LoggedField2d();
   private final Alert gyroDisconnectedAlert =
       new Alert("Disconnected gyro, using kinematics as fallback.", AlertType.kError);
 
@@ -94,11 +97,13 @@ public class Drive extends SubsystemBase {
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {
           Logger.recordOutput(
-              "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
+              "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));  
+          field.getObject("PP/activePath").setPoses(activePath);
         });
     PathPlannerLogging.setLogTargetPoseCallback(
         (targetPose) -> {
           Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+          field.getObject("PP/targetpose").setPoses(targetPose);
         });
 
     // Configure SysId
@@ -205,6 +210,10 @@ public class Drive extends SubsystemBase {
     YAGSLWidget.robotRotationObj = getRotation();
 
     YAGSLWidget.updateData();
+
+    field.setRobotPose(getPose());
+
+    SmartDashboard.putData("field", field);
   }
 
   /**
@@ -342,5 +351,6 @@ public class Drive extends SubsystemBase {
 
   public void resetGyro(double headingRad){
     gyroIO.reset(headingRad);
+    poseEstimator.resetPose(new Pose2d(getPose().getX(), getPose().getY(), new Rotation2d(headingRad)));
   }
 }

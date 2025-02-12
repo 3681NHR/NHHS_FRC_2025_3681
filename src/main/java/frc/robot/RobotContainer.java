@@ -2,11 +2,16 @@ package frc.robot;
 
 import frc.robot.commands.AnglePresetDriveCommand;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.PointAtVisionTarget;
 import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.swerve.*;
+import frc.robot.subsystems.vision.CameraIO;
+import frc.robot.subsystems.vision.CameraIOPhoton;
+import frc.robot.subsystems.vision.CameraIOPhotonSim;
+import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.CameraIO;
 import frc.robot.subsystems.vision.CameraIOPhoton;
 import frc.robot.subsystems.vision.CameraIOPhotonSim;
@@ -18,6 +23,7 @@ import frc.utils.ExtraMath;
 import frc.utils.Joystick;
 
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -53,6 +59,7 @@ public class RobotContainer {
   private SwerveDriveSimulation driveSim;
 
   private Drive drive;
+  private Vision vision;
 
   private LoggedNetworkBoolean resetOdometry = new LoggedNetworkBoolean("resetOdometry", false);
 
@@ -63,6 +70,8 @@ public class RobotContainer {
 
   private Trigger lockPose;
   private Trigger rstGyro;
+
+  private Trigger trackTag;
 
   private final XboxController driverController =
       new XboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
@@ -91,13 +100,13 @@ public class RobotContainer {
       // Specify gyro type (for realistic gyro drifting and error simulation)
       .withGyro(COTS.ofPigeon2())
       // Specify swerve module (for realistic swerve dynamics)
-      .withSwerveModule(COTS.ofMark4(
-              DCMotor.getNEO(1), // Drive motor is a Kraken X60
-              DCMotor.getNEO(1), // Steer motor is a Falcon 500
+      .withSwerveModule(COTS.ofMark4i(
+              DCMotor.getNEO(1), // Drive motor
+              DCMotor.getNEO(1), // Steer motor
               COTS.WHEELS.COLSONS.cof, // Use the COF for Colson Wheels
-              2)) // L3 Gear ratio
+              2)) //Gear ratio
       // Configures the track length and track width (spacing between swerve modules)
-      .withTrackLengthTrackWidth(Inches.of(28), Inches.of(25.75))
+      .withTrackLengthTrackWidth(Meters.of(DriveConstants.LENGTH), Meters.of(DriveConstants.WIDTH))
       // Configures the bumper size (dimensions of the robot bumper)
       .withBumperSize(Inches.of(32), Inches.of(32));
       driveSim = new SwerveDriveSimulation(driveTrainSimulationConfig, Constants.STARTING_POSE);
@@ -117,6 +126,7 @@ public class RobotContainer {
     switch (Constants.MODE) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
+        vision = new Vision(new CameraIOPhoton(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM));
         drive =
             new Drive(
                 new GyroIOPigeon2(),
@@ -124,14 +134,12 @@ public class RobotContainer {
                 new ModuleIOSpark(1),
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3),
-                new Vision(
-                  new CameraIOPhoton(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM)
-                )
-            );
+                vision);
         break;
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
+        vision = new Vision(new CameraIOPhotonSim(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose));
         if(driveSim != null){
           drive =
               new Drive(
@@ -140,14 +148,13 @@ public class RobotContainer {
                   new ModuleIOSim(driveSim.getModules()[1]),
                   new ModuleIOSim(driveSim.getModules()[2]),
                   new ModuleIOSim(driveSim.getModules()[3]),
-                  new Vision(
-                  new CameraIOPhotonSim(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM, drive::getPose)
-                ));
+                  vision);
         }
         break;
 
       default:
         // Replayed robot, disable IO implementations
+        vision = new Vision(new CameraIO() {});
         drive =
             new Drive(
                 new GyroIO() {},
@@ -155,7 +162,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {},
-                new Vision(new CameraIO() {}));
+                vision);
         break;
     }
 
@@ -207,11 +214,13 @@ public class RobotContainer {
     if(RobotBase.isReal()){
       lockPose = new Trigger(driverController::getXButton);
       rstGyro = new Trigger(driverController::getAButton);
+      trackTag = new Trigger(driverController::getYButton);
       new Trigger(driverController::getLeftStickButton).onTrue(Commands.runOnce(() -> {this.fod = !this.fod;}));
       new Trigger(driverController::getRightStickButton).onTrue(Commands.runOnce(() -> {this.directAngle = !this.directAngle;}));
     } else {
       lockPose = new Trigger(() -> driverController.getRawButton(3));
       rstGyro = new Trigger(() -> driverController.getRawButton(1));
+      trackTag = new Trigger(() -> driverController.getRawButton(4));
       new Trigger(() -> driverController.getRawButton(9)).onTrue(Commands.runOnce(() -> {this.fod = !this.fod;}));
       new Trigger(() -> driverController.getRawButton(10)).onTrue(Commands.runOnce(() -> {this.directAngle = !this.directAngle;}));
 
@@ -222,10 +231,21 @@ public class RobotContainer {
         rumbler.overrideQue(new Rumble(.1, 0.25));
       }, drive).repeatedly());
 
+      trackTag.whileTrue(Commands.runOnce(() -> {rumbler.overrideQue(new Rumble(.1, 0.25));}, drive).repeatedly().alongWith(new PointAtVisionTarget(
+        drive,
+        () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getX()  , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0),
+        () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getY()  , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0),
+        () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getX(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0),
+        () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getY(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0),
+        vision,
+        1
+        )));
+
       rstGyro.onTrue(Commands.runOnce(() -> {
         drive.resetGyro(0);
         rumbler.overrideQue(RumblePreset.TAP.load());
       }));
+
 
       new Trigger(() -> TimerHandler.getTeleopRemaining()<Constants.ENDGAME_TIME).onTrue(Commands.runOnce(() -> {
         rumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());;
