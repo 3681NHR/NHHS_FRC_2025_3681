@@ -7,6 +7,10 @@ import frc.robot.constants.DriveConstants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.swerve.*;
+import frc.robot.subsystems.vision.CameraIO;
+import frc.robot.subsystems.vision.CameraIOPhoton;
+import frc.robot.subsystems.vision.CameraIOPhotonSim;
+import frc.robot.subsystems.vision.Vision;
 import frc.utils.rumble.*;
 import frc.utils.TimerHandler;
 import frc.utils.BatteryVoltageSim;
@@ -49,6 +53,7 @@ public class RobotContainer {
   private SwerveDriveSimulation driveSim;
 
   private Drive drive;
+  private Vision vision;
 
   private LoggedNetworkBoolean resetOdometry = new LoggedNetworkBoolean("resetOdometry", false);
 
@@ -113,6 +118,7 @@ public class RobotContainer {
     switch (Constants.MODE) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
+        vision = new Vision(new CameraIOPhoton(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM));
         drive =
             new Drive(
                 new GyroIOPigeon2(),
@@ -120,11 +126,12 @@ public class RobotContainer {
                 new ModuleIOSpark(1),
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3),
-                null);
+                vision);
         break;
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
+        vision = new Vision(new CameraIOPhotonSim(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose));
         if(driveSim != null){
           drive =
               new Drive(
@@ -133,12 +140,13 @@ public class RobotContainer {
                   new ModuleIOSim(driveSim.getModules()[1]),
                   new ModuleIOSim(driveSim.getModules()[2]),
                   new ModuleIOSim(driveSim.getModules()[3]),
-                  null);
+                  vision);
         }
         break;
 
       default:
         // Replayed robot, disable IO implementations
+        vision = new Vision(new CameraIO() {});
         drive =
             new Drive(
                 new GyroIO() {},
@@ -146,7 +154,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {},
-                null);
+                vision);
         break;
     }
 

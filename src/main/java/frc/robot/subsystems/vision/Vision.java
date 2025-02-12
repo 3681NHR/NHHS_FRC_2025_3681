@@ -1,6 +1,5 @@
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.filter.MedianFilter;
@@ -10,6 +9,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.VisionConstants;
@@ -17,7 +17,11 @@ import static frc.robot.constants.VisionConstants.*;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import org.littletonrobotics.junction.Logger;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class Vision extends SubsystemBase {
   private final CameraIO[] io;
@@ -164,9 +168,13 @@ public class Vision extends SubsystemBase {
             "Vision/Camera: " + io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName() + "/RobotPosesRejected",
             robotPosesRejected.toArray(new Pose3d[0]));
       }
+      double[][] stdDevs = new double[estimates.size()][3];
+      for(int i=0; i<stdDevs.length; i++){
+        stdDevs[i] = estimates.get(i).visionMeasurementStdDevs.getData();
+      }
       Logger.recordOutput(
         "Vision/Camera: " + io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName() + "/stdDevs",
-        estimates.stream().map((t) -> t.visionMeasurementStdDevs).toArray(Matrix[]::new));
+        stdDevs);
 
       allTagPoses.addAll(tagPoses);
       allRobotPoses.addAll(robotPoses);
@@ -191,7 +199,11 @@ public class Vision extends SubsystemBase {
     Logger.recordOutput(
         "Vision/Summary/RobotPosesRejected",
         allRobotPosesRejected.toArray(new Pose3d[allRobotPosesRejected.size()]));
-    Logger.recordOutput("Vision/Summary/stdDevs", allEstimates.toArray(new Matrix[0]));
+    double[][] stdDevs = new double[allEstimates.size()][3];
+    for(int i=0; i<stdDevs.length; i++){
+      stdDevs[i] = allEstimates.get(i).visionMeasurementStdDevs.getData();
+    }
+    Logger.recordOutput("Vision/Summary/stdDevs", stdDevs);
 
     latestEstimateRaw = allEstimates.stream().toArray(VisionEstimate[]::new);
 
@@ -205,6 +217,16 @@ public class Vision extends SubsystemBase {
       );
     }
 
+    Logger.recordOutput("Vision/Summary/ProssesedPose", Stream.of(latestEstimateFinal).map(t -> t.pose).toArray(Pose2d[]::new));
+
+    if(DriverStation.isTest()){
+      Logger.recordOutput("Vision/Summary/RawPose", Stream.of(latestEstimateFinal).map(t -> t.pose).toArray(Pose2d[]::new));
+      Logger.recordOutput("Vision/Summary/SPFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.SINGLE_POLE_IIR)).toArray(Pose2d[]::new));
+      Logger.recordOutput("Vision/Summary/MeanFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.MEAN)).toArray(Pose2d[]::new));
+      Logger.recordOutput("Vision/Summary/MedianFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.MEDIAN)).toArray(Pose2d[]::new));
+      Logger.recordOutput("Vision/Summary/RateLimFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.RATE_LIM)).toArray(Pose2d[]::new));
+    }
+
     allTagPoses.clear();
     allRobotPoses.clear();
     allRobotPosesAccepted.clear();
@@ -215,6 +237,24 @@ public class Vision extends SubsystemBase {
   public VisionEstimate[] getPose() {
     // Send vision observation
     return latestEstimateFinal;
+  }
+
+  public Optional<Double> getYaw(int tagID){
+    Optional<Double> yaw = Optional.empty();
+    if(tagID < 0){
+      for(int i=0; i<inputs.length; i++){
+        yaw = Optional.of(inputs[i].latestTargetObservation.tx().getRadians() + io[i].getRobotToCamera().getRotation().getZ());
+      }
+    } else {
+      for(int i=0; i<inputs.length; i++){
+        for(PhotonTrackedTarget t : inputs[i].targets){
+          if(t.fiducialId == tagID){
+            yaw = Optional.of(t.getYaw() + io[i].getRobotToCamera().getRotation().getZ());
+          }
+        }
+      }
+    }
+    return yaw;
   }
 
   private Pose2d FilterPose(Pose2d p, FilterStrategy strat){

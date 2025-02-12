@@ -10,6 +10,7 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import frc.robot.constants.VisionConstants;
 
@@ -17,6 +18,8 @@ public class CameraIOPhoton implements CameraIO {
 
     protected final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
+
+    private final Transform3d robotToCamera;
   
     /**
      * Creates a new CameraIOPhoton.
@@ -26,6 +29,7 @@ public class CameraIOPhoton implements CameraIO {
      */
     public CameraIOPhoton(String name, Transform3d robotToCamera) {
       camera = new PhotonCamera(name);
+      this.robotToCamera = robotToCamera;
 
       this.poseEstimator = new PhotonPoseEstimator(VisionConstants.APRILTAG_LAYOUT, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, robotToCamera);
     }
@@ -45,7 +49,10 @@ public class CameraIOPhoton implements CameraIO {
             getAvgDistance(result)
             ));
             inputs.tagIds = estimate.get().targetsUsed.stream().mapToInt(t -> t.fiducialId).toArray();
-        }
+            inputs.latestTargetObservation = new TargetObservation(new Rotation2d(result.getBestTarget().getYaw()), new Rotation2d(result.getBestTarget().getPitch()));
+
+            inputs.targets = result.targets.toArray(new PhotonTrackedTarget[0]);
+          }
 
         
       }
@@ -66,5 +73,10 @@ public class CameraIOPhoton implements CameraIO {
 
   public String getName() {
     return camera.getName();
+  }
+
+  @Override
+  public Transform3d getRobotToCamera() {
+    return robotToCamera;
   }
 }
