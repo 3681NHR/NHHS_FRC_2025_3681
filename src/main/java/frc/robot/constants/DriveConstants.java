@@ -36,7 +36,7 @@ public class DriveConstants {
     public static final double ANGLE_MAX_VELOCITY = Math.PI*2*100;
     public static final double ANGLE_MAX_ACCELERATION = ANGLE_MAX_VELOCITY*100;//1/10 sec to full speed
 
-    public static final boolean USE_VISION = false;
+    public static final boolean USE_VISION = true;
 
     public static final double MAX_SPEED = 4.8;
     public static final double ODOMETRY_FREQ = 100.0; // Hz

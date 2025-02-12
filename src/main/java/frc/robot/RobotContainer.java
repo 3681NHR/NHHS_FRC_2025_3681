@@ -7,6 +7,10 @@ import frc.robot.constants.DriveConstants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.swerve.*;
+import frc.robot.subsystems.vision.CameraIO;
+import frc.robot.subsystems.vision.CameraIOPhoton;
+import frc.robot.subsystems.vision.CameraIOPhotonSim;
+import frc.robot.subsystems.vision.Vision;
 import frc.utils.rumble.*;
 import frc.utils.TimerHandler;
 import frc.utils.BatteryVoltageSim;
@@ -120,7 +124,10 @@ public class RobotContainer {
                 new ModuleIOSpark(1),
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3),
-                null);
+                new Vision(
+                  new CameraIOPhoton(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM)
+                )
+            );
         break;
 
       case SIM:
@@ -133,7 +140,9 @@ public class RobotContainer {
                   new ModuleIOSim(driveSim.getModules()[1]),
                   new ModuleIOSim(driveSim.getModules()[2]),
                   new ModuleIOSim(driveSim.getModules()[3]),
-                  null);
+                  new Vision(
+                  new CameraIOPhotonSim(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM, drive::getPose)
+                ));
         }
         break;
 
@@ -146,7 +155,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {},
-                null);
+                new Vision(new CameraIO() {}));
         break;
     }
 

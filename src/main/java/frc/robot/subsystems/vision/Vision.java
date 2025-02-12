@@ -164,9 +164,9 @@ public class Vision extends SubsystemBase {
             "Vision/Camera: " + io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName() + "/RobotPosesRejected",
             robotPosesRejected.toArray(new Pose3d[0]));
       }
-      Logger.recordOutput(
-        "Vision/Camera: " + io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName() + "/stdDevs",
-        estimates.stream().map((t) -> t.visionMeasurementStdDevs).toArray(Matrix[]::new));
+      //Logger.recordOutput(
+      //  "Vision/Camera: " + io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName() + "/stdDevs",
+      //  estimates.stream().map((t) -> t.visionMeasurementStdDevs).toArray(Matrix[]::new));
 
       allTagPoses.addAll(tagPoses);
       allRobotPoses.addAll(robotPoses);
@@ -191,7 +191,7 @@ public class Vision extends SubsystemBase {
     Logger.recordOutput(
         "Vision/Summary/RobotPosesRejected",
         allRobotPosesRejected.toArray(new Pose3d[allRobotPosesRejected.size()]));
-    Logger.recordOutput("Vision/Summary/stdDevs", allEstimates.toArray(new Matrix[0]));
+    //Logger.recordOutput("Vision/Summary/stdDevs", allEstimates.toArray(new Matrix[0]));
 
     latestEstimateRaw = allEstimates.stream().toArray(VisionEstimate[]::new);
 

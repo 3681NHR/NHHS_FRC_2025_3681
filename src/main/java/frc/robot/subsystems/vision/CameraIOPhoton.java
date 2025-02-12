@@ -40,7 +40,7 @@ public class CameraIOPhoton implements CameraIO {
           observations.add(new PoseObservation(
             estimate.get().timestampSeconds,
             estimate.get().estimatedPose,
-            result.multitagResult.get().estimatedPose.ambiguity,
+            result.multitagResult.isPresent() ? result.multitagResult.get().estimatedPose.ambiguity : -1,
             estimate.get().targetsUsed.size(),
             getAvgDistance(result)
             ));
