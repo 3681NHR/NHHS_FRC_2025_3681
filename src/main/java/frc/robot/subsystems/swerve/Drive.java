@@ -149,9 +149,11 @@ public class Drive extends SubsystemBase {
     for (var module : modules) {
       module.periodic();
     }
-    for(VisionEstimate e : vision.getPose()){
-      poseEstimator.addVisionMeasurement(
-          e.pose, e.timestampSeconds, e.visionMeasurementStdDevs);
+    if(USE_VISION){
+      for(VisionEstimate e : vision.getPose()){
+        poseEstimator.addVisionMeasurement(
+            e.pose, e.timestampSeconds, e.visionMeasurementStdDevs);
+      }
     }
     odometryLock.unlock();
 

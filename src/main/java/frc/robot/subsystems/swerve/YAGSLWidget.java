@@ -286,7 +286,7 @@ public class YAGSLWidget {
   /**
    * The units of the module rotations and robot rotation
    */
-  public static        String               rotationUnit             = "radians";
+  public static        String               rotationUnit             = "degrees";
   /**
    * The distance between the left and right modules.
    */

@@ -44,14 +44,19 @@ public class CameraIOPhoton implements CameraIO {
           observations.add(new PoseObservation(
             estimate.get().timestampSeconds,
             estimate.get().estimatedPose,
-            result.multitagResult.get().estimatedPose.ambiguity,
+            result.multitagResult.isPresent() ? result.multitagResult.get().estimatedPose.ambiguity : -1,
             estimate.get().targetsUsed.size(),
             getAvgDistance(result)
             ));
             inputs.tagIds = estimate.get().targetsUsed.stream().mapToInt(t -> t.fiducialId).toArray();
-            inputs.latestTargetObservation = new TargetObservation(new Rotation2d(result.getBestTarget().getYaw()), new Rotation2d(result.getBestTarget().getPitch()));
+            inputs.latestTargetObservation = new TargetObservation(new Rotation2d(result.getBestTarget().getYaw()), new Rotation2d(result.getBestTarget().getPitch()), result.getBestTarget().fiducialId);
 
-            inputs.targets = result.targets.toArray(new PhotonTrackedTarget[0]);
+            inputs.targets = result.targets.stream().map(t -> 
+              new TargetObservation(
+                new Rotation2d(t.getYaw()), 
+                new Rotation2d(t.getPitch()), 
+                t.fiducialId)
+            ).toArray(TargetObservation[]::new);
           }
 
         

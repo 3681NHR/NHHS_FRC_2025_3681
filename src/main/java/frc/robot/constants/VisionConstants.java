@@ -34,11 +34,11 @@ public class VisionConstants {
         new Transform3d(
             Units.inchesToMeters(14), 
             Units.inchesToMeters(0), 
-            Units.inchesToMeters(4), 
+            Units.inchesToMeters(6), 
         new Rotation3d(
-            Units.degreesToRadians(0),
-            Units.degreesToRadians(-20),
-            Units.degreesToRadians(45)
+            Units.degreesToRadians(10),
+            Units.degreesToRadians(-45),
+            Units.degreesToRadians(90)
         )
     );
 
@@ -58,7 +58,7 @@ public class VisionConstants {
         1.0, // front
       };
 
-  public static final FilterStrategy POSE_FILTER = FilterStrategy.RATE_LIM;
+  public static final FilterStrategy POSE_FILTER = FilterStrategy.MEDIAN;
 
   public static final double ANGLE_P = 0.4;
   public static final double ANGLE_D = 0.01;
