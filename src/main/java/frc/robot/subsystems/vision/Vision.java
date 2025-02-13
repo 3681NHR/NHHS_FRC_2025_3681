@@ -33,9 +33,9 @@ public class Vision extends SubsystemBase {
   private VisionEstimate[] latestEstimateRaw;
   private VisionEstimate[] latestEstimateFinal = latestEstimateRaw;
 
-  private LinearFilter xFilterSP = LinearFilter.singlePoleIIR(0.1, 0.2);
-  private LinearFilter yFilterSP = LinearFilter.singlePoleIIR(0.1, 0.2);
-  private LinearFilter tFilterSP = LinearFilter.singlePoleIIR(0.1, 0.2);
+  private LinearFilter xFilterSP = LinearFilter.singlePoleIIR(0.2, 0.2);
+  private LinearFilter yFilterSP = LinearFilter.singlePoleIIR(0.2, 0.2);
+  private LinearFilter tFilterSP = LinearFilter.singlePoleIIR(0.2, 0.2);
 
   private LinearFilter xFilterMean = LinearFilter.movingAverage(5);
   private LinearFilter yFilterMean = LinearFilter.movingAverage(5);
@@ -250,8 +250,10 @@ public class Vision extends SubsystemBase {
     } else {
       for(int i=0; i<inputs.length; i++){
         for(TargetObservation t : inputs[i].targets){//FIXME
-          if(t.ID() == tagID){
-            yaw = Optional.of(t.tx().getRadians() + io[i].getRobotToCamera().getRotation().getZ());
+          if(t != null){
+            if(t.ID() == tagID){
+              yaw = Optional.of(t.tx().getRadians() + io[i].getRobotToCamera().getRotation().getZ());
+            }
           }
         }
       }
