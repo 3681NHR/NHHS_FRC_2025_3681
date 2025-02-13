@@ -32,12 +32,12 @@ public class VisionConstants {
   // (Not used by Limelight, configure in web UI instead)
   public static Transform3d CAMERA_0_ROBOT_TO_CAM =
         new Transform3d(
-            Units.inchesToMeters(14), 
             Units.inchesToMeters(0), 
+            Units.inchesToMeters(12), 
             Units.inchesToMeters(6), 
         new Rotation3d(
-            Units.degreesToRadians(10),
-            Units.degreesToRadians(-45),
+            Units.degreesToRadians(0),
+            Units.degreesToRadians(-35),
             Units.degreesToRadians(90)
         )
     );
@@ -60,6 +60,9 @@ public class VisionConstants {
 
   public static final FilterStrategy POSE_FILTER = FilterStrategy.MEDIAN;
 
-  public static final double ANGLE_P = 0.4;
-  public static final double ANGLE_D = 0.01;
+  public static final double ANGLE_P = 0.01;
+  public static final double ANGLE_D = 0.001;
+
+  public static final double ANGLE_SIM_P = 0.01;
+  public static final double ANGLE_SIM_D = 0.001;
 }

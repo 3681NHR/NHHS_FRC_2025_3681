@@ -9,9 +9,11 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.constants.Constants;
+import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.swerve.Drive;
 import frc.utils.ExtraMath;
 import frc.utils.Joystick;
@@ -110,9 +112,9 @@ public class DriveCommands {
     // Create PID controller
     ProfiledPIDController angleController =
         new ProfiledPIDController(
-            ANGLE_P,
+        RobotBase.isReal() ? ANGLE_P : ANGLE_SIM_P, 
             0.0,
-            ANGLE_D,
+            RobotBase.isReal() ? ANGLE_D : ANGLE_SIM_D, 
             new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
     
     angleController.reset(drive.getRotation().getRadians());

@@ -41,9 +41,9 @@ public class Vision extends SubsystemBase {
   private LinearFilter yFilterMean = LinearFilter.movingAverage(5);
   private LinearFilter tFilterMean = LinearFilter.movingAverage(5);
 
-  private MedianFilter xFilterMedian = new MedianFilter(5);
-  private MedianFilter yFilterMedian = new MedianFilter(5);
-  private MedianFilter tFilterMedian = new MedianFilter(5);
+  private MedianFilter xFilterMedian = new MedianFilter(11);
+  private MedianFilter yFilterMedian = new MedianFilter(11);
+  private MedianFilter tFilterMedian = new MedianFilter(11);
 
   private SlewRateLimiter xFilterRate = new SlewRateLimiter(10);
   private SlewRateLimiter yFilterRate = new SlewRateLimiter(10);

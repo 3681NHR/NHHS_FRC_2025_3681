@@ -42,7 +42,7 @@ public class AnglePresetDriveCommand extends Command {
 
   @Override
   public void execute() {
-    DriveCommands.joystickDriveAtAngleFunc(drive, sticks.lx, sticks.ly, angle);
+    DriveCommands.joystickDriveAtAngleFunc(drive, sticks.ly, sticks.lx, angle);
   }
 
   @Override
@@ -51,6 +51,6 @@ public class AnglePresetDriveCommand extends Command {
 
   @Override
   public boolean isFinished() {
-    return ExtraMath.getMagnitude(sticks.rx.getAsDouble(), sticks.ry.getAsDouble()) < Constants.OperatorConstants.ANGLE_DEADBAND;
+    return ExtraMath.getMagnitude(sticks.rx.getAsDouble(), sticks.ry.getAsDouble()) > Constants.OperatorConstants.ANGLE_DEADBAND;
   }
 }

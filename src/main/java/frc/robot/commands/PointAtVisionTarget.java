@@ -6,8 +6,13 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.Constants;
+import frc.robot.constants.DriveConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.swerve.Drive;
 import frc.robot.subsystems.vision.Vision;
@@ -23,7 +28,12 @@ public class PointAtVisionTarget extends Command {
 
   int tagID = -1;
 
-  PIDController pid = new PIDController(VisionConstants.ANGLE_P, 0, VisionConstants.ANGLE_D);
+  ProfiledPIDController pid = new ProfiledPIDController(
+    RobotBase.isReal() ? VisionConstants.ANGLE_P : VisionConstants.ANGLE_SIM_P, 
+    0, 
+    RobotBase.isReal() ? VisionConstants.ANGLE_D : VisionConstants.ANGLE_SIM_D,
+    new TrapezoidProfile.Constraints(Units.radiansToDegrees(DriveConstants.ANGLE_MAX_VELOCITY), Units.radiansToDegrees(DriveConstants.ANGLE_MAX_ACCELERATION))
+  );
 
   Optional<Double> yaw;
 
@@ -48,7 +58,6 @@ public class PointAtVisionTarget extends Command {
 
   @Override
   public void initialize() {
-    
   }
 
 
@@ -56,11 +65,13 @@ public class PointAtVisionTarget extends Command {
   public void execute() {
     yaw = vision.getYaw(tagID);
 
+    yaw = Optional.of(yaw.isPresent() ? yaw.get() : 5);
+
     if(yaw.isPresent()){
       Logger.recordOutput("Drive/yawToVisionTarget", yaw.get());
     }
 
-    DriveCommands.joystickDriveFunc(drive, sticks.lx, sticks.ly, () -> MathUtil.clamp(pid.calculate(yaw.isPresent() ? yaw.get() : 0, 0), -1, 1));
+    DriveCommands.joystickDriveFunc(drive, sticks.ly, sticks.lx, () -> MathUtil.clamp(pid.calculate(yaw.get(), 0), -1, 1));
   }
 
   @Override
@@ -69,6 +80,6 @@ public class PointAtVisionTarget extends Command {
 
   @Override
   public boolean isFinished() {
-    return ExtraMath.getMagnitude(sticks.rx.getAsDouble(), sticks.ry.getAsDouble()) < Constants.OperatorConstants.ANGLE_DEADBAND;
+    return ExtraMath.getMagnitude(sticks.rx.getAsDouble(), sticks.ry.getAsDouble()) > Constants.OperatorConstants.ANGLE_DEADBAND;
   }
 }

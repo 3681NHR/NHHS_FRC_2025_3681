@@ -3,6 +3,7 @@ package frc.robot.subsystems.swerve;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -290,11 +291,11 @@ public class YAGSLWidget {
   /**
    * The distance between the left and right modules.
    */
-  public static        double               sizeLeftRight;
+  public static        double               sizeLeftRight = Units.inchesToMeters(25);
   /**
    * The distance between the front and back modules.
    */
-  public static        double               sizeFrontBack;
+  public static        double               sizeFrontBack = Units.inchesToMeters(25);
   /**
    * The direction the robot should be facing when the "Robot Rotation" is zero or blank. This option is often useful to
    * align with odometry data or match videos. 'up', 'right', 'down' or 'left'

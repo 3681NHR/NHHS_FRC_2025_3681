@@ -107,18 +107,15 @@ public class RobotContainer {
 
     if(RobotBase.isSimulation()){
       driveTrainSimulationConfig = DriveTrainSimulationConfig.Default()
-      // Specify gyro type (for realistic gyro drifting and error simulation)
-      .withGyro(COTS.ofPigeon2())
-      // Specify swerve module (for realistic swerve dynamics)
-      .withSwerveModule(COTS.ofMark4i(
-              DCMotor.getNEO(1), // Drive motor
-              DCMotor.getNEO(1), // Steer motor
-              COTS.WHEELS.COLSONS.cof, // Use the COF for Colson Wheels
-              2)) //Gear ratio
-      // Configures the track length and track width (spacing between swerve modules)
-      .withTrackLengthTrackWidth(Meters.of(DriveConstants.LENGTH), Meters.of(DriveConstants.WIDTH))
-      // Configures the bumper size (dimensions of the robot bumper)
-      .withBumperSize(Inches.of(32), Inches.of(32));
+          .withGyro(COTS.ofPigeon2())
+          .withSwerveModule(COTS.ofMark4i(
+                  DCMotor.getNEO(1),
+                  DCMotor.getNEO(1),
+                  COTS.WHEELS.DEFAULT_NEOPRENE_TREAD.cof,
+                  2))
+          .withTrackLengthTrackWidth(Meters.of(DriveConstants.LENGTH), Meters.of(DriveConstants.WIDTH))
+          .withBumperSize(Inches.of(30), Inches.of(27));
+
       driveSim = new SwerveDriveSimulation(driveTrainSimulationConfig, Constants.STARTING_POSE);
       // Register the drivetrain simulation to the default simulation world
       SimulatedArena.getInstance().addDriveTrainSimulation(driveSim);
@@ -255,12 +252,12 @@ public class RobotContainer {
         rumbler.overrideQue(new Rumble(.1, 0.25));
       }, drive).repeatedly());
 
-      trackTag.whileTrue(Commands.runOnce(() -> {rumbler.overrideQue(new Rumble(.01, 0.5));}, drive).repeatedly().alongWith(new PointAtVisionTarget(
+      trackTag.whileTrue(new PointAtVisionTarget(
         driverSticks,
         drive,
         vision,
         3
-      )));
+      ));
 
       rstGyro.onTrue(Commands.runOnce(() -> {
         drive.resetGyro(0);
