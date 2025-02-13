@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -11,7 +12,7 @@ import frc.utils.ExtraMath;
 public class AnglePresetDriveCommand extends Command {
 
   Drive drive;
-  Rotation2d angle;
+  Supplier<Rotation2d> angle;
 
   DoubleSupplier tx;
   DoubleSupplier ty;
@@ -27,7 +28,7 @@ public class AnglePresetDriveCommand extends Command {
    * @param ry
    * @param angle
    */
-  public AnglePresetDriveCommand(Drive drive, DoubleSupplier tx, DoubleSupplier ty, DoubleSupplier rx, DoubleSupplier ry, Rotation2d angle) {
+  public AnglePresetDriveCommand(Drive drive, DoubleSupplier tx, DoubleSupplier ty, DoubleSupplier rx, DoubleSupplier ry, Supplier<Rotation2d> angle) {
     this.drive = drive;
     this.angle = angle;
     this.tx = tx;
@@ -47,7 +48,7 @@ public class AnglePresetDriveCommand extends Command {
 
   @Override
   public void execute() {
-    DriveCommands.joystickDriveAtAngleFunc(drive, tx, ty, () -> angle);
+    DriveCommands.joystickDriveAtAngleFunc(drive, tx, ty, angle);
   }
 
   @Override

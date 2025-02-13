@@ -15,11 +15,14 @@ import frc.robot.subsystems.vision.Vision;
 import frc.utils.rumble.*;
 import frc.utils.TimerHandler;
 import frc.utils.BatteryVoltageSim;
+import frc.utils.ControllerMap;
 import frc.utils.ExtraMath;
 import frc.utils.Joystick;
 
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+
+import static frc.utils.ControllerMap.*;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -109,13 +112,13 @@ public class RobotContainer {
       // Register the drivetrain simulation to the default simulation world
       SimulatedArena.getInstance().addDriveTrainSimulation(driveSim);
 
-      lx = () -> driverController.getRawAxis(0);
-      ly = () -> driverController.getRawAxis(1);
-      rx = () -> driverController.getRawAxis(4);
-      ry = () -> driverController.getRawAxis(5);
+      lx = () -> driverController.getRawAxis(LEFT_STICK_X);
+      ly = () -> driverController.getRawAxis(LEFT_STICK_Y);
+      rx = () -> driverController.getRawAxis(RIGHT_STICK_X);
+      ry = () -> driverController.getRawAxis(RIGHT_STICK_Y);
 
-      leftTrigger = () -> driverController.getRawAxis(2);
-      rightTrigger = () -> driverController.getRawAxis(3);
+      leftTrigger = () -> driverController.getRawAxis(LEFT_TRIGGER);
+      rightTrigger = () -> driverController.getRawAxis(RIGHT_TRIGGER);
     }
     
 
@@ -214,11 +217,11 @@ public class RobotContainer {
       new Trigger(driverController::getLeftStickButton).onTrue(Commands.runOnce(() -> {this.fod = !this.fod;}));
       new Trigger(driverController::getRightStickButton).onTrue(Commands.runOnce(() -> {this.directAngle = !this.directAngle;}));
     } else {
-      lockPose = new Trigger(() -> driverController.getRawButton(3));
-      rstGyro = new Trigger(() -> driverController.getRawButton(1));
-      trackTag = new Trigger(() -> driverController.getRawButton(4));
-      new Trigger(() -> driverController.getRawButton(9)).onTrue(Commands.runOnce(() -> {this.fod = !this.fod;}));
-      new Trigger(() -> driverController.getRawButton(10)).onTrue(Commands.runOnce(() -> {this.directAngle = !this.directAngle;}));
+      lockPose = new Trigger(() -> driverController.getRawButton(X));
+      rstGyro = new Trigger(() -> driverController.getRawButton(A));
+      trackTag = new Trigger(() -> driverController.getRawButton(Y));
+      new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON)).onTrue(Commands.runOnce(() -> {this.fod = !this.fod;}));
+      new Trigger(() -> driverController.getRawButton(RIGHT_STICK_BUTTON)).onTrue(Commands.runOnce(() -> {this.directAngle = !this.directAngle;}));
 
     }
       
@@ -255,7 +258,7 @@ public class RobotContainer {
         () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getY()  , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0),
         () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getX(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0),
         () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getY(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0),
-        povDRot
+        () -> povDRot
       )));
   }
 
