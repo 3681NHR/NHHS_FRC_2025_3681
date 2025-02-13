@@ -1,7 +1,6 @@
 package frc.robot.commands;
 
 import java.util.Optional;
-import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -13,16 +12,14 @@ import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.swerve.Drive;
 import frc.robot.subsystems.vision.Vision;
 import frc.utils.ExtraMath;
+import frc.utils.Joystick.duelJoystickAxis;
 
 public class PointAtVisionTarget extends Command {
 
   Drive drive;
   Vision  vision;
 
-  DoubleSupplier tx;
-  DoubleSupplier ty;
-  DoubleSupplier rx;
-  DoubleSupplier ry;
+  duelJoystickAxis sticks;
 
   int tagID = -1;
 
@@ -39,14 +36,11 @@ public class PointAtVisionTarget extends Command {
    * @param ry
    * @param angle
    */
-  public PointAtVisionTarget(Drive drive, DoubleSupplier tx, DoubleSupplier ty, DoubleSupplier rx, DoubleSupplier ry, Vision vision, int tagID) {
+  public PointAtVisionTarget(duelJoystickAxis sticks, Drive drive, Vision vision, int tagID) {
     this.drive = drive;
     this.vision = vision;
-    this.tx = tx;
-    this.ty = ty;
-    this.rx = rx;
-    this.ry = ry;
     this.tagID = tagID;
+    this.sticks = sticks;
     addRequirements(drive);
     addRequirements(vision);
   }
@@ -66,7 +60,7 @@ public class PointAtVisionTarget extends Command {
       Logger.recordOutput("Drive/yawToVisionTarget", yaw.get());
     }
 
-    DriveCommands.joystickDriveFunc(drive, tx, ty, () -> MathUtil.clamp(pid.calculate(yaw.isPresent() ? yaw.get() : 0, 0), -1, 1));
+    DriveCommands.joystickDriveFunc(drive, sticks.lx, sticks.ly, () -> MathUtil.clamp(pid.calculate(yaw.isPresent() ? yaw.get() : 0, 0), -1, 1));
   }
 
   @Override
@@ -75,6 +69,6 @@ public class PointAtVisionTarget extends Command {
 
   @Override
   public boolean isFinished() {
-    return ExtraMath.getMagnitude(rx.getAsDouble(), ry.getAsDouble()) < Constants.OperatorConstants.ANGLE_DEADBAND;
+    return ExtraMath.getMagnitude(sticks.rx.getAsDouble(), sticks.ry.getAsDouble()) < Constants.OperatorConstants.ANGLE_DEADBAND;
   }
 }

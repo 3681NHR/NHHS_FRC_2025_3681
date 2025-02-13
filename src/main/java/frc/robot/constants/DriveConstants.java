@@ -31,7 +31,7 @@ import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage; 
 
 public class DriveConstants {
-    public static final double ANGLE_P = 0.4;
+    public static final double ANGLE_P = 0.25;
     public static final double ANGLE_D = 0.01;
     public static final double ANGLE_MAX_VELOCITY = Math.PI*2*100;
     public static final double ANGLE_MAX_ACCELERATION = ANGLE_MAX_VELOCITY*100;//1/10 sec to full speed
