@@ -18,13 +18,18 @@ import frc.robot.subsystems.vision.CameraIOPhotonSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.utils.rumble.*;
 import frc.utils.TimerHandler;
+import frc.utils.Joystick.duelJoystickAxis;
 import frc.utils.BatteryVoltageSim;
+import frc.utils.ControllerMap;
 import frc.utils.ExtraMath;
 import frc.utils.Joystick;
 
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 
+import static frc.utils.ControllerMap.*;
+
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -42,9 +47,11 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -61,8 +68,10 @@ public class RobotContainer {
   private Drive drive;
   private Vision vision;
 
-  private LoggedNetworkBoolean resetOdometry = new LoggedNetworkBoolean("resetOdometry", false);
+  private final XboxController driverController =
+      new XboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
 
+  private LoggedNetworkBoolean resetOdometry = new LoggedNetworkBoolean("resetOdometry", false);
   private LoggedDashboardChooser<Command> autoChooser;
 
   private boolean fod = Constants.drive.STARTING_FOD;
@@ -70,24 +79,20 @@ public class RobotContainer {
 
   private Trigger lockPose;
   private Trigger rstGyro;
-
   private Trigger trackTag;
+  private Trigger toggleFOD;
+  private Trigger toggleDA;
 
-  private final XboxController driverController =
-      new XboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
+  private DoubleSupplier lx;
+  private DoubleSupplier ly;
+  private DoubleSupplier rx;
+  private DoubleSupplier ry;
 
-  private DoubleSupplier lx = driverController::getLeftX;
-  private DoubleSupplier ly = driverController::getLeftY;
-  private DoubleSupplier rx = driverController::getRightX;
-  private DoubleSupplier ry = driverController::getRightY;
+  private duelJoystickAxis driverSticks;
 
-  private DoubleSupplier leftTrigger = driverController::getLeftTriggerAxis;
-  private DoubleSupplier rightTrigger = driverController::getRightTriggerAxis;
-
-  private RumbleHandler rumbler = new RumbleHandler(driverController);
-
-  private PowerDistribution pdp = new PowerDistribution(1  , ModuleType.kRev);
-
+  private DoubleSupplier leftTrigger;
+  private DoubleSupplier rightTrigger;
+  
   private Rotation2d povDRot = new Rotation2d();
   private Rotation2d povRRot = new Rotation2d();
   private Rotation2d povLRot = new Rotation2d();
@@ -95,35 +100,54 @@ public class RobotContainer {
 
   private LoggedNetworkBoolean useVisionOdometry = new LoggedNetworkBoolean("overrides/useVisionOdometry", DriveConstants.USE_VISION);
 
+  private RumbleHandler rumbler = new RumbleHandler(driverController);
+
+
+  private PowerDistribution pdp = new PowerDistribution(1  , ModuleType.kRev);
+
   public RobotContainer() {
 
     if(RobotBase.isSimulation()){
       driveTrainSimulationConfig = DriveTrainSimulationConfig.Default()
-      // Specify gyro type (for realistic gyro drifting and error simulation)
-      .withGyro(COTS.ofPigeon2())
-      // Specify swerve module (for realistic swerve dynamics)
-      .withSwerveModule(COTS.ofMark4i(
-              DCMotor.getNEO(1), // Drive motor
-              DCMotor.getNEO(1), // Steer motor
-              COTS.WHEELS.COLSONS.cof, // Use the COF for Colson Wheels
-              2)) //Gear ratio
-      // Configures the track length and track width (spacing between swerve modules)
-      .withTrackLengthTrackWidth(Meters.of(DriveConstants.LENGTH), Meters.of(DriveConstants.WIDTH))
-      // Configures the bumper size (dimensions of the robot bumper)
-      .withBumperSize(Inches.of(32), Inches.of(32));
+          .withGyro(COTS.ofPigeon2())
+          .withSwerveModule(COTS.ofMark4i(
+                  DCMotor.getNEO(1),
+                  DCMotor.getNEO(1),
+                  COTS.WHEELS.DEFAULT_NEOPRENE_TREAD.cof,
+                  2))
+          .withTrackLengthTrackWidth(Meters.of(DriveConstants.LENGTH), Meters.of(DriveConstants.WIDTH))
+          .withBumperSize(Inches.of(30), Inches.of(27));
+
       driveSim = new SwerveDriveSimulation(driveTrainSimulationConfig, Constants.STARTING_POSE);
       // Register the drivetrain simulation to the default simulation world
       SimulatedArena.getInstance().addDriveTrainSimulation(driveSim);
 
-      lx = () -> driverController.getRawAxis(0);
-      ly = () -> driverController.getRawAxis(1);
-      rx = () -> driverController.getRawAxis(4);
-      ry = () -> driverController.getRawAxis(5);
+      lx = () -> driverController.getRawAxis(LEFT_STICK_X);
+      ly = () -> driverController.getRawAxis(LEFT_STICK_Y);
+      rx = () -> driverController.getRawAxis(RIGHT_STICK_X);
+      ry = () -> driverController.getRawAxis(RIGHT_STICK_Y);
 
-      leftTrigger = () -> driverController.getRawAxis(2);
-      rightTrigger = () -> driverController.getRawAxis(3);
+      leftTrigger = () -> driverController.getRawAxis(LEFT_TRIGGER);
+      rightTrigger = () -> driverController.getRawAxis(RIGHT_TRIGGER);
+
+    } else {
+
+      lx = () -> driverController.getLeftX();
+      ly = () -> driverController.getLeftY();
+      rx = () -> driverController.getRightX();
+      ry = () -> driverController.getRightY();
+
+      leftTrigger = () -> driverController.getLeftTriggerAxis();
+      rightTrigger = () -> driverController.getRightTriggerAxis();
+
     }
-    
+    //process driver controls(radial deadzone, curve, trigger slowdown, and inversion)
+    driverSticks = new duelJoystickAxis(
+      () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getX()  , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0),
+      () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getY()  , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0),
+      () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getX(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0),
+      () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getY(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0)
+    );
 
     switch (Constants.MODE) {
       case REAL:
@@ -193,10 +217,7 @@ public class RobotContainer {
     // right stick controls the angular velocity of the robot
     // sim command used raw axis for simulating joysticks
     Command driveCommand = DriveCommands.driveCommand(
-      () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getX()  , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0),
-      () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getY()  , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0),
-      () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getX(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0),
-      () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getY(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0),
+      driverSticks,  
       () -> this.getDirectAngle(),
       () -> this.getFOD(),
       drive
@@ -217,14 +238,14 @@ public class RobotContainer {
       lockPose = new Trigger(driverController::getXButton);
       rstGyro = new Trigger(driverController::getAButton);
       trackTag = new Trigger(driverController::getYButton);
-      new Trigger(driverController::getLeftStickButton).onTrue(Commands.runOnce(() -> {this.fod = !this.fod;}));
-      new Trigger(driverController::getRightStickButton).onTrue(Commands.runOnce(() -> {this.directAngle = !this.directAngle;}));
+      toggleFOD = new Trigger(driverController::getLeftStickButton);
+      toggleDA = new Trigger(driverController::getRightStickButton);
     } else {
-      lockPose = new Trigger(() -> driverController.getRawButton(3));
-      rstGyro = new Trigger(() -> driverController.getRawButton(1));
-      trackTag = new Trigger(() -> driverController.getRawButton(4));
-      new Trigger(() -> driverController.getRawButton(9)).onTrue(Commands.runOnce(() -> {this.fod = !this.fod;}));
-      new Trigger(() -> driverController.getRawButton(10)).onTrue(Commands.runOnce(() -> {this.directAngle = !this.directAngle;}));
+      lockPose = new Trigger(() -> driverController.getRawButton(X));
+      rstGyro = new Trigger(() -> driverController.getRawButton(A));
+      trackTag = new Trigger(() -> driverController.getRawButton(Y));
+      toggleFOD = new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON));
+      toggleDA = new Trigger(() -> driverController.getRawButton(RIGHT_STICK_BUTTON));
 
     }
       
@@ -233,36 +254,38 @@ public class RobotContainer {
         rumbler.overrideQue(new Rumble(.1, 0.25));
       }, drive).repeatedly());
 
-      trackTag.whileTrue(Commands.runOnce(() -> {rumbler.overrideQue(new Rumble(.1, 0.25));}).repeatedly().alongWith(new PointAtVisionTarget(
+      trackTag.whileTrue(new PointAtVisionTarget(
+        driverSticks,
         drive,
-        () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getX()  , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0),
-        () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getY()  , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0),
-        () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getX(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0),
-        () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getY(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0),
         vision,
         3
-        )));
+      ));
 
       rstGyro.onTrue(Commands.runOnce(() -> {
         drive.resetGyro(0);
         rumbler.overrideQue(RumblePreset.TAP.load());
       }));
 
-
-      new Trigger(() -> TimerHandler.getTeleopRemaining()<Constants.ENDGAME_TIME).onTrue(Commands.runOnce(() -> {
-        rumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());;
+      toggleFOD.onTrue(Commands.runOnce(() -> {
+        this.fod = !this.fod;
+      }));
+      toggleDA.onTrue(Commands.runOnce(() -> {
+        this.directAngle = !this.directAngle;
       }));
 
+      new Trigger(() -> TimerHandler.getTeleopRemaining()<Constants.ENDGAME_TIME).onTrue(Commands.runOnce(() -> {
+        rumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());
+      }));
+
+      //pov down
       new Trigger(() -> driverController.getPOV() == 180).onTrue(Commands.runOnce(() -> {
         rumbler.overrideQue(RumblePreset.TAP.load());
       }).alongWith(new AnglePresetDriveCommand(
+        driverSticks,
         drive,
-        () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getX()  , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0),
-        () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getY()  , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0),
-        () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getX(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0),
-        () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getY(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0),
-        povDRot
+        () -> povDRot
       )));
+
   }
 
   public void Periodic(){
@@ -278,13 +301,15 @@ public class RobotContainer {
     } else {
       povDRot = DriveConstants.presets.EAST_STATION.getRotation();
     }
-    //povURot = DriveConstants.presets.PROSSESOR.getRotation();
-    //if(drive.getPose().getTranslation().getY() > 4){
-    //  povRRot = DriveConstants.presets.WEST_STATION.getRotation();
-    //} else {
-    //  povRRot = DriveConstants.presets.EAST_STATION.getRotation();
-    //}
+    povURot = DriveConstants.presets.PROSSESOR.getRotation();
 
+    //flip if on red side
+    if(DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red){
+      povURot = povURot.rotateBy(Rotation2d.k180deg);
+      povDRot = povDRot.rotateBy(Rotation2d.k180deg);
+      povLRot = povLRot.rotateBy(Rotation2d.k180deg);
+      povRRot = povRRot.rotateBy(Rotation2d.k180deg);
+    }
   }
   public void SimPeriodic(){
     Logger.recordOutput("simulatedVoltage", BatteryVoltageSim.getInstance().calculateVoltage());

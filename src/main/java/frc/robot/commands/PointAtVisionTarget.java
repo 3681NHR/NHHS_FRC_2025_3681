@@ -1,32 +1,39 @@
 package frc.robot.commands;
 
 import java.util.Optional;
-import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.Constants;
+import frc.robot.constants.DriveConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.swerve.Drive;
 import frc.robot.subsystems.vision.Vision;
 import frc.utils.ExtraMath;
+import frc.utils.Joystick.duelJoystickAxis;
 
 public class PointAtVisionTarget extends Command {
 
   Drive drive;
   Vision  vision;
 
-  DoubleSupplier tx;
-  DoubleSupplier ty;
-  DoubleSupplier rx;
-  DoubleSupplier ry;
+  duelJoystickAxis sticks;
 
   int tagID = -1;
 
-  PIDController pid = new PIDController(VisionConstants.ANGLE_P, 0, VisionConstants.ANGLE_D);
+  ProfiledPIDController pid = new ProfiledPIDController(
+    RobotBase.isReal() ? VisionConstants.ANGLE_P : VisionConstants.ANGLE_SIM_P, 
+    0, 
+    RobotBase.isReal() ? VisionConstants.ANGLE_D : VisionConstants.ANGLE_SIM_D,
+    new TrapezoidProfile.Constraints(Units.radiansToDegrees(DriveConstants.ANGLE_MAX_VELOCITY), Units.radiansToDegrees(DriveConstants.ANGLE_MAX_ACCELERATION))
+  );
 
   Optional<Double> yaw;
 
@@ -39,14 +46,11 @@ public class PointAtVisionTarget extends Command {
    * @param ry
    * @param angle
    */
-  public PointAtVisionTarget(Drive drive, DoubleSupplier tx, DoubleSupplier ty, DoubleSupplier rx, DoubleSupplier ry, Vision vision, int tagID) {
+  public PointAtVisionTarget(duelJoystickAxis sticks, Drive drive, Vision vision, int tagID) {
     this.drive = drive;
     this.vision = vision;
-    this.tx = tx;
-    this.ty = ty;
-    this.rx = rx;
-    this.ry = ry;
     this.tagID = tagID;
+    this.sticks = sticks;
     addRequirements(drive);
     addRequirements(vision);
   }
@@ -54,7 +58,6 @@ public class PointAtVisionTarget extends Command {
 
   @Override
   public void initialize() {
-    
   }
 
 
@@ -62,11 +65,13 @@ public class PointAtVisionTarget extends Command {
   public void execute() {
     yaw = vision.getYaw(tagID);
 
+    yaw = Optional.of(yaw.isPresent() ? yaw.get() : 5);
+
     if(yaw.isPresent()){
       Logger.recordOutput("Drive/yawToVisionTarget", yaw.get());
     }
 
-    DriveCommands.joystickDriveFunc(drive, tx, ty, () -> MathUtil.clamp(pid.calculate(yaw.isPresent() ? yaw.get() : 0, 0), -1, 1));
+    DriveCommands.joystickDriveFunc(drive, sticks.ly, sticks.lx, () -> MathUtil.clamp(pid.calculate(yaw.get(), 0), -1, 1));
   }
 
   @Override
@@ -75,6 +80,6 @@ public class PointAtVisionTarget extends Command {
 
   @Override
   public boolean isFinished() {
-    return ExtraMath.getMagnitude(rx.getAsDouble(), ry.getAsDouble()) < Constants.OperatorConstants.ANGLE_DEADBAND;
+    return ExtraMath.getMagnitude(sticks.rx.getAsDouble(), sticks.ry.getAsDouble()) > Constants.OperatorConstants.ANGLE_DEADBAND;
   }
 }

@@ -31,10 +31,12 @@ import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage; 
 
 public class DriveConstants {
-    public static final double ANGLE_P = 0.4;
+    public static final double ANGLE_P = 0.25;
     public static final double ANGLE_D = 0.01;
-    public static final double ANGLE_MAX_VELOCITY = Math.PI*2*100;
-    public static final double ANGLE_MAX_ACCELERATION = ANGLE_MAX_VELOCITY*100;//1/10 sec to full speed
+    public static final double ANGLE_SIM_P = 0.25;
+    public static final double ANGLE_SIM_D = 0.01;
+    public static final double ANGLE_MAX_VELOCITY = 11.349369704658978;
+    public static final double ANGLE_MAX_ACCELERATION = ANGLE_MAX_VELOCITY*10;//1/10 sec to full speed
 
     public static boolean USE_VISION = true;
 
@@ -123,9 +125,9 @@ public class DriveConstants {
   public static final double TURN_MAX_POS = 2 * Math.PI; // Radians
 
   // PathPlanner configuration
-  public static final double MASS = 74.088;
-  public static final double MOI = 6.883;
-  public static final double COF = 1.2;
+  public static final double MASS = 74;
+  public static final double MOI = 6;
+  public static final double COF = 2.31421199;
   public static final RobotConfig PP_CONFIG =
       new RobotConfig(
           MASS,

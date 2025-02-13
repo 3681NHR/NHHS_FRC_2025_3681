@@ -30,16 +30,16 @@ public class TimerHandler {
     }
     public static void init(){
         Logger.recordOutput("time/upTime", 0.0);
-        Logger.recordOutput("time/RemainingTime", 0);
+        Logger.recordOutput("time/RemainingTime", 0.0);
 
-        Logger.recordOutput("time/auto/StartTime"    , 0);
-        Logger.recordOutput("time/auto/UpTime"       , 0);
-        Logger.recordOutput("time/auto/RemainingTime", 0);
+        Logger.recordOutput("time/auto/StartTime"    , 0.0);
+        Logger.recordOutput("time/auto/UpTime"       , 0.0);
+        Logger.recordOutput("time/auto/RemainingTime", 0.0);
         Logger.recordOutput("time/auto/TotalTime"    , Constants.AUTO_TIME);
         
-        Logger.recordOutput("time/teleop/StartTime"    , 0);
-        Logger.recordOutput("time/teleop/UpTime"       , 0);
-        Logger.recordOutput("time/teleop/RemainingTime", 0);
+        Logger.recordOutput("time/teleop/StartTime"    , 0.0);
+        Logger.recordOutput("time/teleop/UpTime"       , 0.0);
+        Logger.recordOutput("time/teleop/RemainingTime", 0.0);
         Logger.recordOutput("time/teleop/TotalTime"    , Constants.TELEOP_TIME);
     }
     public static void update(){

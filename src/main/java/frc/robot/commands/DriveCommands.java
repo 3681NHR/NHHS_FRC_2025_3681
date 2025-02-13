@@ -9,12 +9,15 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.constants.Constants;
+import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.swerve.Drive;
 import frc.utils.ExtraMath;
 import frc.utils.Joystick;
+import frc.utils.Joystick.duelJoystickAxis;
 
 import static frc.robot.constants.DriveConstants.*;
 
@@ -109,9 +112,9 @@ public class DriveCommands {
     // Create PID controller
     ProfiledPIDController angleController =
         new ProfiledPIDController(
-            ANGLE_P,
+        RobotBase.isReal() ? ANGLE_P : ANGLE_SIM_P, 
             0.0,
-            ANGLE_D,
+            RobotBase.isReal() ? ANGLE_D : ANGLE_SIM_D, 
             new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
     
     angleController.reset(drive.getRotation().getRadians());
@@ -126,22 +129,22 @@ public class DriveCommands {
     joystickDriveFunc(drive, xSupplier, ySupplier, () -> omega);
   }
   
-  public static Command driveCommand(DoubleSupplier tx, DoubleSupplier ty, DoubleSupplier rx, DoubleSupplier ry, BooleanSupplier direct, BooleanSupplier fod, Drive drive){
+  public static Command driveCommand(duelJoystickAxis sticks, BooleanSupplier direct, BooleanSupplier fod, Drive drive){
     return Commands.run(() -> {
         if(fod.getAsBoolean()){
             if(direct.getAsBoolean()){
-                joystickDriveAtAngleFunc(drive, ty, tx, () -> ExtraMath.getAngle(//use angle deadzone if in D/A
-                    Joystick.deadzone(Constants.OperatorConstants.ANGLE_DEADBAND,  ry.getAsDouble(), rx.getAsDouble()).getX(), 
-                    Joystick.deadzone(Constants.OperatorConstants.ANGLE_DEADBAND,  ry.getAsDouble(), rx.getAsDouble()).getY()
+                joystickDriveAtAngleFunc(drive, sticks.ly, sticks.lx, () -> ExtraMath.getAngle(//use angle deadzone if in D/A
+                    Joystick.deadzone(Constants.OperatorConstants.ANGLE_DEADBAND,  sticks.ry.getAsDouble(), sticks.rx.getAsDouble()).getX(), 
+                    Joystick.deadzone(Constants.OperatorConstants.ANGLE_DEADBAND,  sticks.ry.getAsDouble(), sticks.rx.getAsDouble()).getY()
                 ));
             } else {
-                joystickDriveFunc(drive, ty, tx, rx);
+                joystickDriveFunc(drive, sticks.ly, sticks.lx, sticks.rx);
             }
         } else {
                 drive.runVelocity(new ChassisSpeeds(
-                    ty.getAsDouble()*drive.getMaxLinearSpeedMetersPerSec(), 
-                    tx.getAsDouble()*drive.getMaxLinearSpeedMetersPerSec(), 
-                    rx.getAsDouble()*drive.getMaxAngularSpeedRadPerSec()
+                    sticks.ly.getAsDouble()*drive.getMaxLinearSpeedMetersPerSec(), 
+                    sticks.lx.getAsDouble()*drive.getMaxLinearSpeedMetersPerSec(), 
+                    sticks.rx.getAsDouble()*drive.getMaxAngularSpeedRadPerSec()
                 ));
         }
     }, drive);
