@@ -13,6 +13,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.VisionConstants;
+import frc.robot.subsystems.vision.CameraIO.TargetObservation;
+
 import static frc.robot.constants.VisionConstants.*;
 
 import java.util.LinkedList;
@@ -247,9 +249,9 @@ public class Vision extends SubsystemBase {
       }
     } else {
       for(int i=0; i<inputs.length; i++){
-        for(PhotonTrackedTarget t : inputs[i].targets){
-          if(t.fiducialId == tagID){
-            yaw = Optional.of(t.getYaw() + io[i].getRobotToCamera().getRotation().getZ());
+        for(TargetObservation t : inputs[i].targets){//FIXME
+          if(t.ID() == tagID){
+            yaw = Optional.of(t.tx().getRadians() + io[i].getRobotToCamera().getRotation().getZ());
           }
         }
       }

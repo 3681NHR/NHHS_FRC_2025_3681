@@ -231,7 +231,7 @@ public class RobotContainer {
         rumbler.overrideQue(new Rumble(.1, 0.25));
       }, drive).repeatedly());
 
-      trackTag.whileTrue(Commands.runOnce(() -> {rumbler.overrideQue(new Rumble(.1, 0.25));}, drive).repeatedly().alongWith(new PointAtVisionTarget(
+      trackTag.whileTrue(Commands.runOnce(() -> {rumbler.overrideQue(new Rumble(.1, 0.25));}).repeatedly().alongWith(new PointAtVisionTarget(
         drive,
         () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getX()  , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0),
         () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getY()  , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0),

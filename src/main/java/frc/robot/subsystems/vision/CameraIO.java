@@ -13,12 +13,12 @@ public interface CameraIO {
     public boolean connected = false;
     public PoseObservation[] poseObservations = new PoseObservation[0];
     public int[] tagIds = new int[0];
-    public TargetObservation latestTargetObservation = new TargetObservation(new Rotation2d(), new Rotation2d());
-    public PhotonTrackedTarget[] targets;
+    public TargetObservation latestTargetObservation = new TargetObservation(new Rotation2d(), new Rotation2d(), -1);
+    public TargetObservation[] targets;
   }
 
   /** Represents the angle to a simple target, not used for pose estimation. */
-  public static record TargetObservation(Rotation2d tx, Rotation2d ty) {}
+  public static record TargetObservation(Rotation2d tx, Rotation2d ty, int ID) {}
 
   /** Represents a robot pose sample used for pose estimation. */
   public static record PoseObservation(

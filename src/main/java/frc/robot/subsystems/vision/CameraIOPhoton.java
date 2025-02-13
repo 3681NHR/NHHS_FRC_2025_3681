@@ -49,9 +49,14 @@ public class CameraIOPhoton implements CameraIO {
             getAvgDistance(result)
             ));
             inputs.tagIds = estimate.get().targetsUsed.stream().mapToInt(t -> t.fiducialId).toArray();
-            inputs.latestTargetObservation = new TargetObservation(new Rotation2d(result.getBestTarget().getYaw()), new Rotation2d(result.getBestTarget().getPitch()));
+            inputs.latestTargetObservation = new TargetObservation(new Rotation2d(result.getBestTarget().getYaw()), new Rotation2d(result.getBestTarget().getPitch()), result.getBestTarget().fiducialId);
 
-            inputs.targets = result.targets.toArray(new PhotonTrackedTarget[0]);
+            inputs.targets = result.targets.stream().map(t -> 
+              new TargetObservation(
+                new Rotation2d(t.getYaw()), 
+                new Rotation2d(t.getPitch()), 
+                t.fiducialId)
+            ).toArray(TargetObservation[]::new);
           }
 
         
