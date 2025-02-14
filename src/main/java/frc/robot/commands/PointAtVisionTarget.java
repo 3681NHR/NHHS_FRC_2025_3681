@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import java.util.Optional;
+import java.util.function.IntSupplier;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -26,7 +27,7 @@ public class PointAtVisionTarget extends Command {
 
   duelJoystickAxis sticks;
 
-  int tagID = -1;
+  IntSupplier tagID = () ->-1;
 
   ProfiledPIDController pid = new ProfiledPIDController(
     RobotBase.isReal() ? VisionConstants.ANGLE_P : VisionConstants.ANGLE_SIM_P, 
@@ -46,7 +47,7 @@ public class PointAtVisionTarget extends Command {
    * @param ry
    * @param angle
    */
-  public PointAtVisionTarget(duelJoystickAxis sticks, Drive drive, Vision vision, int tagID) {
+  public PointAtVisionTarget(duelJoystickAxis sticks, Drive drive, Vision vision, IntSupplier tagID) {
     this.drive = drive;
     this.vision = vision;
     this.tagID = tagID;
@@ -63,7 +64,7 @@ public class PointAtVisionTarget extends Command {
 
   @Override
   public void execute() {
-    yaw = vision.getYaw(tagID);
+    yaw = vision.getYaw(tagID.getAsInt());
 
     yaw = Optional.of(yaw.isPresent() ? yaw.get() : 5);
 
@@ -71,7 +72,7 @@ public class PointAtVisionTarget extends Command {
       Logger.recordOutput("Drive/yawToVisionTarget", yaw.get());
     }
 
-    DriveCommands.joystickDriveFunc(drive, sticks.ly, sticks.lx, () -> MathUtil.clamp(pid.calculate(yaw.get(), 0), -1, 1));
+    DriveCommands.joystickDriveFunc(drive, sticks.ly, sticks.lx, () -> pid.calculate(yaw.get(), 0));
   }
 
   @Override

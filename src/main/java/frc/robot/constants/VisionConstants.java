@@ -60,9 +60,9 @@ public class VisionConstants {
 
   public static final FilterStrategy POSE_FILTER = FilterStrategy.MEDIAN;
 
-  public static final double ANGLE_P = 0.01;
+  public static final double ANGLE_P = 0.001;
   public static final double ANGLE_D = 0.001;
 
-  public static final double ANGLE_SIM_P = 0.01;
+  public static final double ANGLE_SIM_P = 0.001;
   public static final double ANGLE_SIM_D = 0.001;
 }

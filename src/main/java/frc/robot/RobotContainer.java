@@ -41,6 +41,7 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
@@ -99,6 +100,7 @@ public class RobotContainer {
   private Rotation2d povURot = new Rotation2d();
 
   private LoggedNetworkBoolean useVisionOdometry = new LoggedNetworkBoolean("overrides/useVisionOdometry", DriveConstants.USE_VISION);
+  private LoggedNetworkNumber trackID = new LoggedNetworkNumber("apriltag to track", 3);
 
   private RumbleHandler rumbler = new RumbleHandler(driverController);
 
@@ -258,7 +260,7 @@ public class RobotContainer {
         driverSticks,
         drive,
         vision,
-        3
+        () -> (int) trackID.get()
       ));
 
       rstGyro.onTrue(Commands.runOnce(() -> {
