@@ -53,7 +53,7 @@ public class CameraIOPhotonSim extends CameraIOPhoton {
     cameraProperties.setFPS(100);
     cameraProperties.setAvgLatencyMs(10);
     cameraProperties.setLatencyStdDevMs(10);
-    cameraProperties.setCalibration(800, 600, Rotation2d.fromDegrees(100));
+    cameraProperties.setCalibration(800, 600, Rotation2d.fromDegrees(105));
     cameraProperties.setCalibError(.25, 0.08);
     cameraSim = new PhotonCameraSim(camera, cameraProperties);
     visionSim.addCamera(cameraSim, robotToCamera);
