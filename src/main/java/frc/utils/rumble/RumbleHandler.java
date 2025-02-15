@@ -66,7 +66,7 @@ public class RumbleHandler {
             Logger.recordOutput("haptics/rumble: "+port+"/que", getPows());
         } else {
             controller.setRumble(RumbleType.kBothRumble, 0);
-            Logger.recordOutput("haptics/rumble: "+port+"/currentStrength", 0);
+            Logger.recordOutput("haptics/rumble: "+port+"/currentStrength", 0.0);
             Logger.recordOutput("haptics/rumble: "+port+"/que", new double[0][0]);
         }
     } 

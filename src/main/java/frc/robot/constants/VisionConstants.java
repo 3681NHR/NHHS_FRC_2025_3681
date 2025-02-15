@@ -32,12 +32,12 @@ public class VisionConstants {
   // (Not used by Limelight, configure in web UI instead)
   public static Transform3d CAMERA_0_ROBOT_TO_CAM =
         new Transform3d(
-            Units.inchesToMeters(0), 
-            Units.inchesToMeters(0), 
+            Units.inchesToMeters(-5), 
+            Units.inchesToMeters(9), 
             Units.inchesToMeters(6), 
         new Rotation3d(
             Units.degreesToRadians(0),
-            Units.degreesToRadians(-30),
+            Units.degreesToRadians(-35),
             Units.degreesToRadians(90)
         )
     );
@@ -48,8 +48,8 @@ public class VisionConstants {
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)
-  public static double LIN_STD_DEV_BASELINE = 0.05; // Meters
-  public static double ANG_STD_DEV_BASELINE = 0.25; // Radians
+  public static double LIN_STD_DEV_BASELINE = 0.006; // Meters
+  public static double ANG_STD_DEV_BASELINE = 0.0023; // Radians
 
   // Standard deviation multipliers for each camera
   // (Adjust to trust some cameras more than others)
