@@ -57,7 +57,12 @@ public class CameraIOPhoton implements CameraIO {
                 new Rotation2d(t.getPitch()), 
                 t.fiducialId)
             ).toArray(TargetObservation[]::new);
-          }
+        } else {
+          inputs.targets = new TargetObservation[0];
+          inputs.tagIds = new int[0];
+
+
+        }
 
         
       }

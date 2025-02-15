@@ -350,7 +350,6 @@ public class Drive extends SubsystemBase {
   }
 
   public void resetGyro(double headingRad){
-    gyroIO.reset(headingRad);
     poseEstimator.resetPose(new Pose2d(getPose().getX(), getPose().getY(), new Rotation2d(headingRad)));
   }
 }
