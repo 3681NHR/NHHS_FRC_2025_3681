@@ -24,7 +24,7 @@ public final class Constants {
     SIM,
     REPLAY
   }
-  public static RobotMode SIM_MODE = RobotMode.REPLAY;
+  public static RobotMode SIM_MODE = RobotMode.SIM;
   public static RobotMode MODE = RobotBase.isReal() ? RobotMode.REAL : SIM_MODE;
 
   public static final double AUTO_TIME = 15;
@@ -45,13 +45,17 @@ public final class Constants {
     public static final double ANGLE_DEADBAND = 0.5;
     
     //Curvature (rotation curve only applies when using anguler velocity)
-    public static final double TRANSLATION_CURVE = 2;
-    public static final double ROTATION_CURVE = 2;
-    
-    public static final Rotation2d DPAD_UP_ANGLE    =  Rotation2d.fromDegrees(0);//rotation setpoint for dpad up button
-    public static final Rotation2d DPAD_DOWN_ANGLE  =  Rotation2d.fromDegrees(180);//rotation setpoint for dpad down button
-    public static final Rotation2d DPAD_LEFT_ANGLE  =  Rotation2d.fromDegrees(90);//rotation setpoint for dpad left button
-    public static final Rotation2d DPAD_RIGHT_ANGLE =  Rotation2d.fromDegrees(270);//rotation setpoint for dpad right button
+    public static final double TRANSLATION_CURVE = 1.5;
+    public static final double ROTATION_CURVE = 1.5;
+
+    public static final Rotation2d[] REEF_ROTS = {
+      Rotation2d.fromDegrees(0),//closest to ds
+      Rotation2d.fromDegrees(60),//cw
+      Rotation2d.fromDegrees(120),//cw
+      Rotation2d.fromDegrees(180),//cw
+      Rotation2d.fromDegrees(240),//cw
+      Rotation2d.fromDegrees(300),//cw
+    };
 
     //usb port of driver controller, remember to assign controller to port in driverstation
     public static final int DRIVER_CONTROLLER_PORT = 0;

@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -10,6 +11,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.constants.Constants;
@@ -25,7 +27,27 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
+import org.littletonrobotics.junction.Logger;
+
 public class DriveCommands {
+
+    
+    // Create PID controller
+    static ProfiledPIDController angleController =
+        new ProfiledPIDController(
+        RobotBase.isReal() ? ANGLE_P : ANGLE_SIM_P, 
+            0.0,
+            RobotBase.isReal() ? ANGLE_D : ANGLE_SIM_D, 
+            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+
+    static SimpleMotorFeedforward ff = new SimpleMotorFeedforward(
+        0,
+        RobotBase.isReal() ? ANGLE_V : ANGLE_SIM_V,
+        RobotBase.isReal() ? ANGLE_A : ANGLE_SIM_A
+    );
+
+    static double rx = 0;
+    static double ry = 0;
 
   private DriveCommands() {}
 
@@ -75,12 +97,22 @@ public class DriveCommands {
     boolean isFlipped =
         DriverStation.getAlliance().isPresent()
             && DriverStation.getAlliance().get() == Alliance.Red;
-    drive.runVelocity(
-        ChassisSpeeds.fromFieldRelativeSpeeds(
-            speeds,
-            isFlipped
-                ? drive.getRotation().plus(new Rotation2d(Math.PI))
-                : drive.getRotation()));
+
+    ChassisSpeeds desiredChassisSpeeds = 
+    ChassisSpeeds.fromFieldRelativeSpeeds(
+        speeds,
+        isFlipped
+            ? drive.getRotation().plus(new Rotation2d(Math.PI))
+            : drive.getRotation());
+     //       Compensate for gyro drift by adjusting the target chassis speeds
+    var angularVelocity = new Rotation2d(drive.getAngulerVelocity() * ANGULAR_VELOCITY_COEFFICIENT);
+    if (angularVelocity.getRadians() != 0.0) {
+        desiredChassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+                desiredChassisSpeeds,
+                angularVelocity);
+    }
+
+    drive.runVelocity(desiredChassisSpeeds);
 
 }
   
@@ -100,7 +132,10 @@ public class DriveCommands {
             () -> {
                 joystickDriveAtAngleFunc(drive, xSupplier, ySupplier, rotationSupplier);
             },
-            drive);
+            drive).beforeStarting(() -> {
+                angleController.reset(drive.getRotation().getRadians());
+                angleController.enableContinuousInput(-Math.PI, Math.PI);
+            }, drive);
   }
 
   public static void joystickDriveAtAngleFunc(
@@ -109,22 +144,11 @@ public class DriveCommands {
       DoubleSupplier ySupplier,
       Supplier<Rotation2d> rotationSupplier) {
 
-    // Create PID controller
-    ProfiledPIDController angleController =
-        new ProfiledPIDController(
-        RobotBase.isReal() ? ANGLE_P : ANGLE_SIM_P, 
-            0.0,
-            RobotBase.isReal() ? ANGLE_D : ANGLE_SIM_D, 
-            new TrapezoidProfile.Constraints(ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
-    
-    angleController.reset(drive.getRotation().getRadians());
-
-    angleController.enableContinuousInput(0, 2*Math.PI);
-    
     // Calculate angular speed
     double omega =
         angleController.calculate(
-            drive.getRotation().getRadians(), rotationSupplier.get().getRadians());
+            drive.getRotation().getRadians(), rotationSupplier.get().rotateBy(DriverStation.getAlliance().isPresent()&& DriverStation.getAlliance().get() == Alliance.Red ? Rotation2d.k180deg : new Rotation2d()).getRadians()) + 
+            ff.calculate(angleController.getSetpoint().velocity);
     
     joystickDriveFunc(drive, xSupplier, ySupplier, () -> omega);
   }
@@ -133,9 +157,14 @@ public class DriveCommands {
     return Commands.run(() -> {
         if(fod.getAsBoolean()){
             if(direct.getAsBoolean()){
+                if(Joystick.deadzone(Constants.OperatorConstants.ANGLE_DEADBAND,  sticks.ry.getAsDouble(), sticks.rx.getAsDouble()).getX() != 0){
+                    rx = sticks.rx.getAsDouble();
+                    ry = sticks.ry.getAsDouble();
+                }
+
                 joystickDriveAtAngleFunc(drive, sticks.ly, sticks.lx, () -> ExtraMath.getAngle(//use angle deadzone if in D/A
-                    Joystick.deadzone(Constants.OperatorConstants.ANGLE_DEADBAND,  sticks.ry.getAsDouble(), sticks.rx.getAsDouble()).getX(), 
-                    Joystick.deadzone(Constants.OperatorConstants.ANGLE_DEADBAND,  sticks.ry.getAsDouble(), sticks.rx.getAsDouble()).getY()
+                    Joystick.deadzone(Constants.OperatorConstants.ANGLE_DEADBAND,  ry, rx).getX(), 
+                    Joystick.deadzone(Constants.OperatorConstants.ANGLE_DEADBAND,  ry, rx).getY()
                 ));
             } else {
                 joystickDriveFunc(drive, sticks.ly, sticks.lx, sticks.rx);
@@ -147,6 +176,12 @@ public class DriveCommands {
                     sticks.rx.getAsDouble()*drive.getMaxAngularSpeedRadPerSec()
                 ));
         }
+    }, drive).beforeStarting(() -> {
+        rx = sticks.rx.getAsDouble();
+        ry = sticks.ry.getAsDouble();
+
+        angleController.reset(drive.getRotation().getRadians());
+        angleController.enableContinuousInput(-Math.PI, Math.PI);
     }, drive);
 
   }

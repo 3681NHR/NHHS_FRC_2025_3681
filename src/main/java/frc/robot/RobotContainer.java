@@ -80,9 +80,21 @@ public class RobotContainer {
 
   private Trigger lockPose;
   private Trigger rstGyro;
-  private Trigger trackTag;
   private Trigger toggleFOD;
   private Trigger toggleDA;
+  private Trigger autoAimReef;
+  private Trigger autoAimStation;
+  private Trigger autoAimFar;//barge or prosseser
+
+  private Trigger reefAimUp;
+  private Trigger reefAimDown;
+
+  private int reefIndex = 0;
+  private int stationIndex = 0;
+  private int farIndex = 0;
+  private Rotation2d reefAngle = Constants.OperatorConstants.REEF_ROTS[0];
+  private Rotation2d stationAngle = new Rotation2d();
+  private Rotation2d farAngle = new Rotation2d();
 
   private DoubleSupplier lx;
   private DoubleSupplier ly;
@@ -93,11 +105,6 @@ public class RobotContainer {
 
   private DoubleSupplier leftTrigger;
   private DoubleSupplier rightTrigger;
-  
-  private Rotation2d povDRot = new Rotation2d();
-  private Rotation2d povRRot = new Rotation2d();
-  private Rotation2d povLRot = new Rotation2d();
-  private Rotation2d povURot = new Rotation2d();
 
   private LoggedNetworkBoolean useVisionOdometry = new LoggedNetworkBoolean("overrides/useVisionOdometry", DriveConstants.USE_VISION);
   private LoggedNetworkNumber trackID = new LoggedNetworkNumber("apriltag to track", 3);
@@ -239,55 +246,72 @@ public class RobotContainer {
     if(RobotBase.isReal()){
       lockPose = new Trigger(driverController::getXButton);
       rstGyro = new Trigger(driverController::getAButton);
-      trackTag = new Trigger(driverController::getYButton);
+      autoAimReef = new Trigger(driverController::getYButton);
       toggleFOD = new Trigger(driverController::getLeftStickButton);
       toggleDA = new Trigger(driverController::getRightStickButton);
     } else {
       lockPose = new Trigger(() -> driverController.getRawButton(X));
       rstGyro = new Trigger(() -> driverController.getRawButton(A));
-      trackTag = new Trigger(() -> driverController.getRawButton(Y));
+      autoAimReef = new Trigger(() -> driverController.getRawButton(Y));
       toggleFOD = new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON));
       toggleDA = new Trigger(() -> driverController.getRawButton(RIGHT_STICK_BUTTON));
 
     }
+    autoAimStation = new Trigger(() -> driverController.getPOV() == 180);
+    autoAimFar = new Trigger(() -> driverController.getPOV() == 0);
+
+    reefAimUp = new Trigger(() -> driverController.getPOV() == 90);
+    reefAimDown = new Trigger(() -> driverController.getPOV() == 270);
       
-      lockPose.whileTrue(Commands.runOnce(() -> {
-        drive.stopWithX();
-        rumbler.overrideQue(new Rumble(.1, 0.25));
-      }, drive).repeatedly());
+    lockPose.whileTrue(Commands.runOnce(() -> {
+      drive.stopWithX();
+      rumbler.overrideQue(new Rumble(.1, 0.25));
+    }, drive).repeatedly());
 
-      trackTag.whileTrue(new PointAtVisionTarget(
-        driverSticks,
-        drive,
-        vision,
-        () -> (int) trackID.get()
-      ));
+    rstGyro.onTrue(Commands.runOnce(() -> {
+      drive.resetGyro(0);
+      rumbler.overrideQue(RumblePreset.TAP.load());
+    }));
 
-      rstGyro.onTrue(Commands.runOnce(() -> {
-        drive.resetGyro(0);
-        rumbler.overrideQue(RumblePreset.TAP.load());
-      }));
+    toggleFOD.onTrue(Commands.runOnce(() -> {
+    this.fod = !this.fod;
+    }));
 
-      toggleFOD.onTrue(Commands.runOnce(() -> {
-        this.fod = !this.fod;
-      }));
-      toggleDA.onTrue(Commands.runOnce(() -> {
-        this.directAngle = !this.directAngle;
-      }));
+    toggleDA.onTrue(Commands.runOnce(() -> {
+      this.directAngle = !this.directAngle;
+    }));
 
-      new Trigger(() -> TimerHandler.getTeleopRemaining()<Constants.ENDGAME_TIME).onTrue(Commands.runOnce(() -> {
-        rumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());
-      }));
+    new Trigger(() -> TimerHandler.getTeleopRemaining()<Constants.ENDGAME_TIME).onTrue(Commands.runOnce(() -> {
+      rumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());
+    }));
+    
+    autoAimStation.onTrue(Commands.runOnce(() -> {
+      rumbler.overrideQue(RumblePreset.TAP.load());
+    }).alongWith(new AnglePresetDriveCommand(
+      driverSticks,
+      drive,
+      () -> stationAngle
+    )));
 
-      //pov down
-      new Trigger(() -> driverController.getPOV() == 180).onTrue(Commands.runOnce(() -> {
-        rumbler.overrideQue(RumblePreset.TAP.load());
-      }).alongWith(new AnglePresetDriveCommand(
-        driverSticks,
-        drive,
-        () -> povDRot
-      )));
+    autoAimReef.onTrue(new AnglePresetDriveCommand(driverSticks, drive, () -> reefAngle));
+    
+    autoAimFar.onTrue(Commands.runOnce(() -> {
+      farIndex++;
+      farIndex = farIndex % 2;
+    }));
+    autoAimFar.onTrue(new AnglePresetDriveCommand(driverSticks, drive, () -> farAngle));
 
+    reefAimUp.onTrue(Commands.runOnce(() -> {
+      reefIndex++;
+      reefIndex = reefIndex % Constants.OperatorConstants.REEF_ROTS.length;
+    }));
+    reefAimDown.onTrue(Commands.runOnce(() -> {
+      reefIndex--;
+      reefIndex = reefIndex % Constants.OperatorConstants.REEF_ROTS.length;
+      if(reefIndex < 0){
+        reefIndex = Constants.OperatorConstants.REEF_ROTS.length-1;
+      }
+    }));
   }
 
   public void Periodic(){
@@ -298,20 +322,30 @@ public class RobotContainer {
 
     rumbler.update(0.02);
 
-    if(drive.getPose().getTranslation().getY() > 4){
-      povDRot = DriveConstants.presets.WEST_STATION.getRotation();
+    if(DriverStation.getAlliance().isPresent()){
+      if(DriverStation.getAlliance().get() == Alliance.Red){
+        if(drive.getPose().getTranslation().getY() > 4){
+          stationAngle = DriveConstants.presets.EAST_STATION.getRotation();
+        } else {
+          stationAngle = DriveConstants.presets.WEST_STATION.getRotation();
+        }
+      } else {
+        if(drive.getPose().getTranslation().getY() > 4){
+          stationAngle = DriveConstants.presets.WEST_STATION.getRotation();
+        } else {
+          stationAngle = DriveConstants.presets.EAST_STATION.getRotation();
+        }
+      }
+    }
+    reefAngle = Constants.OperatorConstants.REEF_ROTS[reefIndex];
+    Logger.recordOutput("reefindex", reefIndex);
+    if(farIndex == 1){
+      farAngle = DriveConstants.presets.PROSSESOR.getRotation();
     } else {
-      povDRot = DriveConstants.presets.EAST_STATION.getRotation();
+      farAngle = DriveConstants.presets.CLIMB;
     }
-    povURot = DriveConstants.presets.PROSSESOR.getRotation();
+    Logger.recordOutput("farIndex", farIndex);
 
-    //flip if on red side
-    if(DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red){
-      povURot = povURot.rotateBy(Rotation2d.k180deg);
-      povDRot = povDRot.rotateBy(Rotation2d.k180deg);
-      povLRot = povLRot.rotateBy(Rotation2d.k180deg);
-      povRRot = povRRot.rotateBy(Rotation2d.k180deg);
-    }
   }
   public void SimPeriodic(){
     Logger.recordOutput("simulatedVoltage", BatteryVoltageSim.getInstance().calculateVoltage());

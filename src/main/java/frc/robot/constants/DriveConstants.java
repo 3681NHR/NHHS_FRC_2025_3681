@@ -33,10 +33,14 @@ import edu.wpi.first.units.measure.Voltage;
 public class DriveConstants {
     public static final double ANGLE_P = 0.25;
     public static final double ANGLE_D = 0.01;
-    public static final double ANGLE_SIM_P = 0.25;
-    public static final double ANGLE_SIM_D = 0.01;
-    public static final double ANGLE_MAX_VELOCITY = 11.349369704658978;
-    public static final double ANGLE_MAX_ACCELERATION = ANGLE_MAX_VELOCITY*10;//1/10 sec to full speed
+    public static final double ANGLE_V = 0.0;
+    public static final double ANGLE_A = 0.0;
+    public static final double ANGLE_SIM_P = 0.2;
+    public static final double ANGLE_SIM_D = 0.1;
+    public static final double ANGLE_SIM_V = 0.085;
+    public static final double ANGLE_SIM_A = 0.04;
+    public static final double ANGLE_MAX_VELOCITY = 11;
+    public static final double ANGLE_MAX_ACCELERATION = ANGLE_MAX_VELOCITY*2;//1/10 sec to full speed
 
     public static boolean USE_VISION = true;
 
@@ -151,9 +155,12 @@ public class DriveConstants {
     public static final Velocity<VoltageUnit> TURN_SYSID_VRAMP = Volts.of(.5).per(Second);
     public static final Time TURN_SYSID_TIMEOUT = Seconds.of(10);
 
+    public static final double ANGULAR_VELOCITY_COEFFICIENT = 0.1;
+
     public static class presets{
-        public static final Pose2d EAST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(270));
-        public static final Pose2d WEST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90));
-        public static final Pose2d PROSSESOR = new Pose2d();
+        public static final Rotation2d CLIMB = Rotation2d.fromDegrees(0);
+        public static final Pose2d WEST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(30));
+        public static final Pose2d EAST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(142));
+        public static final Pose2d PROSSESOR = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(270));
     }
 }

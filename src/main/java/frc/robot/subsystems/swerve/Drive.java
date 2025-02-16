@@ -352,4 +352,8 @@ public class Drive extends SubsystemBase {
   public void resetGyro(double headingRad){
     poseEstimator.resetPose(new Pose2d(getPose().getX(), getPose().getY(), new Rotation2d(headingRad)));
   }
+
+  public double getAngulerVelocity(){
+    return gyroInputs.yawVelocityRadPerSec;
+  }
 }
