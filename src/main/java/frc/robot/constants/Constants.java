@@ -24,7 +24,7 @@ public final class Constants {
     SIM,
     REPLAY
   }
-  public static RobotMode SIM_MODE = RobotMode.SIM;
+  public static RobotMode SIM_MODE = RobotMode.REPLAY;
   public static RobotMode MODE = RobotBase.isReal() ? RobotMode.REAL : SIM_MODE;
 
   public static final double AUTO_TIME = 15;
