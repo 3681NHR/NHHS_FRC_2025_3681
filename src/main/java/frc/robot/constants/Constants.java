@@ -49,12 +49,12 @@ public final class Constants {
     public static final double ROTATION_CURVE = 1.5;
 
     public static final Rotation2d[] REEF_ROTS = {
-      Rotation2d.fromDegrees(0),//closest to ds
-      Rotation2d.fromDegrees(60),//cw
-      Rotation2d.fromDegrees(120),//cw
-      Rotation2d.fromDegrees(180),//cw
-      Rotation2d.fromDegrees(240),//cw
-      Rotation2d.fromDegrees(300),//cw
+      Rotation2d.fromDegrees(270),//closest to ds
+      Rotation2d.fromDegrees(330),//cw
+      Rotation2d.fromDegrees(30),//cw
+      Rotation2d.fromDegrees(90),//cw
+      Rotation2d.fromDegrees(150),//cw
+      Rotation2d.fromDegrees(210),//cw
     };
 
     //usb port of driver controller, remember to assign controller to port in driverstation

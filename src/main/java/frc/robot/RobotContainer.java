@@ -249,15 +249,15 @@ public class RobotContainer {
       autoAimReef = new Trigger(driverController::getYButton);
       toggleFOD = new Trigger(driverController::getLeftStickButton);
       toggleDA = new Trigger(driverController::getRightStickButton);
+      autoAimStation = new Trigger(driverController::getBButton);
     } else {
       lockPose = new Trigger(() -> driverController.getRawButton(X));
       rstGyro = new Trigger(() -> driverController.getRawButton(A));
       autoAimReef = new Trigger(() -> driverController.getRawButton(Y));
       toggleFOD = new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON));
       toggleDA = new Trigger(() -> driverController.getRawButton(RIGHT_STICK_BUTTON));
-
+      autoAimStation = new Trigger(() -> driverController.getRawButton(B));
     }
-    autoAimStation = new Trigger(() -> driverController.getPOV() == 180);
     autoAimFar = new Trigger(() -> driverController.getPOV() == 0);
 
     reefAimUp = new Trigger(() -> driverController.getPOV() == 90);
