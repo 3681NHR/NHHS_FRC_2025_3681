@@ -149,6 +149,9 @@ public class DriveCommands {
         angleController.calculate(
             drive.getRotation().getRadians(), rotationSupplier.get().rotateBy(DriverStation.getAlliance().isPresent()&& DriverStation.getAlliance().get() == Alliance.Red ? Rotation2d.k180deg : new Rotation2d()).getRadians()) + 
             ff.calculate(angleController.getSetpoint().velocity);
+
+    Logger.recordOutput("angletarget", angleController.getGoal().position);
+    Logger.recordOutput("angleset", angleController.getSetpoint().position);
     
     joystickDriveFunc(drive, xSupplier, ySupplier, () -> omega);
   }

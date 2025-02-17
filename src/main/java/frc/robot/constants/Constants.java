@@ -24,11 +24,11 @@ public final class Constants {
     SIM,
     REPLAY
   }
-  public static RobotMode SIM_MODE = RobotMode.SIM;
+  public static RobotMode SIM_MODE = RobotMode.REPLAY;
   public static RobotMode MODE = RobotBase.isReal() ? RobotMode.REAL : SIM_MODE;
 
   public static final double AUTO_TIME = 15;
-  public static final double TELEOP_TIME = 130;//2:15
+  public static final double TELEOP_TIME = 150;//2:15
   public static final double ENDGAME_TIME = 20;//time remaining in teleop when endgame starts
 
   public static final Pose2d STARTING_POSE = new Pose2d(new Translation2d(2.3, 4), Rotation2d.fromDegrees(0));
