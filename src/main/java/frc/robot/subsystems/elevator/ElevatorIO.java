@@ -23,7 +23,7 @@ public interface ElevatorIO {
         public double motor1Voltage = 0;
         public double motor1TempC = 0;
 
-        public double motor2Current = 0;
+        public double motor2CurrentAmps = 0;
         public double motor2Voltage = 0;
         public double motor2TempC = 0;
 

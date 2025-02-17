@@ -19,8 +19,8 @@ public final class ElevatorConstants {
     public static final int ENCODER_ID_A = 0;
     public static final int ENCODER_ID_B = 1;
 
-    public static final boolean MOTOR_1_INVERT = false;
-    public static final boolean MOTOR_2_INVERT = false;
+    public static final boolean MOTOR_INVERT = false;
+    public static final boolean ENCODER_INVERT = false;
 
     public static final int CURRENT_LIM = 40;
 
