@@ -3,6 +3,7 @@ package frc.robot.subsystems.elevator;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
@@ -75,6 +76,8 @@ public class ElevatorIOSpark implements ElevatorIO {
     public void updateInputs(ElevatorIOInputs inputs) {
         vel = ((encoder.getDistance() + posOffset)-pos)/0.02;
         pos = encoder.getDistance() + posOffset;
+
+        //posSetpoint = MathUtil.clamp(posSetpoint, MIN_POS, MAX_POS);//FIXME
 
         double pidOut = pid.calculate(pos, posSetpoint);
         double ffOut = ff.calculate(pid.getSetpoint().velocity);
