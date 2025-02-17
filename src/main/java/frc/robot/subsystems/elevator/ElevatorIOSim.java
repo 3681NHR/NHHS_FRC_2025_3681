@@ -4,8 +4,10 @@ import frc.robot.subsystems.elevator.ElevatorIO.ElevatorIOInputs;
 
 public class ElevatorIOSim implements ElevatorIO{
 
+    
+
     public ElevatorIOSim(){
-        
+
     }
     
     public void updateInputs(ElevatorIOInputs inputs) {

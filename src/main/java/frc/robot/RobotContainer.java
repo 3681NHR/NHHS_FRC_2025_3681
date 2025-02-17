@@ -45,6 +45,7 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -285,13 +286,11 @@ public class RobotContainer {
       rumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());
     }));
     
-    autoAimStation.onTrue(Commands.runOnce(() -> {
-      rumbler.overrideQue(RumblePreset.TAP.load());
-    }).alongWith(new AnglePresetDriveCommand(
+    autoAimStation.onTrue(new AnglePresetDriveCommand(
       driverSticks,
       drive,
       () -> stationAngle
-    )));
+    ));
 
     autoAimReef.onTrue(new AnglePresetDriveCommand(driverSticks, drive, () -> reefAngle));
     
@@ -366,6 +365,9 @@ public class RobotContainer {
     return auto;
   }
 
+  public void resetDrivetrain(Pose2d pose){
+    driveSim.setSimulationWorldPose(pose);
+  }
   
   public boolean getFOD(){return fod;}
   public boolean getDirectAngle(){return directAngle;}
