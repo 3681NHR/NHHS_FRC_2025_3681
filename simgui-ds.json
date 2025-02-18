@@ -4,24 +4,19 @@
       "visible": true
     }
   },
-  "System Joysticks": {
-    "window": {
-      "enabled": false
-    }
-  },
   "keyboardJoysticks": [
     {
       "axisConfig": [
         {
-          "decKey": 87,
-          "decayRate": 1.0,
-          "incKey": 83,
-          "keyRate": 1.0
-        },
-        {
           "decKey": 65,
           "decayRate": 1.0,
           "incKey": 68,
+          "keyRate": 1.0
+        },
+        {
+          "decKey": 87,
+          "decayRate": 1.0,
+          "incKey": 83,
           "keyRate": 1.0
         },
         {
@@ -107,7 +102,8 @@
   ],
   "robotJoysticks": [
     {
-      "guid": "Keyboard0"
+      "guid": "78696e70757401000000000000000000",
+      "useGamepad": true
     },
     {
       "guid": "030000005e040000120b000001050000",

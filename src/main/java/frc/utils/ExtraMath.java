@@ -1,9 +1,19 @@
 package frc.utils;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 
 public final class ExtraMath {
     
+
+  public static Rotation2d getAngle(double u, double v) {
+    return new Rotation2d(Math.atan2(v, u));
+  }
+
+  public static double getMagnitude(double x, double y) {
+    return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+  }
+
   /**
    * process input value
    * 
@@ -41,5 +51,24 @@ public final class ExtraMath {
 
   public static double holdPositive(double in){
     return in<0 ? 0 : in;
+  }
+  public static class Derrivitive{
+
+    private double value;
+    private double oldValue;
+    public Derrivitive(double initMesure){
+      value = initMesure;
+      oldValue = initMesure;
+    }
+
+    public double calculate(double mesurement, double dt){
+      double out = (value-oldValue)/dt;
+      oldValue = value;
+      return out;
+    }
+    public void reset(double initMesure){
+      value = initMesure;
+      oldValue = initMesure;
+    }
   }
 }
