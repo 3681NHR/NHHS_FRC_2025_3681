@@ -36,7 +36,7 @@ public class AnglePresetDriveCommand extends Command {
 
   @Override
   public void initialize() {
-
+    DriveCommands.resetPid(drive);
   }
 
 

@@ -188,4 +188,8 @@ public class DriveCommands {
     }, drive);
 
   }
+
+  public static void resetPid(Drive drive){
+    angleController.reset(drive.getRotation().getRadians());
+  }
 }
