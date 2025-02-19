@@ -1,7 +1,10 @@
 package frc.robot.subsystems.elevator;
 
+import java.util.function.DoubleSupplier;
+
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.HomeElevator;
@@ -9,7 +12,7 @@ import frc.robot.commands.HomeElevator;
 public class Elevator extends SubsystemBase {
 
     private ElevatorIO io;
-    private ElevatorIOInputsAutoLogged inputs;
+    private ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
     private double pos = 0.0;
 
     private boolean homed = false;
@@ -58,5 +61,11 @@ public class Elevator extends SubsystemBase {
     }
     public void resetPos(double pos){
         io.resetposition(pos);
+    }
+
+    public Command man(DoubleSupplier change){
+        return run(() -> {
+            setTargetPos(pos + change.getAsDouble());
+        });
     }
 }

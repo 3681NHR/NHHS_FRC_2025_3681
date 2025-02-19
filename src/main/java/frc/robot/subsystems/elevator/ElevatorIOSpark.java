@@ -71,13 +71,16 @@ public class ElevatorIOSpark implements ElevatorIO {
     encoder.reset();
     encoder.setDistancePerPulse(POS_FACTOR);
     encoder.setReverseDirection(ENCODER_INVERT);
+
+    
+    pid.reset(encoder.getDistance() + posOffset);
     }
 
     public void updateInputs(ElevatorIOInputs inputs) {
         vel = ((encoder.getDistance() + posOffset)-pos)/0.02;
         pos = encoder.getDistance() + posOffset;
 
-        //posSetpoint = MathUtil.clamp(posSetpoint, MIN_POS, MAX_POS);//FIXME
+        posSetpoint = MathUtil.clamp(posSetpoint, MIN_POS, MAX_POS);
 
         double pidOut = pid.calculate(pos, posSetpoint);
         double ffOut = ff.calculate(pid.getSetpoint().velocity);

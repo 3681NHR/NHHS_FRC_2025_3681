@@ -24,7 +24,7 @@ public final class Constants {
     SIM,
     REPLAY
   }
-  public static RobotMode SIM_MODE = RobotMode.REPLAY;
+  public static RobotMode SIM_MODE = RobotMode.SIM;
   public static RobotMode MODE = RobotBase.isReal() ? RobotMode.REAL : SIM_MODE;
 
   public static final double AUTO_TIME = 15;
@@ -43,6 +43,9 @@ public final class Constants {
     public static final double RIGHT_DEADBAND = 0.15;
 
     public static final double ANGLE_DEADBAND = 0.5;
+
+
+    public static final double ELEVATOR_MAN_SENS = ElevatorConstants.POS_MAX_SPEED*0.02;
     
     //Curvature (rotation curve only applies when using anguler velocity)
     public static final double TRANSLATION_CURVE = 1.5;

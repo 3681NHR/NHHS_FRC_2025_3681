@@ -1,5 +1,7 @@
 package frc.robot.constants;
 
+import edu.wpi.first.math.util.Units;
+
 public final class ElevatorConstants {
     
     public static final double HOME_VOLTAGE = -1.5;
@@ -32,7 +34,19 @@ public final class ElevatorConstants {
     public static final double POS_V = 0.0;
     public static final double POS_A = 0.0;
     public static final double POS_G = 0.0;
+    
+    public static final double SIM_POS_P = 2;
+    public static final double SIM_POS_D = 0.0;
 
-    public static final double POS_MAX_SPEED = 0.0;
-    public static final double POS_MAX_ACCEL = 0.0;
+    public static final double SIM_POS_S = .05;
+    public static final double SIM_POS_V = 11;
+    public static final double SIM_POS_A = 0.0;
+    public static final double SIM_POS_G = 0.2222222;
+
+    public static final double POS_MAX_SPEED = 1;
+    public static final double POS_MAX_ACCEL = POS_MAX_SPEED*15;
+
+    public static final double GEARING = 12;
+    public static final double DRUM_RAD = Units.inchesToMeters(1);
+    public static final double MASS = Units.lbsToKilograms(10);
 }

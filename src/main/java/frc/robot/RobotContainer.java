@@ -7,6 +7,10 @@ import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorIO;
+import frc.robot.subsystems.elevator.ElevatorIOSim;
+import frc.robot.subsystems.elevator.ElevatorIOSpark;
 import frc.robot.subsystems.swerve.*;
 import frc.robot.subsystems.vision.CameraIO;
 import frc.robot.subsystems.vision.CameraIOPhoton;
@@ -69,9 +73,13 @@ public class RobotContainer {
 
   private Drive drive;
   private Vision vision;
+  private Elevator elevator;
 
   private final XboxController driverController =
       new XboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
+      
+  private final XboxController operatorController =
+  new XboxController(OperatorConstants.OPERATOR_CONTROLLER_PORT);
 
   private LoggedNetworkBoolean resetOdometry = new LoggedNetworkBoolean("resetOdometry", false);
   private LoggedDashboardChooser<Command> autoChooser;
@@ -171,6 +179,7 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3),
                 vision);
+        elevator = new Elevator(new ElevatorIOSpark());
         break;
 
       case SIM:
@@ -185,6 +194,8 @@ public class RobotContainer {
                   new ModuleIOSim(driveSim.getModules()[2]),
                   new ModuleIOSim(driveSim.getModules()[3]),
                   vision);
+        
+        elevator = new Elevator(new ElevatorIOSim());
         }
         break;
 
@@ -199,6 +210,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 vision);
+        elevator = new Elevator(new ElevatorIO() {});
         break;
     }
 
@@ -235,6 +247,7 @@ public class RobotContainer {
 
     drive.setDefaultCommand(driveCommand);
     
+    elevator.setDefaultCommand(elevator.man(() -> (operatorController.getRightTriggerAxis()-operatorController.getLeftTriggerAxis())*OperatorConstants.ELEVATOR_MAN_SENS));
   }
 
   private void configureBindings() {
