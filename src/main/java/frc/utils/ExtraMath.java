@@ -56,18 +56,27 @@ public final class ExtraMath {
 
     private double value;
     private double oldValue;
+    private boolean init = false;
+
     public Derrivitive(double initMesure){
-      value = initMesure;
+
       oldValue = initMesure;
+      init = true;
+    }
+    public Derrivitive(){
+      init = false;
     }
 
     public double calculate(double mesurement, double dt){
+      value = mesurement;
+      if(!init){
+        oldValue = value;
+      }
       double out = (value-oldValue)/dt;
       oldValue = value;
       return out;
     }
     public void reset(double initMesure){
-      value = initMesure;
       oldValue = initMesure;
     }
   }

@@ -46,6 +46,7 @@ public class Drive extends SubsystemBase {
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private final SysIdRoutine driveSysId;
   private final SysIdRoutine steerSysId;
+  private final SysIdRoutine angleSysId;
   private final Vision vision;
   private LoggedField2d field = new LoggedField2d();
   private final Alert gyroDisconnectedAlert =
@@ -125,6 +126,15 @@ public class Drive extends SubsystemBase {
                 (state) -> Logger.recordOutput("Drive/SteerSysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> runSteerCharacterization(voltage.in(Volts)), null, this));
+    angleSysId =
+    new SysIdRoutine(
+        new SysIdRoutine.Config(
+            null,
+            null,
+            Seconds.of(10),
+            (state) -> Logger.recordOutput("Drive/AngleSysIdState", state.toString())),
+        new SysIdRoutine.Mechanism(
+            (voltage) -> runAngleCharacterization(voltage.in(Volts)), null, this));
 
     YAGSLWidget.maxAngularVelocity = getMaxAngularSpeedRadPerSec();
     YAGSLWidget.maxSpeed = getMaxLinearSpeedMetersPerSec();
@@ -231,6 +241,7 @@ public class Drive extends SubsystemBase {
     // Log unoptimized setpoints
     Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
     Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
+    Logger.recordOutput("SwerveChassisSpeeds/SetpointAngularVel", discreteSpeeds.omegaRadiansPerSecond);
     
     // Send setpoints to modules
     for (int i = 0; i < 4; i++) {
@@ -253,6 +264,10 @@ public class Drive extends SubsystemBase {
     for (int i = 0; i < 4; i++) {
       modules[i].runSteerCharacterization(output);
     }
+  }
+  /** spins robot*/
+  public void runAngleCharacterization(double output) {
+    runVelocity(new ChassisSpeeds(0, 0, output));
   }
 
   /** Stops the drive. */
@@ -296,6 +311,17 @@ public class Drive extends SubsystemBase {
   public Command steerSysIdDynamic(SysIdRoutine.Direction direction) {
     return run(() -> runSteerCharacterization(0.0)).withTimeout(1.0).andThen(steerSysId.dynamic(direction));
   }
+  /** Returns a command to run a quasistatic test in the specified direction. */
+  public Command angleSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return run(() -> runAngleCharacterization(0.0))
+        .withTimeout(1.0)
+        .andThen(angleSysId.quasistatic(direction));
+  }
+  /** Returns a command to run a dynamic test in the specified direction. */
+  public Command angleSysIdDynamic(SysIdRoutine.Direction direction) {
+    return run(() -> runAngleCharacterization(0.0)).withTimeout(1.0).andThen(angleSysId.dynamic(direction));
+  }
+
   /** Returns the module states (turn angles and drive velocities) for all of the modules. */
   @AutoLogOutput(key = "SwerveStates/Measured")
   private SwerveModuleState[] getModuleStates() {

@@ -2,7 +2,6 @@ package frc.robot;
 
 import frc.robot.commands.AnglePresetDriveCommand;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.PointAtVisionTarget;
 import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.Constants.OperatorConstants;
@@ -229,6 +228,12 @@ public class RobotContainer {
             drive.steerSysIdQuasistatic(SysIdRoutine.Direction.kForward).andThen(drive.steerSysIdQuasistatic(SysIdRoutine.Direction.kReverse)));
       autoChooser.addOption(
             "Steer SysId (Dynamic Forward/Reverse)", drive.steerSysIdDynamic(SysIdRoutine.Direction.kForward).andThen(drive.steerSysIdDynamic(SysIdRoutine.Direction.kReverse)));
+      autoChooser.addOption(
+              "Angle SysId (Quasistatic Forward/Reverse)",
+              drive.angleSysIdQuasistatic(SysIdRoutine.Direction.kForward).andThen(drive.angleSysIdQuasistatic(SysIdRoutine.Direction.kReverse)));
+      autoChooser.addOption(
+              "Angle SysId (Dynamic Forward/Reverse)", drive.angleSysIdDynamic(SysIdRoutine.Direction.kForward).andThen(drive.angleSysIdDynamic(SysIdRoutine.Direction.kReverse)));
+      
     }
 
     configureBindings();
