@@ -38,7 +38,7 @@ public class DriveConstants {
     public static final double ANGLE_MAX_VELOCITY = 11;
     public static boolean USE_VISION = true;
 
-    public static final double MAX_SPEED = 4.8;
+    public static final double MAX_SPEED = 4.1;
     public static final double ODOMETRY_FREQ = 100.0; // Hz
     public static final double WIDTH = Units.inchesToMeters(22);
     public static final double LENGTH = Units.inchesToMeters(25);
