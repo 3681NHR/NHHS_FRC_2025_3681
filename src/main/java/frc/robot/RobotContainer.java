@@ -15,15 +15,10 @@ import frc.robot.subsystems.vision.CameraIO;
 import frc.robot.subsystems.vision.CameraIOPhoton;
 import frc.robot.subsystems.vision.CameraIOPhotonSim;
 import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.CameraIO;
-import frc.robot.subsystems.vision.CameraIOPhoton;
-import frc.robot.subsystems.vision.CameraIOPhotonSim;
-import frc.robot.subsystems.vision.Vision;
 import frc.utils.rumble.*;
 import frc.utils.TimerHandler;
 import frc.utils.Joystick.duelJoystickAxis;
 import frc.utils.BatteryVoltageSim;
-import frc.utils.ControllerMap;
 import frc.utils.ExtraMath;
 import frc.utils.Joystick;
 
@@ -32,10 +27,7 @@ import static edu.wpi.first.units.Units.Meters;
 
 import static frc.utils.ControllerMap.*;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -44,15 +36,14 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
@@ -63,7 +54,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
-@SuppressWarnings("unused")
 public class RobotContainer {
 
   // Create and configure a drivetrain simulation configuration
@@ -78,10 +68,11 @@ public class RobotContainer {
       new XboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
       
   private final XboxController operatorController =
-  new XboxController(OperatorConstants.OPERATOR_CONTROLLER_PORT);
+      new XboxController(OperatorConstants.OPERATOR_CONTROLLER_PORT);
 
   private LoggedNetworkBoolean resetOdometry = new LoggedNetworkBoolean("resetOdometry", false);
   private LoggedDashboardChooser<Command> autoChooser;
+  private LoggedNetworkBoolean useVisionOdometry = new LoggedNetworkBoolean("overrides/useVisionOdometry", DriveConstants.USE_VISION);
 
   private boolean fod = Constants.drive.STARTING_FOD;
   private boolean directAngle = Constants.drive.STARTING_DIRECT_ANGLE;
@@ -90,6 +81,7 @@ public class RobotContainer {
   private Trigger rstGyro;
   private Trigger toggleFOD;
   private Trigger toggleDA;
+
   private Trigger autoAimReef;
   private Trigger autoAimStation;
   private Trigger autoAimFar;//barge or prosseser
@@ -114,13 +106,15 @@ public class RobotContainer {
   private DoubleSupplier leftTrigger;
   private DoubleSupplier rightTrigger;
 
-  private LoggedNetworkBoolean useVisionOdometry = new LoggedNetworkBoolean("overrides/useVisionOdometry", DriveConstants.USE_VISION);
-  private LoggedNetworkNumber trackID = new LoggedNetworkNumber("apriltag to track", 3);
 
   private RumbleHandler rumbler = new RumbleHandler(driverController);
 
-
   private PowerDistribution pdp = new PowerDistribution(1  , ModuleType.kRev);
+  
+  private final Alert driverDisconnected =
+      new Alert("Driver controller disconnected (port 0).", AlertType.kWarning);
+  private final Alert operatorDisconnected =
+      new Alert("Operator controller disconnected (port 1).", AlertType.kWarning);
 
   public RobotContainer() {
 
@@ -363,6 +357,8 @@ public class RobotContainer {
     }
     Logger.recordOutput("farIndex", farIndex);
 
+    driverDisconnected.set(!driverController.isConnected());
+    operatorDisconnected.set(!operatorController.isConnected());
   }
   public void SimPeriodic(){
     Logger.recordOutput("simulatedVoltage", BatteryVoltageSim.getInstance().calculateVoltage());
