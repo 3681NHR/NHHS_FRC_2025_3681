@@ -38,6 +38,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -59,10 +60,12 @@ public class RobotContainer {
   // Create and configure a drivetrain simulation configuration
   private DriveTrainSimulationConfig driveTrainSimulationConfig;
   private SwerveDriveSimulation driveSim;
-
+  
   private Drive drive;
   private Vision vision;
   private Elevator elevator;
+  
+  private AutoFactory autoFactory;
 
   private final XboxController driverController =
       new XboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
@@ -208,7 +211,9 @@ public class RobotContainer {
     }
 
     // Set up auto routines
+    autoFactory = new AutoFactory(drive::getPose, drive::setPose, drive::followTraj, true, drive);
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    autoChooser.addOption("choreo", autoFactory.trajectoryCmd("testPath"));
 
     if(DriverStation.isTest()){
       // Set up SysId routines

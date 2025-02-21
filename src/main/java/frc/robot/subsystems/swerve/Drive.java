@@ -7,9 +7,13 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.PathPlannerLogging;
+
+import choreo.trajectory.SwerveSample;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -64,6 +68,10 @@ public class Drive extends SubsystemBase {
       };
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Constants.STARTING_POSE);
+
+  private PIDController choreoAnglePID = new PIDController(ANGLE_P, 0, ANGLE_D);
+  private PIDController choreoTransXPID = new PIDController(TRANS_P, 0, TRANS_D);
+  private PIDController choreoTransYPID = new PIDController(TRANS_P, 0, TRANS_D);
 
   public Drive(
       GyroIO gyroIO,
@@ -382,5 +390,21 @@ public class Drive extends SubsystemBase {
 
   public double getAngulerVelocity(){
     return gyroInputs.yawVelocityRadPerSec;
+  }
+
+  public void followTraj(SwerveSample sample){
+        // Get the current pose of the robot
+        Pose2d pose = getPose();
+
+        // Generate the next speeds for the robot
+        ChassisSpeeds speeds = new ChassisSpeeds(
+            sample.vx + MathUtil.clamp(choreoTransXPID.calculate(pose.getX(), sample.x), -TRANS_MAX_VELOCITY, TRANS_MAX_VELOCITY),
+            sample.vy + MathUtil.clamp(choreoTransYPID.calculate(pose.getY(), sample.y), -TRANS_MAX_VELOCITY, TRANS_MAX_VELOCITY),
+            sample.omega + MathUtil.clamp(choreoAnglePID.calculate(pose.getRotation().getRadians(), sample.heading), -ANGLE_MAX_VELOCITY, ANGLE_MAX_VELOCITY)
+        );
+        Logger.recordOutput("auto/target", new Pose2d(new Translation2d(sample.x, sample.y), new Rotation2d(sample.heading)));
+
+        // Apply the generated speeds
+        runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getRotation()));
   }
 }

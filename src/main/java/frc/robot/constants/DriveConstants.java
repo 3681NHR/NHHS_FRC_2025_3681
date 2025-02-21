@@ -20,6 +20,7 @@ import static edu.wpi.first.units.Units.Volts;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -33,10 +34,16 @@ import edu.wpi.first.units.measure.Voltage;
 public class DriveConstants {
     public static final double ANGLE_P = 0.5;
     public static final double ANGLE_D = 0.025;
-    public static final double ANGLE_SIM_P = 0.2;
-    public static final double ANGLE_SIM_D = 0.1;
-    public static final double ANGLE_MAX_VELOCITY = 11;
+    public static final double ANGLE_SIM_P = 0.5;
+    public static final double ANGLE_SIM_D = 0.025;
+    public static final double ANGLE_MAX_VELOCITY = 11.2;
     public static boolean USE_VISION = true;
+
+    public static final double TRANS_P = 5;
+    public static final double TRANS_D = 0.0;
+    public static final double TRANS_SIM_P = 5;
+    public static final double TRANS_SIM_D = 0.0;
+    public static final double TRANS_MAX_VELOCITY = 4.8;
 
     public static final double MAX_SPEED = 4.1;
     public static final double ODOMETRY_FREQ = 100.0; // Hz
