@@ -1,9 +1,16 @@
 package frc.robot.subsystems.elevator;
 
+import static frc.robot.constants.ElevatorConstants.MAX_POS;
+import static frc.robot.constants.ElevatorConstants.MIN_POS;
+
 import java.util.function.DoubleSupplier;
 
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -13,17 +20,22 @@ public class Elevator extends SubsystemBase {
 
     private ElevatorIO io;
     private ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
+    @AutoLogOutput
     private double pos = 0.0;
 
+    @AutoLogOutput
     private boolean homed = false;
+    @AutoLogOutput
     private boolean openloop = false;
+
+    private Alert notHomed = new Alert("elevator is not homed, limits not enforced", AlertType.kWarning);
+
+    @AutoLogOutput
+    private boolean brake = true;
     
     public Elevator(ElevatorIO io){
         this.io = io;
 
-        if(!homed){
-            CommandScheduler.getInstance().schedule(new HomeElevator(this));
-        }
     }
 
     @Override
@@ -31,8 +43,15 @@ public class Elevator extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("elevator", inputs);
 
+        notHomed.set(!homed);
+
         if(!openloop){
+            if(homed){
+                pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
+            }
             io.setTargetLocation(pos);
+        } else {
+            pos = inputs.positionMeters;
         }
     }
 
@@ -54,7 +73,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public double getPosition(){
-        return pos;
+        return inputs.positionMeters;
     }
     public double getVelocity() {
         return inputs.velocityMetersPerSec;
@@ -65,7 +84,12 @@ public class Elevator extends SubsystemBase {
 
     public Command man(DoubleSupplier change){
         return run(() -> {
-            setTargetPos(pos + change.getAsDouble());
+            pos += change.getAsDouble();
         });
+    }
+
+    public void toggleBrake(){
+        io.setNeutralMode(brake);
+        brake = !brake;
     }
 }

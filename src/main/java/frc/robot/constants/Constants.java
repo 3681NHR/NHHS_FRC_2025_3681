@@ -44,8 +44,7 @@ public final class Constants {
 
     public static final double ANGLE_DEADBAND = 0.5;
 
-
-    public static final double ELEVATOR_MAN_SENS = ElevatorConstants.POS_MAX_SPEED*0.02;
+    public static final double ELEVATOR_MAN_SENS = 0.05;
     
     //Curvature (rotation curve only applies when using anguler velocity)
     public static final double TRANSLATION_CURVE = 1.5;

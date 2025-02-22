@@ -37,6 +37,7 @@ public class HomeElevator extends Command{
     public void execute() {
         if (manageTimer(ElevatorConstants.HOME_MIN_VEL)) {
             elevator.resetPos(ElevatorConstants.HOME_POS);
+            elevator.setHomed(true);
             zeroTimeStamp = Double.NaN;
             elevator.setVoltage(0.0);
         } else {

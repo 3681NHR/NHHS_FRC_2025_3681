@@ -4,16 +4,16 @@ import edu.wpi.first.math.util.Units;
 
 public final class ElevatorConstants {
     
-    public static final double HOME_VOLTAGE = -1.5;
-    public static final double HOME_MIN_VEL = 0.01;
+    public static final double HOME_VOLTAGE = -0.5;
+    public static final double HOME_MIN_VEL = 0.1;
     public static final double HOME_STOP_TIME = 0.1;
     public static final double HOME_POS = 0;
 
     public static final double MIN_POS = 0.0;
-    public static final double MAX_POS = 2;
+    public static final double MAX_POS = 1.5;
 
-    public static final double DIST_PER_PULSE = Math.PI*2 / 4056;
-    public static final double POS_FACTOR = 1.0/58.0;
+    public static final double DIST_PER_PULSE = Math.PI*2 / 2048;
+    public static final double POS_FACTOR = 1.0/58.0 * Units.inchesToMeters(53) * 20 * (1/0.8843) * 0.0508;
     public static final double VEL_FACTOR = POS_FACTOR;
     
     public static final int MOTOR_1_ID = 40;
@@ -27,11 +27,11 @@ public final class ElevatorConstants {
 
     public static final int CURRENT_LIM = 40;
 
-    public static final double POS_P = 0.2;
+    public static final double POS_P = 5;
     public static final double POS_D = 0.0;
 
-    public static final double POS_S = 0.0;
-    public static final double POS_V = 0.0;
+    public static final double POS_S = 0.2;
+    public static final double POS_V = 4;
     public static final double POS_A = 0.0;
     public static final double POS_G = 0.0;
     
@@ -43,7 +43,7 @@ public final class ElevatorConstants {
     public static final double SIM_POS_A = 0.0;
     public static final double SIM_POS_G = 0.2222222;
 
-    public static final double POS_MAX_SPEED = 1;
+    public static final double POS_MAX_SPEED = 2;
     public static final double POS_MAX_ACCEL = POS_MAX_SPEED*15;
 
     public static final double GEARING = 12;

@@ -2,8 +2,10 @@ package frc.robot;
 
 import frc.robot.commands.AnglePresetDriveCommand;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.HomeElevator;
 import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
+import frc.robot.constants.ElevatorConstants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.elevator.Elevator;
@@ -19,6 +21,7 @@ import frc.utils.rumble.*;
 import frc.utils.TimerHandler;
 import frc.utils.Joystick.duelJoystickAxis;
 import frc.utils.BatteryVoltageSim;
+import frc.utils.DisabledInstantCommand;
 import frc.utils.ExtraMath;
 import frc.utils.Joystick;
 
@@ -43,6 +46,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -52,6 +56,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -90,6 +95,8 @@ public class RobotContainer {
   private Trigger reefAimUp;
   private Trigger reefAimDown;
 
+  private Trigger toggleElevBrake;
+
   private int reefIndex = 0;
   private int stationIndex = 0;
   private int farIndex = 0;
@@ -107,6 +114,7 @@ public class RobotContainer {
   private DoubleSupplier leftTrigger;
   private DoubleSupplier rightTrigger;
 
+  private DigitalInput brakeDio = new DigitalInput(2);
 
   private RumbleHandler rumbler = new RumbleHandler(driverController);
 
@@ -152,6 +160,7 @@ public class RobotContainer {
       leftTrigger = () -> driverController.getLeftTriggerAxis();
       rightTrigger = () -> driverController.getRightTriggerAxis();
 
+
     }
     //process driver controls(radial deadzone, curve, trigger slowdown, and inversion)
     driverSticks = new duelJoystickAxis(
@@ -164,7 +173,9 @@ public class RobotContainer {
     switch (Constants.MODE) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
-        vision = new Vision(new CameraIOPhoton(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM));
+        vision = new Vision(
+          new CameraIOPhoton(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM),
+          new CameraIOPhoton(VisionConstants.CAMERA_1_NAME, VisionConstants.CAMERA_1_ROBOT_TO_CAM));
         drive =
             new Drive(
                 new GyroIOPigeon2(),
@@ -178,7 +189,10 @@ public class RobotContainer {
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
-        vision = new Vision(new CameraIOPhotonSim(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose));
+        vision = new Vision(
+          new CameraIOPhotonSim(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose),
+          new CameraIOPhotonSim(VisionConstants.CAMERA_1_NAME, VisionConstants.CAMERA_1_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose)
+          );
         if(driveSim != null){
           drive =
               new Drive(
@@ -195,7 +209,10 @@ public class RobotContainer {
 
       default:
         // Replayed robot, disable IO implementations
-        vision = new Vision(new CameraIO() {});
+        vision = new Vision(
+          new CameraIO() {},
+          new CameraIO() {}
+        );
         drive =
             new Drive(
                 new GyroIO() {},
@@ -264,6 +281,7 @@ public class RobotContainer {
       toggleFOD = new Trigger(driverController::getLeftStickButton);
       toggleDA = new Trigger(driverController::getRightStickButton);
       autoAimStation = new Trigger(driverController::getBButton);
+
     } else {
       lockPose = new Trigger(() -> driverController.getRawButton(X));
       rstGyro = new Trigger(() -> driverController.getRawButton(A));
@@ -273,9 +291,11 @@ public class RobotContainer {
       autoAimStation = new Trigger(() -> driverController.getRawButton(B));
     }
     autoAimFar = new Trigger(() -> driverController.getPOV() == 0);
-
+    
     reefAimUp = new Trigger(() -> driverController.getPOV() == 90);
     reefAimDown = new Trigger(() -> driverController.getPOV() == 270);
+
+    toggleElevBrake = new Trigger(() -> brakeDio.get());
       
     lockPose.whileTrue(Commands.runOnce(() -> {
       drive.stopWithX();
@@ -324,6 +344,13 @@ public class RobotContainer {
         reefIndex = Constants.OperatorConstants.REEF_ROTS.length-1;
       }
     }));
+
+    toggleElevBrake.onTrue(new DisabledInstantCommand(() -> {
+      elevator.toggleBrake();
+    }));
+
+    new Trigger(() -> operatorController.getAButton()).onTrue(new HomeElevator(elevator));
+    
   }
 
   public void Periodic(){

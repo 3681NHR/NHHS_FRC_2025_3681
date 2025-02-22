@@ -10,7 +10,7 @@ public interface ElevatorIO {
 
     public default void moveOpenLoop(double voltage) {}
 
-    public default void setNutralMode(boolean brake) {}
+    public default void setNeutralMode(boolean brake) {}
 
     public default void resetposition(double posMeters) {}
 

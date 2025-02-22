@@ -9,6 +9,7 @@ import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.Encoder;
+import frc.utils.SparkUtil;
 
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -88,8 +89,6 @@ public class ElevatorIOSpark implements ElevatorIO {
         vel = motorEncoder.getVelocity() * factor;
         pos = motorEncoder.getPosition() * factor;
 
-        posSetpoint = MathUtil.clamp(posSetpoint, MIN_POS, MAX_POS);
-
         double pidOut = pid.calculate(pos, posSetpoint);
         double ffOut = ff.calculate(pid.getSetpoint().velocity);
         Logger.recordOutput("elevator/pidOut", pidOut);
@@ -125,6 +124,8 @@ public class ElevatorIOSpark implements ElevatorIO {
     }
     
     public void setNeutralMode(boolean brake) {
+        
+        Logger.recordOutput("no", brake);
         if(brake){
             motor1Config.idleMode(IdleMode.kBrake);
             motor2Config.idleMode(IdleMode.kBrake);
@@ -154,7 +155,9 @@ public class ElevatorIOSpark implements ElevatorIO {
         5,
         () ->
         motor2.configure(
-            motor1Config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+            motor2Config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+        
     }
+    
                 
 }
