@@ -12,12 +12,12 @@ public final class ElevatorConstants {
     public static final double MIN_POS = 0.0;
     public static final double MAX_POS = 2;
 
-    public static final double DIST_PER_PULSE = Math.PI*2 / 2048;
-    public static final double POS_FACTOR = DIST_PER_PULSE * (1.0/5.0);
+    public static final double DIST_PER_PULSE = Math.PI*2 / 4056;
+    public static final double POS_FACTOR = 1.0/58.0;
     public static final double VEL_FACTOR = POS_FACTOR;
     
-    public static final int MOTOR_1_ID = 41;
-    public static final int MOTOR_2_ID = 42;
+    public static final int MOTOR_1_ID = 40;
+    public static final int MOTOR_2_ID = 41;
 
     public static final int ENCODER_ID_A = 0;
     public static final int ENCODER_ID_B = 1;
@@ -27,7 +27,7 @@ public final class ElevatorConstants {
 
     public static final int CURRENT_LIM = 40;
 
-    public static final double POS_P = 0.0;
+    public static final double POS_P = 0.2;
     public static final double POS_D = 0.0;
 
     public static final double POS_S = 0.0;

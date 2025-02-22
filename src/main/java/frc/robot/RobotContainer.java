@@ -64,8 +64,6 @@ public class RobotContainer {
   private Drive drive;
   private Vision vision;
   private Elevator elevator;
-  
-  private AutoFactory autoFactory;
 
   private final XboxController driverController =
       new XboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
@@ -211,9 +209,7 @@ public class RobotContainer {
     }
 
     // Set up auto routines
-    autoFactory = new AutoFactory(drive::getPose, drive::setPose, drive::followTraj, true, drive);
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-    autoChooser.addOption("choreo", autoFactory.trajectoryCmd("testPath"));
 
     if(DriverStation.isTest()){
       // Set up SysId routines

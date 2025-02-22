@@ -1,5 +1,6 @@
 package frc.robot.subsystems.elevator;
 
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
@@ -26,11 +27,14 @@ public class ElevatorIOSpark implements ElevatorIO {
     private SparkMax motor2 = new SparkMax(MOTOR_2_ID, MotorType.kBrushless);
     private SparkMaxConfig motor2Config = new SparkMaxConfig();
     private Encoder encoder = new Encoder(ENCODER_ID_A, ENCODER_ID_B);
+    private RelativeEncoder motorEncoder = motor1.getEncoder();
 
     private double posOffset = 0.0;
     private double pos = 0.0;
     private double vel = 0.0;
     private double posSetpoint = 0.0;
+
+    private double factor = POS_FACTOR * (ENCODER_INVERT ? -1 : 1);
 
     private double voltsOut = 0.0;
     private boolean openloop = false;
@@ -71,14 +75,18 @@ public class ElevatorIOSpark implements ElevatorIO {
     encoder.reset();
     encoder.setDistancePerPulse(POS_FACTOR);
     encoder.setReverseDirection(ENCODER_INVERT);
-
+    motorEncoder.setPosition(0);
     
-    pid.reset(encoder.getDistance() + posOffset);
+    //pid.reset(encoder.getDistance() + posOffset);
+    
+    pid.reset(motorEncoder.getPosition()*factor);
     }
 
     public void updateInputs(ElevatorIOInputs inputs) {
-        vel = ((encoder.getDistance() + posOffset)-pos)/0.02;
-        pos = encoder.getDistance() + posOffset;
+        //vel = ((encoder.getDistance() + posOffset)-pos)/0.02;
+        //pos = encoder.getDistance() + posOffset;
+        vel = motorEncoder.getVelocity() * factor;
+        pos = motorEncoder.getPosition() * factor;
 
         posSetpoint = MathUtil.clamp(posSetpoint, MIN_POS, MAX_POS);
 
@@ -130,6 +138,7 @@ public class ElevatorIOSpark implements ElevatorIO {
     public void resetposition(double posMeters) {
         encoder.reset();
         posOffset = posMeters;
+        motorEncoder.setPosition(posMeters/factor);
     }
 
     private void configure(){
