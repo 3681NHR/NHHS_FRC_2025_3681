@@ -38,8 +38,7 @@ public class led extends SubsystemBase {
     public led() {
         led.setLength(buffer.getLength());
 
-        
-        //led.start();
+        led.start();
     }
     
     @Override
