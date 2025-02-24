@@ -5,7 +5,6 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.HomeElevator;
 import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
-import frc.robot.constants.ElevatorConstants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.elevator.Elevator;
@@ -41,7 +40,6 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 import com.pathplanner.lib.auto.AutoBuilder;
 
-import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -56,7 +54,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -98,7 +95,6 @@ public class RobotContainer {
   private Trigger toggleElevBrake;
 
   private int reefIndex = 0;
-  private int stationIndex = 0;
   private int farIndex = 0;
   private Rotation2d reefAngle = Constants.OperatorConstants.REEF_ROTS[0];
   private Rotation2d stationAngle = new Rotation2d();

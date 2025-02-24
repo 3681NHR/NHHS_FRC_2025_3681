@@ -4,8 +4,6 @@ import static frc.robot.constants.ElevatorConstants.*;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -15,7 +13,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
-import frc.robot.subsystems.elevator.ElevatorIO.ElevatorIOInputs;
 import frc.utils.BatteryVoltageSim;
 
 public class ElevatorIOSim implements ElevatorIO{

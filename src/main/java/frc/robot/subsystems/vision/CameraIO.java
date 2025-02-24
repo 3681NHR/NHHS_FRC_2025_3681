@@ -1,7 +1,6 @@
 package frc.robot.subsystems.vision;
 
 import org.littletonrobotics.junction.AutoLog;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
