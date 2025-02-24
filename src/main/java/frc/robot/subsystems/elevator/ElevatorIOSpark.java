@@ -8,7 +8,9 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import frc.utils.SparkUtil;
 
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -35,10 +37,15 @@ public class ElevatorIOSpark implements ElevatorIO {
     private double vel = 0.0;
     private double posSetpoint = 0.0;
 
-    private double factor = POS_FACTOR * (ENCODER_INVERT ? -1 : 1);
+    private double Builtinfactor = BUILTIN_POS_FACTOR * (BUILTIN_ENCODER_INVERT ? -1 : 1);
 
     private double voltsOut = 0.0;
     private boolean openloop = false;
+
+    private boolean encoderFallback = false;
+
+    private Alert divergenceAlert = new Alert("main encoder and builtin encoder values are divergent!", AlertType.kError);
+    private Alert fallbackAlert = new Alert("main encoder not found, using builtin encoder as fallback", AlertType.kWarning);
 
     private ProfiledPIDController pid = new ProfiledPIDController(
         POS_P,
@@ -76,18 +83,26 @@ public class ElevatorIOSpark implements ElevatorIO {
     encoder.reset();
     encoder.setDistancePerPulse(POS_FACTOR);
     encoder.setReverseDirection(ENCODER_INVERT);
+    encoder.setSamplesToAverage(5);
     motorEncoder.setPosition(0);
     
     //pid.reset(encoder.getDistance() + posOffset);
     
-    pid.reset(motorEncoder.getPosition()*factor);
+    pid.reset(motorEncoder.getPosition()*Builtinfactor);
     }
 
     public void updateInputs(ElevatorIOInputs inputs) {
-        //vel = ((encoder.getDistance() + posOffset)-pos)/0.02;
-        //pos = encoder.getDistance() + posOffset;
-        vel = motorEncoder.getVelocity() * factor;
-        pos = motorEncoder.getPosition() * factor;
+        //TODO detect fallback condition
+        if(encoderFallback){
+            vel = motorEncoder.getVelocity() * Builtinfactor;
+            pos = motorEncoder.getPosition() * Builtinfactor;
+        } else {
+            pos = encoder.getDistance() + posOffset;
+            vel = encoder.getRate();
+        }
+
+        fallbackAlert.set(encoderFallback);
+        divergenceAlert.set(MathUtil.isNear(motorEncoder.getPosition() * Builtinfactor, encoder.getDistance() + posOffset, ENCODER_DIVERGANCE_THRESH));
 
         double pidOut = pid.calculate(pos, posSetpoint);
         double ffOut = ff.calculate(pid.getSetpoint().velocity);
@@ -125,7 +140,6 @@ public class ElevatorIOSpark implements ElevatorIO {
     
     public void setNeutralMode(boolean brake) {
         
-        Logger.recordOutput("no", brake);
         if(brake){
             motor1Config.idleMode(IdleMode.kBrake);
             motor2Config.idleMode(IdleMode.kBrake);
@@ -139,7 +153,7 @@ public class ElevatorIOSpark implements ElevatorIO {
     public void resetposition(double posMeters) {
         encoder.reset();
         posOffset = posMeters;
-        motorEncoder.setPosition(posMeters/factor);
+        motorEncoder.setPosition(posMeters/Builtinfactor);
     }
 
     private void configure(){

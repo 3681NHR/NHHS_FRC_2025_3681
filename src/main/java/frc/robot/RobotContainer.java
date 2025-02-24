@@ -127,6 +127,8 @@ public class RobotContainer {
 
   public RobotContainer() {
 
+    DriverStation.silenceJoystickConnectionWarning(true);
+
     if(RobotBase.isSimulation()){
       driveTrainSimulationConfig = DriveTrainSimulationConfig.Default()
           .withGyro(COTS.ofPigeon2())
@@ -275,16 +277,16 @@ public class RobotContainer {
     }));
 
     if(RobotBase.isReal()){
-      lockPose = new Trigger(driverController::getXButton);
-      rstGyro = new Trigger(driverController::getAButton);
+      lockPose = new Trigger(driverController::getStartButton);
+      rstGyro = new Trigger(driverController::getBackButton);
       autoAimReef = new Trigger(driverController::getYButton);
       toggleFOD = new Trigger(driverController::getLeftStickButton);
       toggleDA = new Trigger(driverController::getRightStickButton);
       autoAimStation = new Trigger(driverController::getBButton);
 
     } else {
-      lockPose = new Trigger(() -> driverController.getRawButton(X));
-      rstGyro = new Trigger(() -> driverController.getRawButton(A));
+      lockPose = new Trigger(() -> driverController.getRawButton(LOGO_RIGHT));
+      rstGyro = new Trigger(() -> driverController.getRawButton(LOGO_LEFT));
       autoAimReef = new Trigger(() -> driverController.getRawButton(Y));
       toggleFOD = new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON));
       toggleDA = new Trigger(() -> driverController.getRawButton(RIGHT_STICK_BUTTON));
@@ -303,7 +305,7 @@ public class RobotContainer {
     }, drive).repeatedly());
 
     rstGyro.onTrue(Commands.runOnce(() -> {
-      drive.resetGyro(0);
+      drive.resetGyro(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? Math.PI : 0);
       rumbler.overrideQue(RumblePreset.TAP.load());
     }));
 

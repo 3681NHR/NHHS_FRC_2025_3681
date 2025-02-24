@@ -46,9 +46,11 @@ public class Elevator extends SubsystemBase {
         notHomed.set(!homed);
 
         if(!openloop){
-            if(homed){
-                pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
+            if(!homed && inputs.positionMeters < 0){
+                io.resetposition(0);
             }
+            pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
+                
             io.setTargetLocation(pos);
         } else {
             pos = inputs.positionMeters;
@@ -71,7 +73,13 @@ public class Elevator extends SubsystemBase {
         this.pos = pos;
         openloop = false;
     }
-
+    public void setTargetPos(AffectorPosition pos){
+        this.pos = pos.elev;
+        openloop = false;
+    }
+    public double getPositionSet(){
+        return pos;
+    }
     public double getPosition(){
         return inputs.positionMeters;
     }

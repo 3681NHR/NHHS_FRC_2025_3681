@@ -52,7 +52,7 @@ public class HomeElevator extends Command{
 
         if (!interrupted) {
             elevator.setHomed(true);
-            elevator.setTargetPos(ElevatorPosition.DOWN.pos);
+            elevator.setTargetPos(AffectorPosition.STOW.elev);
         }
     }
 

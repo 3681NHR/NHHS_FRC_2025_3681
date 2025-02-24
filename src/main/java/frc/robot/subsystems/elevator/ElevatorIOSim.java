@@ -70,8 +70,8 @@ public class ElevatorIOSim implements ElevatorIO{
 
         
         encoder.reset();
-        encoder.setDistancePerPulse(POS_FACTOR);
-        encoder.setReverseDirection(ENCODER_INVERT);
+        encoder.setDistancePerPulse(BUILTIN_POS_FACTOR);
+        encoder.setReverseDirection(BUILTIN_ENCODER_INVERT);
 
         pid.reset(encoder.getDistance() + posOffset);
     }

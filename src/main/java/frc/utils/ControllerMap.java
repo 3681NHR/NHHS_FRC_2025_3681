@@ -2,9 +2,6 @@ package frc.utils;
 
 public class ControllerMap {
    
-    //Controllers
-	public static final int DRIVER_PORT = 0;
-	public static final int OPERATOR_PORT = 1;
 		
 	//XboxOne Joysticks
 	public static final int LEFT_STICK_X = 0;
