@@ -2,8 +2,6 @@ package frc.robot.commands;
 
 import org.littletonrobotics.junction.Logger;
 
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.ElevatorConstants;
 import frc.robot.subsystems.elevator.*;

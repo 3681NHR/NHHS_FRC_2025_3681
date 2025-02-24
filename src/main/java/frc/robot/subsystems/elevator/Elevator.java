@@ -91,6 +91,9 @@ public class Elevator extends SubsystemBase {
     public Command man(DoubleSupplier change){
         return run(() -> {
             pos += change.getAsDouble();
+        }).beforeStarting(() -> {
+            //reset pos on start to avoid jumping
+            pos = inputs.positionMeters;
         });
     }
 

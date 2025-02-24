@@ -7,6 +7,7 @@ import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
+import frc.robot.subsystems.led;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
@@ -54,6 +55,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
@@ -66,6 +68,8 @@ public class RobotContainer {
   private Drive drive;
   private Vision vision;
   private Elevator elevator;
+
+  private led led = new led();
 
   private final XboxController driverController =
       new XboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
@@ -267,7 +271,7 @@ public class RobotContainer {
 
   private void configureBindings() {
     resetOdometry.set(false);
-    new Trigger(() ->resetOdometry.get()).onTrue(Commands.runOnce(() -> {
+    new Trigger(() ->resetOdometry.get()).onTrue(new InstantCommand(() -> {
       resetOdometry.set(false);
       drive.setPose(Constants.STARTING_POSE);
     }));
@@ -295,25 +299,25 @@ public class RobotContainer {
 
     toggleElevBrake = new Trigger(() -> brakeDio.get());
       
-    lockPose.whileTrue(Commands.runOnce(() -> {
+    lockPose.whileTrue(new InstantCommand(() -> {
       drive.stopWithX();
       rumbler.overrideQue(new Rumble(.1, 0.25));
     }, drive).repeatedly());
 
-    rstGyro.onTrue(Commands.runOnce(() -> {
+    rstGyro.onTrue(new InstantCommand(() -> {
       drive.resetGyro(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? Math.PI : 0);
       rumbler.overrideQue(RumblePreset.TAP.load());
     }));
 
-    toggleFOD.onTrue(Commands.runOnce(() -> {
+    toggleFOD.onTrue(new InstantCommand(() -> {
     this.fod = !this.fod;
     }));
 
-    toggleDA.onTrue(Commands.runOnce(() -> {
+    toggleDA.onTrue(new InstantCommand(() -> {
       this.directAngle = !this.directAngle;
     }));
 
-    new Trigger(() -> TimerHandler.getTeleopRemaining()<Constants.ENDGAME_TIME).onTrue(Commands.runOnce(() -> {
+    new Trigger(() -> TimerHandler.getTeleopRemaining()<Constants.ENDGAME_TIME).onTrue(new InstantCommand(() -> {
       rumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());
     }));
     
@@ -325,17 +329,17 @@ public class RobotContainer {
 
     autoAimReef.onTrue(new AnglePresetDriveCommand(driverSticks, drive, () -> reefAngle));
     
-    autoAimFar.onTrue(Commands.runOnce(() -> {
+    autoAimFar.onTrue(new InstantCommand(() -> {
       farIndex++;
       farIndex = farIndex % 2;
     }));
     autoAimFar.onTrue(new AnglePresetDriveCommand(driverSticks, drive, () -> farAngle));
 
-    reefAimUp.onTrue(Commands.runOnce(() -> {
+    reefAimUp.onTrue(new InstantCommand(() -> {
       reefIndex++;
       reefIndex = reefIndex % Constants.OperatorConstants.REEF_ROTS.length;
     }));
-    reefAimDown.onTrue(Commands.runOnce(() -> {
+    reefAimDown.onTrue(new InstantCommand(() -> {
       reefIndex--;
       reefIndex = reefIndex % Constants.OperatorConstants.REEF_ROTS.length;
       if(reefIndex < 0){
@@ -348,6 +352,7 @@ public class RobotContainer {
     }));
 
     new Trigger(() -> operatorController.getAButton()).onTrue(new HomeElevator(elevator));
+    new Trigger(() -> operatorController.getBButton()).onTrue(new InstantCommand(led::togglePattern, led));
     
   }
 
