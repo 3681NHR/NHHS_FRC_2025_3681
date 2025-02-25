@@ -171,6 +171,4 @@ public class ElevatorIOSpark implements ElevatorIO {
             motor2Config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
         
     }
-    
-                
 }
