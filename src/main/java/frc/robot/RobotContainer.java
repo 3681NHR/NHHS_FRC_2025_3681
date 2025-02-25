@@ -5,6 +5,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.HomeElevator;
 import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
+import frc.robot.constants.ElevatorConstants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.led;
@@ -352,11 +353,12 @@ public class RobotContainer {
     }));
 
     new Trigger(() -> operatorController.getAButton()).onTrue(new HomeElevator(elevator));
-    new Trigger(() -> operatorController.getBButton()).onTrue(new InstantCommand(led::togglePattern, led));
+    new Trigger(() -> operatorController.getBButton()).onTrue(new DisabledInstantCommand(led::togglePattern, led));
     
   }
 
   public void Periodic(){
+    led.setpos(elevator.getPositionSet() / ElevatorConstants.MAX_POS);
     Logger.recordOutput("fieldOrientedDrive", getFOD());
     Logger.recordOutput("directAngle", getDirectAngle());
 

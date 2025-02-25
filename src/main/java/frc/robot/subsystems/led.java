@@ -23,15 +23,16 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class led extends SubsystemBase {
 
     private boolean pattOn = true;
+    private double pos;
 
     private AddressableLED led = new AddressableLED(1);
-    private AddressableLEDBuffer buffer = new AddressableLEDBuffer(60);
+    private AddressableLEDBuffer buffer = new AddressableLEDBuffer(100);
 
-    private LEDPattern patt = LEDPattern.gradient(GradientType.kContinuous, Color.kMaroon, Color.kSeaGreen)
+    private LEDPattern patt = LEDPattern.gradient(GradientType.kContinuous, Color.kRed, Color.kBlue)
             .scrollAtRelativeSpeed(Percent.per(Second).of(25))
             .synchronizedBlink(RobotController::getRSLState);
-    private LEDPattern alliance = LEDPattern.solid(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? Color.kBlue : Color.kRed);
-    
+    private LEDPattern alliance;
+
     private Color[] colors = new Color[buffer.getLength()];
 
 
@@ -46,6 +47,9 @@ public class led extends SubsystemBase {
         if(pattOn){
             patt.applyTo(buffer);
         } else {
+            alliance = LEDPattern.solid(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? Color.kBlue : Color.kRed)
+            .mask(LEDPattern.progressMaskLayer(() -> pos));
+
             alliance.applyTo(buffer);
         }
         led.setData(buffer);
@@ -58,6 +62,9 @@ public class led extends SubsystemBase {
 
     public void togglePattern() {
         pattOn = !pattOn;
+    }
+    public void setpos(double pos){
+        this.pos = pos;
     }
     
 }
