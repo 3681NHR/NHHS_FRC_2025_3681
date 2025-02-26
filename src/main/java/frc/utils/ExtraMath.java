@@ -2,6 +2,7 @@ package frc.utils;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
+import java.lang.Math;
 
 public final class ExtraMath {
     
@@ -21,7 +22,6 @@ public final class ExtraMath {
    * @param val - number to process
    * @param multiplier - multiplier for input, mainly used for inverting
    * @param square - polynomial curve value, roughly y=x^s {@link https://docs.wpilib.org/en/stable/docs/software/hardware-apis/motors/wpi-drive-classes.html#squaring-inputs}
-   * swerve subsystem drive commands square internaly, so this should not be used
    * @param deadZone - deadzone for input {@link https://docs.wpilib.org/en/stable/docs/software/hardware-apis/motors/wpi-drive-classes.html#input-deadband}
    * @return
    */
@@ -52,21 +52,36 @@ public final class ExtraMath {
   public static double holdPositive(double in){
     return in<0 ? 0 : in;
   }
+  /**
+   * Derrivitive class
+   */
   public static class Derrivitive{
 
     private double value;
     private double oldValue;
     private boolean init = false;
 
+    /**
+     * constructs a new Derrivitive object, first update will be based off initial mesurement
+     * @param initMesure initial mesurement
+     */
     public Derrivitive(double initMesure){
-
       oldValue = initMesure;
       init = true;
     }
+    /**
+     * constructs a new Derrivitive object, first update will return 0
+     */
     public Derrivitive(){
       init = false;
     }
 
+    /**
+     * calculate the rate of change of a mesurement
+     * @param mesurement current mesurement
+     * @param dt time since last update
+     * @return  rate of change
+     */
     public double calculate(double mesurement, double dt){
       value = mesurement;
       if(!init){

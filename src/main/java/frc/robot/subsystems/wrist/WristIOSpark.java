@@ -12,12 +12,16 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import frc.utils.SparkUtil;
+import frc.utils.ExtraMath.Derrivitive;
 
 import static frc.robot.constants.WristConstants.*;
+
+import org.littletonrobotics.junction.Logger;
 
 public class WristIOSpark implements WristIO{
 
     private double pos;
+    private double vel;
     private double posSet;
     private DutyCycleEncoder encoder = new DutyCycleEncoder(ENCODER_ID);
 
@@ -27,6 +31,8 @@ public class WristIOSpark implements WristIO{
 
     private SparkMax motor = new SparkMax(MOTOR_ID, MotorType.kBrushless);
     private SparkMaxConfig config;
+
+    private Derrivitive velDeriv = new Derrivitive();
 
     public WristIOSpark(){
         config
@@ -57,7 +63,23 @@ public class WristIOSpark implements WristIO{
     @Override
     public void updateInputs(WristIOInputs in){
         pos = (encoder.get()*POS_FACTOR) + POS_OFFSET;
+        vel = velDeriv.calculate(pos, 0.02);
 
-        motor.setVoltage(pid.calculate(pos, posSet) + ff.calculate(pos, pid.getSetpoint().velocity));
+        double pidOut = pid.calculate(pos, posSet);
+        double ffOut = ff.calculate(pos, pid.getSetpoint().velocity);
+
+        Logger.recordOutput("wrist/PID goal", posSet);
+        Logger.recordOutput("wrist/PID set", pid.getSetpoint().position);
+        Logger.recordOutput("wrist/PID out", pidOut);
+        Logger.recordOutput("wrist/FF out", ffOut);
+
+        motor.setVoltage(pidOut + ffOut);
+
+        in.motorCurrentAmps = motor.getOutputCurrent();
+        in.motoroutVolts = motor.getBusVoltage()*motor.getAppliedOutput();
+        in.motorTemp = motor.getMotorTemperature();
+
+        in.posRad = pos;
+        in.velRadPerSec = vel;
     }
 }

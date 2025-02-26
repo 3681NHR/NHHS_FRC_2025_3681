@@ -1,5 +1,7 @@
 package frc.robot.constants;
 
+import edu.wpi.first.math.util.Units;
+
 public class WristConstants {
     public static final double POS_OFFSET = 0.0;
     public static final double POS_FACTOR = Math.PI*2;
@@ -19,4 +21,7 @@ public class WristConstants {
     public static final int MOTOR_ID = 3;
 
     public static final boolean MOTOR_INVERT = false;
+
+    public static final double MAX_POS = Units.degreesToRadians(360);
+    public static final double MIN_POS = Units.degreesToRadians(-360);
 }
