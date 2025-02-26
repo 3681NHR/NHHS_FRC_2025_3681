@@ -28,7 +28,7 @@ public final class ElevatorConstants {
     public static final boolean BUILTIN_ENCODER_INVERT = false;
     public static final boolean ENCODER_INVERT = false;
 
-    public static final int CURRENT_LIM = 40;
+    public static final int CURRENT_LIM = 30;
 
     public static final double POS_P = 5;
     public static final double POS_D = 0.0;

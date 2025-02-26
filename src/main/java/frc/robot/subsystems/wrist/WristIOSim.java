@@ -1,5 +1,14 @@
 package frc.robot.subsystems.wrist;
 
-public class WristIOSim {
-    
+import frc.robot.subsystems.wrist.WristIO.WristIOInputs;
+
+public class WristIOSim implements WristIO {
+    @Override
+    public void setPos(double pos){
+
+    }
+    @Override
+    public void updateInputs(WristIOInputs in){
+        
+    }
 }
