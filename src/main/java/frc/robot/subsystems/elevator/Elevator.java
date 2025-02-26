@@ -44,14 +44,14 @@ public class Elevator extends SubsystemBase {
         notHomed.set(!homed);
 
         if(!openloop){
-            if(!homed && inputs.positionMeters < 0){
-                io.resetposition(0);
+            if(!homed && inputs.elevatorPositionMeters < 0){
+                io.resetElevatorPosition(0);
             }
             pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
                 
-            io.setTargetLocation(pos);
+            io.setElevatorTargetLocation(pos);
         } else {
-            pos = inputs.positionMeters;
+            pos = inputs.elevatorPositionMeters;
         }
     }
 
@@ -63,7 +63,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public void setVoltage(double voltage){
-        io.moveOpenLoop(voltage);
+        io.moveElevatorOpenLoop(voltage);
         openloop = true;
     }
 
@@ -79,13 +79,13 @@ public class Elevator extends SubsystemBase {
         return pos;
     }
     public double getPosition(){
-        return inputs.positionMeters;
+        return inputs.elevatorPositionMeters;
     }
     public double getVelocity() {
-        return inputs.velocityMetersPerSec;
+        return inputs.elevatorVelocityMetersPerSec;
     }
     public void resetPos(double pos){
-        io.resetposition(pos);
+        io.resetElevatorPosition(pos);
     }
 
     public Command man(DoubleSupplier change){
@@ -93,12 +93,12 @@ public class Elevator extends SubsystemBase {
             pos += change.getAsDouble();
         }).beforeStarting(() -> {
             //reset pos on start to avoid jumping
-            pos = inputs.positionMeters;
+            pos = inputs.elevatorPositionMeters;
         });
     }
 
     public void toggleBrake(){
-        io.setNeutralMode(brake);
+        io.setElevatorNeutralMode(brake);
         brake = !brake;
     }
 }

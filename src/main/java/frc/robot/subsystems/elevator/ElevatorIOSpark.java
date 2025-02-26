@@ -114,8 +114,8 @@ public class ElevatorIOSpark implements ElevatorIO {
         }
         motor1.setVoltage(voltsOut);
 
-        inputs.positionMeters = pos;
-        inputs.velocityMetersPerSec = vel;
+        inputs.elevatorPositionMeters = pos;
+        inputs.elevatorVelocityMetersPerSec = vel;
 
         inputs.motor1CurrentAmps = motor1.getOutputCurrent();
         inputs.motor1Voltage = motor1.getBusVoltage()*motor1.getAppliedOutput();
@@ -126,18 +126,18 @@ public class ElevatorIOSpark implements ElevatorIO {
         inputs.motor2TempC = motor2.getMotorTemperature();
     }
     
-    public void setTargetLocation(double targetMeters) {
+    public void setElevatorTargetLocation(double targetMeters) {
         posSetpoint = targetMeters;
         openloop = false;
     }
     
-    public void moveOpenLoop(double voltage) {
+    public void moveElevatorOpenLoop(double voltage) {
         openloop = true;
         voltsOut = voltage;
         motor1.setVoltage(voltage);
     }
     
-    public void setNeutralMode(boolean brake) {
+    public void setElevatorNeutralMode(boolean brake) {
         
         if(brake){
             motor1Config.idleMode(IdleMode.kBrake);
@@ -149,7 +149,7 @@ public class ElevatorIOSpark implements ElevatorIO {
         configure();
     }
     
-    public void resetposition(double posMeters) {
+    public void resetElevatorPosition(double posMeters) {
         encoder.reset();
         posOffset = posMeters;
         motorEncoder.setPosition(posMeters/Builtinfactor);

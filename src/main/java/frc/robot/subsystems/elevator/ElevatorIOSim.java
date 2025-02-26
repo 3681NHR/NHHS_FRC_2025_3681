@@ -93,8 +93,8 @@ public class ElevatorIOSim implements ElevatorIO{
         }
         sim.setInputVoltage(voltsOut);
 
-        inputs.positionMeters = pos;
-        inputs.velocityMetersPerSec = vel;
+        inputs.elevatorPositionMeters = pos;
+        inputs.elevatorVelocityMetersPerSec = vel;
 
         inputs.motor1CurrentAmps = sim.getCurrentDrawAmps()/2;
         inputs.motor1Voltage = voltsOut/2;
@@ -107,22 +107,22 @@ public class ElevatorIOSim implements ElevatorIO{
         sim.update(0.02);
     }
     
-    public void setTargetLocation(double targetMeters) {
+    public void setElevatorTargetLocation(double targetMeters) {
         posSetpoint = targetMeters;
         openloop = false;
     }
     
-    public void moveOpenLoop(double voltage) {
+    public void moveElevatorOpenLoop(double voltage) {
         openloop = true;
         voltsOut = voltage;
         sim.setInputVoltage(voltsOut);
     }
     
-    public void setNeutralMode(boolean brake) {
+    public void setElevatorNeutralMode(boolean brake) {
         //not used with sim
     }
     
-    public void resetposition(double posMeters) {
+    public void resetElevatorPosition(double posMeters) {
         //TODO reset
         posOffset = posMeters;
     }
