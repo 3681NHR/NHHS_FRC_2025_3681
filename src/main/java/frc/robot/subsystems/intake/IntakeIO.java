@@ -6,17 +6,11 @@ public interface IntakeIO {
     
     public default void updateInputs(IntakeIOInputs inputs) {}
 
-    public default void moveOpenLoop(double voltage) {}
-
     public default void setNeutralMode(boolean brake) {}
-
-    public default void resetposition(double posMeters) {}
 
     public default void setVoltage(double voltage) {}
 
     public default void setBrakeMode(boolean brake) {}
-    
-    public default void setVelocity(double velocityRPM) {}
 
     @AutoLog
     public class IntakeIOInputs {

@@ -3,6 +3,7 @@ package frc.robot.subsystems.wrist;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static frc.robot.constants.WristConstants.*;
@@ -22,6 +23,10 @@ public class Wrist extends SubsystemBase {
     public void periodic(){
         io.updateInputs(inputs);
         Logger.processInputs("wrist", inputs);
+
+        if(DriverStation.isDisabled()){
+            pos = inputs.posRad;
+        }
 
         //pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
 

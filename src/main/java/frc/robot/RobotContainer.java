@@ -13,6 +13,8 @@ import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorIOSpark;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIOSpark;
 import frc.robot.subsystems.swerve.*;
 import frc.robot.subsystems.vision.CameraIO;
 import frc.robot.subsystems.vision.CameraIOPhoton;
@@ -72,6 +74,7 @@ public class RobotContainer {
   private Vision vision;
   private Elevator elevator;
   private Wrist wrist;
+  private Intake intake;
 
   private led led = new led();
 
@@ -192,6 +195,7 @@ public class RobotContainer {
                 vision);
         elevator = new Elevator(new ElevatorIOSpark());
         wrist = new Wrist(new WristIOSpark());
+        intake = new Intake(new IntakeIOSpark());
         break;
 
       case SIM:
@@ -366,6 +370,16 @@ public class RobotContainer {
       wrist.setPos(wrist.getPosSet() - 0.1);
     }));
     
+    new Trigger(() -> driverController.getLeftBumperButton()).onTrue(new InstantCommand(() -> {
+      intake.setVoltage(-5);
+    })).onFalse(new InstantCommand(() -> {
+      intake.stop();
+    }));
+    new Trigger(() -> operatorController.getYButton()).onTrue(new InstantCommand(() -> {
+      intake.setVoltage(5);
+    })).onFalse(new InstantCommand(() -> {
+      intake.stop();
+    }));
   }
 
   public void Periodic(){

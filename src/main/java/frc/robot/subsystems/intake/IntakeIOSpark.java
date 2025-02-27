@@ -22,13 +22,8 @@ public class IntakeIOSpark implements IntakeIO {
     private final SparkMax motor = new SparkMax(MOTOR_ID, MotorType.kBrushless);
     private final SparkMaxConfig motorConfig = new SparkMaxConfig();
     private final RelativeEncoder encoder = motor.getEncoder();
-    private final SimpleMotorFeedforward ff = new SimpleMotorFeedforward(S, V);
-    private final PIDController pidController = new PIDController(P, 0, D);
     
-    private double targetVoltage = 0.0;
-    private boolean closedLoop = false;
-    private double targetVelocity = 0.0;
-    private double appliedVoltage = 0.0;
+    private double voltage = 0.0;
     
     public IntakeIOSpark() {
         motorConfig
@@ -52,24 +47,8 @@ public class IntakeIOSpark implements IntakeIO {
     @Override
     public void updateInputs(IntakeIOInputs inputs) {
         // Update control outputs based on control mode
-        if (closedLoop) {
-            // Use PID + Feedforward for velocity control
-            double currentVelocity = encoder.getVelocity();
-            double pidOutput = pidController.calculate(currentVelocity, targetVelocity);
-            double ffOutput = ff.calculate(targetVelocity);
-            appliedVoltage = pidOutput + ffOutput;
-            
-            // Log control values
-            Logger.recordOutput("Intake/PIDOutput", pidOutput);
-            Logger.recordOutput("Intake/FFOutput", ffOutput);
-            Logger.recordOutput("Intake/TargetVelocity", targetVelocity);
-            
-            motor.setVoltage(appliedVoltage);
-        } else {
-            // Direct voltage control
-            appliedVoltage = targetVoltage;
-            motor.setVoltage(targetVoltage);
-        }
+        motor.setVoltage(voltage);
+        
         
         // Update input values
         inputs.motorVoltage = motor.getBusVoltage() * motor.getAppliedOutput();
@@ -80,23 +59,10 @@ public class IntakeIOSpark implements IntakeIO {
     }
     
     @Override
-    public void moveOpenLoop(double voltage) {
-        closedLoop = false;
-        targetVoltage = voltage;
-    }
-    
-    @Override
     public void setVoltage(double voltage) {
-        closedLoop = false;
-        targetVoltage = voltage;
+        this.voltage = voltage;
     }
-    
-    public void setVelocity(double velocityRPM) {
-        closedLoop = true;
-        targetVelocity = velocityRPM;
-        pidController.setSetpoint(velocityRPM);
-    }
-    
+
     @Override
     public void setBrakeMode(boolean brake) {
         setNeutralMode(brake);
@@ -112,10 +78,6 @@ public class IntakeIOSpark implements IntakeIO {
         configure();
     }
     
-    @Override
-    public void resetposition(double posMeters) {
-        encoder.setPosition(posMeters);
-    }
     
     private void configure() {
         tryUntilOk(

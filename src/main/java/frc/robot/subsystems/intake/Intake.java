@@ -30,34 +30,13 @@ public class Intake extends SubsystemBase {
         useVelocityControl = false;
         io.setVoltage(volts);
     }
-    
-    public void setVelocity(double rpm) {
-        useVelocityControl = true;
-        io.setVelocity(rpm);
-    }
+
     public void stop() {
-        if (useVelocityControl) {
-            setVelocity(0.0);
-        } else {
             setVoltage(0.0);
-        }
+        
     }
     
     public void setBrakeMode(boolean enable) {
         io.setBrakeMode(enable);
-    }
-    
-    public double getVelocityRPM() {
-        return inputs.motorVelocityRPM;
-    }
-    
-    public double getVoltage() {
-        return inputs.motorVoltage;
-    }
-    public double getCurrent() {
-        return inputs.motorCurrent;
-    }
-    public boolean isRunning() {
-        return Math.abs(inputs.motorVelocityRPM) > MOTOR_RUNNING_THRESHOLD;
     }
 }
