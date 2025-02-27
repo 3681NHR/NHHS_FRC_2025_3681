@@ -31,4 +31,10 @@ public class Wrist extends SubsystemBase {
     public void setPos(double pos){
         this.pos = pos;
     }
+    public double getPos(){
+        return inputs.posRad;
+    }
+    public double getPosSet(){
+        return pos;
+    }
 }

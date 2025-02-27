@@ -45,10 +45,12 @@ public class Elevator extends SubsystemBase {
 
         if(!openloop){
             if(!homed && inputs.elevatorPositionMeters < 0){
-                io.resetElevatorPosition(0);
+                //io.resetElevatorPosition(0);
             }
-            pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
-                
+            if(homed){
+                pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
+            }
+
             io.setElevatorTargetLocation(pos);
         } else {
             pos = inputs.elevatorPositionMeters;

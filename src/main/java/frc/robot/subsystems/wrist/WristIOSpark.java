@@ -1,5 +1,6 @@
 package frc.robot.subsystems.wrist;
 
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -30,7 +31,9 @@ public class WristIOSpark implements WristIO{
     private ProfiledPIDController pid = new ProfiledPIDController(POS_P, 0, POS_D, new Constraints(POS_MAX_SPEED, POS_MAX_ACCEL));
 
     private SparkMax motor = new SparkMax(MOTOR_ID, MotorType.kBrushless);
-    private SparkMaxConfig config;
+    private SparkMaxConfig config = new SparkMaxConfig();
+
+    private RelativeEncoder motorEncoder = motor.getEncoder();
 
     private Derrivitive velDeriv = new Derrivitive();
 
@@ -62,7 +65,7 @@ public class WristIOSpark implements WristIO{
 
     @Override
     public void updateInputs(WristIOInputs in){
-        pos = (encoder.get()*POS_FACTOR) + POS_OFFSET;
+        pos = (motorEncoder.getPosition()*POS_FACTOR) + POS_OFFSET;//(encoder.get()*POS_FACTOR) + POS_OFFSET;
         vel = velDeriv.calculate(pos, 0.02);
 
         double pidOut = pid.calculate(pos, posSet);
@@ -73,7 +76,7 @@ public class WristIOSpark implements WristIO{
         Logger.recordOutput("wrist/PID out", pidOut);
         Logger.recordOutput("wrist/FF out", ffOut);
 
-        motor.setVoltage(pidOut + ffOut);
+        motor.setVoltage(pidOut + POS_G);//FIXME
 
         in.motorCurrentAmps = motor.getOutputCurrent();
         in.motoroutVolts = motor.getBusVoltage()*motor.getAppliedOutput();

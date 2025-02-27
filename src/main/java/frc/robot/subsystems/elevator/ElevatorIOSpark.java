@@ -41,7 +41,7 @@ public class ElevatorIOSpark implements ElevatorIO {
     private double voltsOut = 0.0;
     private boolean openloop = false;
 
-    private boolean encoderFallback = false;
+    private boolean encoderFallback = true;
 
     private Alert divergenceAlert = new Alert("main encoder and builtin encoder values are divergent!", AlertType.kError);
     private Alert fallbackAlert = new Alert("main encoder not found, using builtin encoder as fallback", AlertType.kWarning);
@@ -93,7 +93,7 @@ public class ElevatorIOSpark implements ElevatorIO {
     public void updateInputs(ElevatorIOInputs inputs) {
         //TODO detect fallback condition
         if(encoderFallback){
-            vel = motorEncoder.getVelocity() * Builtinfactor;
+            vel = (motorEncoder.getVelocity() * Builtinfactor) - pos;
             pos = motorEncoder.getPosition() * Builtinfactor;
         } else {
             pos = encoder.getDistance() + posOffset;
