@@ -4,7 +4,7 @@ import edu.wpi.first.math.util.Units;
 
 public class WristConstants {
     public static final double POS_OFFSET = 0.0;
-    public static final double POS_FACTOR = Math.PI/20;
+    public static final double POS_FACTOR = 2*Math.PI;
 
     public static final double POS_P = 0.5;
     public static final double POS_D = 0.0;

@@ -59,6 +59,17 @@ public class WristIOSpark implements WristIO{
     public void setPos(double pos){
         posSet = pos;
     }
+    @Override
+    public void setBrake(boolean brake){
+        config.idleMode(brake ? IdleMode.kBrake : IdleMode.kCoast);
+        SparkUtil.tryUntilOk(motor, 
+        5, 
+        () -> motor.configure(
+            config, 
+            ResetMode.kResetSafeParameters, 
+            PersistMode.kPersistParameters
+        ));
+    }
 
     @Override
     public void updateInputs(WristIOInputs in){

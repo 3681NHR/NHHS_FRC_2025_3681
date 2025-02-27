@@ -43,4 +43,7 @@ public class Intake extends SubsystemBase {
     public boolean getHoldLock() {
         return holdLock.get();
     }
+    public boolean isMoving(){
+        return Math.abs(inputs.motorVoltage)> 1;
+    }
 }

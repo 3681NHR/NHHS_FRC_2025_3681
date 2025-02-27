@@ -8,6 +8,8 @@ public interface WristIO {
 
     public default void setPos(double posRad) {}
 
+    public default void setBrake(boolean brake) {}
+
     @AutoLog
     public class WristIOInputs{
         public double posRad = 0.0;
