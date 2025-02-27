@@ -18,6 +18,8 @@ import frc.robot.subsystems.vision.CameraIO;
 import frc.robot.subsystems.vision.CameraIOPhoton;
 import frc.robot.subsystems.vision.CameraIOPhotonSim;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.wrist.Wrist;
+import frc.robot.subsystems.wrist.WristIOSpark;
 import frc.utils.rumble.*;
 import frc.utils.TimerHandler;
 import frc.utils.Joystick.duelJoystickAxis;
@@ -69,6 +71,7 @@ public class RobotContainer {
   private Drive drive;
   private Vision vision;
   private Elevator elevator;
+  private Wrist wrist;
 
   private led led = new led();
 
@@ -188,6 +191,7 @@ public class RobotContainer {
                 new ModuleIOSpark(3),
                 vision);
         elevator = new Elevator(new ElevatorIOSpark());
+        wrist = new Wrist(new WristIOSpark());
         break;
 
       case SIM:
@@ -353,7 +357,14 @@ public class RobotContainer {
     }));
 
     new Trigger(() -> operatorController.getAButton()).onTrue(new HomeElevator(elevator));
-    new Trigger(() -> operatorController.getBButton()).onTrue(new DisabledInstantCommand(led::togglePattern, led));
+    //new Trigger(() -> operatorController.getBButton()).onTrue(new DisabledInstantCommand(led::togglePattern, led));
+    
+    new Trigger(() -> operatorController.getBButton()).whileTrue(Commands.run(() -> {
+      wrist.setPos(wrist.getPosSet() + 0.1);
+    }));
+    new Trigger(() -> operatorController.getXButton()).whileTrue(Commands.run(() -> {
+      wrist.setPos(wrist.getPosSet() - 0.1);
+    }));
     
   }
 
