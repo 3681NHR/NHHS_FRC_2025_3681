@@ -44,7 +44,7 @@ public class ElevatorIOSpark implements ElevatorIO {
     private boolean encoderFallback = true;
 
     private Alert divergenceAlert = new Alert("main encoder and builtin encoder values are divergent!", AlertType.kError);
-    private Alert fallbackAlert = new Alert("main encoder not found, using builtin encoder as fallback", AlertType.kWarning);
+    private Alert fallbackAlert = new Alert("using builtin encoder as fallback", AlertType.kWarning);
 
     private ProfiledPIDController pid = new ProfiledPIDController(
         POS_P,
@@ -91,7 +91,7 @@ public class ElevatorIOSpark implements ElevatorIO {
     }
 
     public void updateInputs(ElevatorIOInputs inputs) {
-        //TODO detect fallback condition
+        encoderFallback = divergenceAlert.get();
         if(encoderFallback){
             vel = (motorEncoder.getVelocity() * Builtinfactor) - pos;
             pos = motorEncoder.getPosition() * Builtinfactor;
@@ -105,10 +105,10 @@ public class ElevatorIOSpark implements ElevatorIO {
 
         double pidOut = pid.calculate(pos, posSetpoint);
         double ffOut = ff.calculate(pid.getSetpoint().velocity);
-        Logger.recordOutput("elevator/pidOut", pidOut);
-        Logger.recordOutput("elevator/ffOut", ffOut);
-        Logger.recordOutput("elevator/target", posSetpoint);
-        Logger.recordOutput("elevator/setpoint", pid.getSetpoint().position);
+        Logger.recordOutput("Elevator/pidOut", pidOut);
+        Logger.recordOutput("Elevator/ffOut", ffOut);
+        Logger.recordOutput("Elevator/target", posSetpoint);
+        Logger.recordOutput("Elevator/setpoint", pid.getSetpoint().position);
         if(!openloop){
             voltsOut = pidOut + ffOut;
         }

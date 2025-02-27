@@ -3,9 +3,11 @@ package frc.robot;
 import frc.robot.commands.AnglePresetDriveCommand;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.HomeElevator;
+import frc.robot.commands.IntakeCommand;
 import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.ElevatorConstants;
+import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.led;
@@ -370,16 +372,13 @@ public class RobotContainer {
       wrist.setPos(wrist.getPosSet() - 0.1);
     }));
     
-    new Trigger(() -> driverController.getLeftBumperButton()).onTrue(new InstantCommand(() -> {
-      intake.setVoltage(-5);
+    //intake controls
+    new Trigger(() -> driverController.getRightBumperButton()).or(() -> operatorController.getRightBumperButton()).onTrue(new InstantCommand(() -> {
+      intake.setVoltage(-IntakeConstants.SPEED);
     })).onFalse(new InstantCommand(() -> {
       intake.stop();
     }));
-    new Trigger(() -> operatorController.getYButton()).onTrue(new InstantCommand(() -> {
-      intake.setVoltage(5);
-    })).onFalse(new InstantCommand(() -> {
-      intake.stop();
-    }));
+    new Trigger(() -> operatorController.getYButton()).whileTrue(new IntakeCommand(intake));
   }
 
   public void Periodic(){

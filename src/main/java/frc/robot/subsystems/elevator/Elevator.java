@@ -39,7 +39,7 @@ public class Elevator extends SubsystemBase {
     @Override
     public void periodic(){
         io.updateInputs(inputs);
-        Logger.processInputs("elevator", inputs);
+        Logger.processInputs("Elevator", inputs);
 
         notHomed.set(!homed);
 

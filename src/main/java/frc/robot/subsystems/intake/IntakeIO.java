@@ -10,8 +10,6 @@ public interface IntakeIO {
 
     public default void setVoltage(double voltage) {}
 
-    public default void setBrakeMode(boolean brake) {}
-
     @AutoLog
     public class IntakeIOInputs {
         public double motorVoltage = 0.0;
@@ -19,5 +17,6 @@ public interface IntakeIO {
         public double motorTemperature = 0.0;
         public double motorVelocityRPM = 0.0;
         public double motorPositionRotations = 0.0;
+        public boolean holding = false;
     }
 }
