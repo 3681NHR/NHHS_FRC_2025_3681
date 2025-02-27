@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 8.017905498341587,
-        "y": 7.253
+        "x": 3.0,
+        "y": 7.0
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.9044623012992155,
-        "y": 6.649634187945211
+        "x": 2.6818209816766494,
+        "y": 7.1444806645079675
       },
       "isLocked": false,
-      "linkedName": "start p1"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.935982526529257,
-        "y": 5.159065028776996
+        "x": 2.0,
+        "y": 7.0
       },
       "prevControl": {
-        "x": 4.728209951968773,
-        "y": 5.636016340899099
+        "x": 2.7952617920480782,
+        "y": 7.4962941313400995
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "reef p5"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
@@ -38,17 +38,17 @@
     "maxAngularVelocity": 597.8815,
     "maxAngularAcceleration": 2575.846,
     "nominalVoltage": 12.0,
-    "unlimited": true
+    "unlimited": false
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -148.37671671133734
+    "rotation": -2.931519627864077
   },
   "reversed": false,
-  "folder": "from start 1",
+  "folder": "tuning and test",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 179.51277024968022
+    "rotation": 178.11388354769844
   },
   "useDefaultConstraints": true
 }

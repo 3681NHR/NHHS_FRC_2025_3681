@@ -28,7 +28,7 @@ public final class Constants {
   public static RobotMode MODE = RobotBase.isReal() ? RobotMode.REAL : SIM_MODE;
 
   public static final double AUTO_TIME = 15;
-  public static final double TELEOP_TIME = 135;//2:15
+  public static final double TELEOP_TIME = 150;//2:15
   public static final double ENDGAME_TIME = 20;//time remaining in teleop when endgame starts
 
   public static final Pose2d STARTING_POSE = new Pose2d(new Translation2d(2.3, 4), Rotation2d.fromDegrees(0));
@@ -43,6 +43,8 @@ public final class Constants {
     public static final double RIGHT_DEADBAND = 0.15;
 
     public static final double ANGLE_DEADBAND = 0.5;
+
+    public static final double ELEVATOR_MAN_SENS = 0.05;
     
     //Curvature (rotation curve only applies when using anguler velocity)
     public static final double TRANSLATION_CURVE = 1.5;

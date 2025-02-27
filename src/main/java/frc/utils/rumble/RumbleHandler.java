@@ -12,10 +12,17 @@ public class RumbleHandler {
     private XboxController controller;
     private double port;
 
+    private boolean following = false;
+    private RumbleHandler lead;
+
     private ArrayList<Rumble> que = new ArrayList<Rumble>();
     public RumbleHandler(XboxController controller){
         this.controller = controller;
         this.port = controller.getPort();
+    }
+    public RumbleHandler(RumbleHandler lead){
+        this.following = true;
+        this.lead = lead;
     }
     /**
      * clear rumble que, effectivly stopping all rumble
@@ -54,6 +61,9 @@ public class RumbleHandler {
         }
     }
     public void update(double loopTime){
+        if(following){
+            que = lead.que;
+        }
         for (int i=0; i < que.size(); i++) {
             que.get(i).time -= loopTime;
             if(que.get(i).time <= 0){
@@ -68,6 +78,11 @@ public class RumbleHandler {
             controller.setRumble(RumbleType.kBothRumble, 0);
             Logger.recordOutput("haptics/rumble: "+port+"/currentStrength", 0.0);
             Logger.recordOutput("haptics/rumble: "+port+"/que", new double[0][0]);
+        }
+        Logger.recordOutput("haptics/rumble: "+port+"/following", following);
+        
+        if(following){
+            Logger.recordOutput("haptics/rumble: "+port+"/following rumble", lead.port);
         }
     } 
     private double[][] getPows(){

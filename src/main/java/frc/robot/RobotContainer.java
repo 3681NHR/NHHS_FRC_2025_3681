@@ -2,16 +2,18 @@ package frc.robot;
 
 import frc.robot.commands.AnglePresetDriveCommand;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.PointAtVisionTarget;
+import frc.robot.commands.HomeElevator;
 import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
+import frc.robot.constants.ElevatorConstants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
+import frc.robot.subsystems.led;
+import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.elevator.ElevatorIO;
+import frc.robot.subsystems.elevator.ElevatorIOSim;
+import frc.robot.subsystems.elevator.ElevatorIOSpark;
 import frc.robot.subsystems.swerve.*;
-import frc.robot.subsystems.vision.CameraIO;
-import frc.robot.subsystems.vision.CameraIOPhoton;
-import frc.robot.subsystems.vision.CameraIOPhotonSim;
-import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.CameraIO;
 import frc.robot.subsystems.vision.CameraIOPhoton;
 import frc.robot.subsystems.vision.CameraIOPhotonSim;
@@ -20,7 +22,7 @@ import frc.utils.rumble.*;
 import frc.utils.TimerHandler;
 import frc.utils.Joystick.duelJoystickAxis;
 import frc.utils.BatteryVoltageSim;
-import frc.utils.ControllerMap;
+import frc.utils.DisabledInstantCommand;
 import frc.utils.ExtraMath;
 import frc.utils.Joystick;
 
@@ -29,10 +31,7 @@ import static edu.wpi.first.units.Units.Meters;
 
 import static frc.utils.ControllerMap.*;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -41,14 +40,15 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
@@ -56,24 +56,31 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
-@SuppressWarnings("unused")
 public class RobotContainer {
 
   // Create and configure a drivetrain simulation configuration
   private DriveTrainSimulationConfig driveTrainSimulationConfig;
   private SwerveDriveSimulation driveSim;
-
+  
   private Drive drive;
   private Vision vision;
+  private Elevator elevator;
+
+  private led led = new led();
 
   private final XboxController driverController =
       new XboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
+      
+  private final XboxController operatorController =
+      new XboxController(OperatorConstants.OPERATOR_CONTROLLER_PORT);
 
   private LoggedNetworkBoolean resetOdometry = new LoggedNetworkBoolean("resetOdometry", false);
   private LoggedDashboardChooser<Command> autoChooser;
+  private LoggedNetworkBoolean useVisionOdometry = new LoggedNetworkBoolean("overrides/useVisionOdometry", DriveConstants.USE_VISION);
 
   private boolean fod = Constants.drive.STARTING_FOD;
   private boolean directAngle = Constants.drive.STARTING_DIRECT_ANGLE;
@@ -82,6 +89,7 @@ public class RobotContainer {
   private Trigger rstGyro;
   private Trigger toggleFOD;
   private Trigger toggleDA;
+
   private Trigger autoAimReef;
   private Trigger autoAimStation;
   private Trigger autoAimFar;//barge or prosseser
@@ -89,8 +97,9 @@ public class RobotContainer {
   private Trigger reefAimUp;
   private Trigger reefAimDown;
 
+  private Trigger toggleElevBrake;
+
   private int reefIndex = 0;
-  private int stationIndex = 0;
   private int farIndex = 0;
   private Rotation2d reefAngle = Constants.OperatorConstants.REEF_ROTS[0];
   private Rotation2d stationAngle = new Rotation2d();
@@ -106,15 +115,20 @@ public class RobotContainer {
   private DoubleSupplier leftTrigger;
   private DoubleSupplier rightTrigger;
 
-  private LoggedNetworkBoolean useVisionOdometry = new LoggedNetworkBoolean("overrides/useVisionOdometry", DriveConstants.USE_VISION);
-  private LoggedNetworkNumber trackID = new LoggedNetworkNumber("apriltag to track", 3);
+  private DigitalInput brakeDio = new DigitalInput(2);
 
   private RumbleHandler rumbler = new RumbleHandler(driverController);
 
-
   private PowerDistribution pdp = new PowerDistribution(1  , ModuleType.kRev);
+  
+  private final Alert driverDisconnected =
+      new Alert("Driver controller disconnected (port 0).", AlertType.kWarning);
+  private final Alert operatorDisconnected =
+      new Alert("Operator controller disconnected (port 1).", AlertType.kWarning);
 
   public RobotContainer() {
+
+    DriverStation.silenceJoystickConnectionWarning(true);
 
     if(RobotBase.isSimulation()){
       driveTrainSimulationConfig = DriveTrainSimulationConfig.Default()
@@ -149,6 +163,7 @@ public class RobotContainer {
       leftTrigger = () -> driverController.getLeftTriggerAxis();
       rightTrigger = () -> driverController.getRightTriggerAxis();
 
+
     }
     //process driver controls(radial deadzone, curve, trigger slowdown, and inversion)
     driverSticks = new duelJoystickAxis(
@@ -161,7 +176,9 @@ public class RobotContainer {
     switch (Constants.MODE) {
       case REAL:
         // Real robot, instantiate hardware IO implementations
-        vision = new Vision(new CameraIOPhoton(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM));
+        vision = new Vision(
+          new CameraIOPhoton(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM),
+          new CameraIOPhoton(VisionConstants.CAMERA_1_NAME, VisionConstants.CAMERA_1_ROBOT_TO_CAM));
         drive =
             new Drive(
                 new GyroIOPigeon2(),
@@ -170,11 +187,15 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3),
                 vision);
+        elevator = new Elevator(new ElevatorIOSpark());
         break;
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
-        vision = new Vision(new CameraIOPhotonSim(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose));
+        vision = new Vision(
+          new CameraIOPhotonSim(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose),
+          new CameraIOPhotonSim(VisionConstants.CAMERA_1_NAME, VisionConstants.CAMERA_1_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose)
+          );
         if(driveSim != null){
           drive =
               new Drive(
@@ -184,12 +205,17 @@ public class RobotContainer {
                   new ModuleIOSim(driveSim.getModules()[2]),
                   new ModuleIOSim(driveSim.getModules()[3]),
                   vision);
+        
+        elevator = new Elevator(new ElevatorIOSim());
         }
         break;
 
       default:
         // Replayed robot, disable IO implementations
-        vision = new Vision(new CameraIO() {});
+        vision = new Vision(
+          new CameraIO() {},
+          new CameraIO() {}
+        );
         drive =
             new Drive(
                 new GyroIO() {},
@@ -198,6 +224,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 vision);
+        elevator = new Elevator(new ElevatorIO() {});
         break;
     }
 
@@ -216,6 +243,12 @@ public class RobotContainer {
             drive.steerSysIdQuasistatic(SysIdRoutine.Direction.kForward).andThen(drive.steerSysIdQuasistatic(SysIdRoutine.Direction.kReverse)));
       autoChooser.addOption(
             "Steer SysId (Dynamic Forward/Reverse)", drive.steerSysIdDynamic(SysIdRoutine.Direction.kForward).andThen(drive.steerSysIdDynamic(SysIdRoutine.Direction.kReverse)));
+      autoChooser.addOption(
+              "Angle SysId (Quasistatic Forward/Reverse)",
+              drive.angleSysIdQuasistatic(SysIdRoutine.Direction.kForward).andThen(drive.angleSysIdQuasistatic(SysIdRoutine.Direction.kReverse)));
+      autoChooser.addOption(
+              "Angle SysId (Dynamic Forward/Reverse)", drive.angleSysIdDynamic(SysIdRoutine.Direction.kForward).andThen(drive.angleSysIdDynamic(SysIdRoutine.Direction.kReverse)));
+      
     }
 
     configureBindings();
@@ -234,87 +267,98 @@ public class RobotContainer {
 
     drive.setDefaultCommand(driveCommand);
     
+    elevator.setDefaultCommand(elevator.man(() -> (operatorController.getRightTriggerAxis()-operatorController.getLeftTriggerAxis())*OperatorConstants.ELEVATOR_MAN_SENS));
   }
 
   private void configureBindings() {
     resetOdometry.set(false);
-    new Trigger(() ->resetOdometry.get()).onTrue(Commands.runOnce(() -> {
+    new Trigger(() ->resetOdometry.get()).onTrue(new InstantCommand(() -> {
       resetOdometry.set(false);
       drive.setPose(Constants.STARTING_POSE);
     }));
 
     if(RobotBase.isReal()){
-      lockPose = new Trigger(driverController::getXButton);
-      rstGyro = new Trigger(driverController::getAButton);
+      lockPose = new Trigger(driverController::getStartButton);
+      rstGyro = new Trigger(driverController::getBackButton);
       autoAimReef = new Trigger(driverController::getYButton);
       toggleFOD = new Trigger(driverController::getLeftStickButton);
       toggleDA = new Trigger(driverController::getRightStickButton);
       autoAimStation = new Trigger(driverController::getBButton);
+
     } else {
-      lockPose = new Trigger(() -> driverController.getRawButton(X));
-      rstGyro = new Trigger(() -> driverController.getRawButton(A));
+      lockPose = new Trigger(() -> driverController.getRawButton(LOGO_RIGHT));
+      rstGyro = new Trigger(() -> driverController.getRawButton(LOGO_LEFT));
       autoAimReef = new Trigger(() -> driverController.getRawButton(Y));
       toggleFOD = new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON));
       toggleDA = new Trigger(() -> driverController.getRawButton(RIGHT_STICK_BUTTON));
       autoAimStation = new Trigger(() -> driverController.getRawButton(B));
     }
     autoAimFar = new Trigger(() -> driverController.getPOV() == 0);
-
+    
     reefAimUp = new Trigger(() -> driverController.getPOV() == 90);
     reefAimDown = new Trigger(() -> driverController.getPOV() == 270);
+
+    toggleElevBrake = new Trigger(() -> brakeDio.get());
       
-    lockPose.whileTrue(Commands.runOnce(() -> {
+    lockPose.whileTrue(new InstantCommand(() -> {
       drive.stopWithX();
       rumbler.overrideQue(new Rumble(.1, 0.25));
     }, drive).repeatedly());
 
-    rstGyro.onTrue(Commands.runOnce(() -> {
-      drive.resetGyro(0);
+    rstGyro.onTrue(new InstantCommand(() -> {
+      drive.resetGyro(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? Math.PI : 0);
       rumbler.overrideQue(RumblePreset.TAP.load());
     }));
 
-    toggleFOD.onTrue(Commands.runOnce(() -> {
+    toggleFOD.onTrue(new InstantCommand(() -> {
     this.fod = !this.fod;
     }));
 
-    toggleDA.onTrue(Commands.runOnce(() -> {
+    toggleDA.onTrue(new InstantCommand(() -> {
       this.directAngle = !this.directAngle;
     }));
 
-    new Trigger(() -> TimerHandler.getTeleopRemaining()<Constants.ENDGAME_TIME).onTrue(Commands.runOnce(() -> {
+    new Trigger(() -> TimerHandler.getTeleopRemaining()<Constants.ENDGAME_TIME).onTrue(new InstantCommand(() -> {
       rumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());
     }));
     
-    autoAimStation.onTrue(Commands.runOnce(() -> {
-      rumbler.overrideQue(RumblePreset.TAP.load());
-    }).alongWith(new AnglePresetDriveCommand(
+    autoAimStation.onTrue(new AnglePresetDriveCommand(
       driverSticks,
       drive,
       () -> stationAngle
-    )));
+    ));
 
     autoAimReef.onTrue(new AnglePresetDriveCommand(driverSticks, drive, () -> reefAngle));
     
-    autoAimFar.onTrue(Commands.runOnce(() -> {
+    autoAimFar.onTrue(new InstantCommand(() -> {
       farIndex++;
       farIndex = farIndex % 2;
     }));
     autoAimFar.onTrue(new AnglePresetDriveCommand(driverSticks, drive, () -> farAngle));
 
-    reefAimUp.onTrue(Commands.runOnce(() -> {
+    reefAimUp.onTrue(new InstantCommand(() -> {
       reefIndex++;
       reefIndex = reefIndex % Constants.OperatorConstants.REEF_ROTS.length;
     }));
-    reefAimDown.onTrue(Commands.runOnce(() -> {
+    reefAimDown.onTrue(new InstantCommand(() -> {
       reefIndex--;
       reefIndex = reefIndex % Constants.OperatorConstants.REEF_ROTS.length;
       if(reefIndex < 0){
         reefIndex = Constants.OperatorConstants.REEF_ROTS.length-1;
       }
     }));
+
+    toggleElevBrake.onTrue(new DisabledInstantCommand(() -> {
+      elevator.toggleBrake();
+    }));
+
+    new Trigger(() -> operatorController.getAButton()).onTrue(new HomeElevator(elevator));
+    new Trigger(() -> operatorController.getBButton()).onTrue(new DisabledInstantCommand(led::togglePattern, led));
+    
   }
 
   public void Periodic(){
+    led.setpos(elevator.getPositionSet() / ElevatorConstants.MAX_POS);
     Logger.recordOutput("fieldOrientedDrive", getFOD());
     Logger.recordOutput("directAngle", getDirectAngle());
 
@@ -346,6 +390,8 @@ public class RobotContainer {
     }
     Logger.recordOutput("farIndex", farIndex);
 
+    driverDisconnected.set(!driverController.isConnected());
+    operatorDisconnected.set(!operatorController.isConnected());
   }
   public void SimPeriodic(){
     Logger.recordOutput("simulatedVoltage", BatteryVoltageSim.getInstance().calculateVoltage());
@@ -366,6 +412,9 @@ public class RobotContainer {
     return auto;
   }
 
+  public void resetDrivetrain(Pose2d pose){
+    driveSim.setSimulationWorldPose(pose);
+  }
   
   public boolean getFOD(){return fod;}
   public boolean getDirectAngle(){return directAngle;}
