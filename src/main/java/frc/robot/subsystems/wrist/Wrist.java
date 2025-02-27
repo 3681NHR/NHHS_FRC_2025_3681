@@ -1,8 +1,11 @@
 package frc.robot.subsystems.wrist;
 
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
@@ -14,6 +17,9 @@ public class Wrist extends SubsystemBase {
     private WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
 
     private double pos;
+
+    private Alert noLim = new Alert("wrist limits not enforced", AlertType.kWarning);
+    private LoggedNetworkBoolean limits = new LoggedNetworkBoolean("overrides/wristLimits", true);
 
     public Wrist(WristIO io){
         this.io = io;
@@ -28,7 +34,10 @@ public class Wrist extends SubsystemBase {
             pos = inputs.posRad;
         }
 
-        //pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
+        noLim.set(!limits.get());
+        if(limits.get()){
+            pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
+        }
 
         io.setPos(pos);
     }

@@ -1,6 +1,5 @@
 package frc.robot.subsystems.intake;
 
-import static frc.robot.constants.IntakeConstants.*;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
@@ -13,6 +12,7 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import static frc.robot.constants.IntakeConstants.*;
 import static frc.utils.SparkUtil.*;
 
 public class IntakeIOSpark implements IntakeIO {

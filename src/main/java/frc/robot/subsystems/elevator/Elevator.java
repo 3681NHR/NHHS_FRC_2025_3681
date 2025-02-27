@@ -7,6 +7,7 @@ import java.util.function.DoubleSupplier;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Alert;
@@ -26,7 +27,10 @@ public class Elevator extends SubsystemBase {
     @AutoLogOutput
     private boolean openloop = false;
 
-    private Alert notHomed = new Alert("elevator is not homed, limits not enforced", AlertType.kWarning);
+    private Alert notHomed = new Alert("elevator is not homed", AlertType.kWarning);
+    private Alert noLim = new Alert("elevator limits not enforced", AlertType.kWarning);
+
+    private LoggedNetworkBoolean limits = new LoggedNetworkBoolean("overrides/elevatorLimits", true);
 
     @AutoLogOutput
     private boolean brake = true;
@@ -45,9 +49,9 @@ public class Elevator extends SubsystemBase {
 
         if(!openloop){
             if(!homed && inputs.elevatorPositionMeters < 0){
-                //io.resetElevatorPosition(0);
+                io.resetElevatorPosition(0);
             }
-            if(homed){
+            if(homed && limits.get()){
                 pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
             }
 
@@ -55,6 +59,8 @@ public class Elevator extends SubsystemBase {
         } else {
             pos = inputs.elevatorPositionMeters;
         }
+
+        noLim.set(!homed || openloop || !limits.get());
     }
 
     public void setHomed(boolean homed){
@@ -71,10 +77,6 @@ public class Elevator extends SubsystemBase {
 
     public void setTargetPos(double pos){
         this.pos = pos;
-        openloop = false;
-    }
-    public void setTargetPos(AffectorPosition pos){
-        this.pos = pos.elev;
         openloop = false;
     }
     public double getPositionSet(){
