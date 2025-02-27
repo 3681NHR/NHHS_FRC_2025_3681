@@ -157,18 +157,17 @@ public class ElevatorIOSpark implements ElevatorIO {
 
     private void configure(){
         
-    tryUntilOk(
-        motor1,
-        5,
-        () ->
-            motor1.configure(
-                motor1Config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
-    tryUntilOk(
-        motor2,
-        5,
-        () ->
-        motor2.configure(
-            motor2Config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
-        
+        tryUntilOk(
+            motor1,
+            5,
+            () ->
+                motor1.configure(
+                    motor1Config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+        tryUntilOk(
+            motor2,
+            5,
+            () ->
+            motor2.configure(
+                motor2Config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
     }
 }
