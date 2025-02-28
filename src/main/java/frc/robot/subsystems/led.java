@@ -1,6 +1,9 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Percent;
 import static edu.wpi.first.units.Units.Seconds;
+
+import org.littletonrobotics.junction.AutoLogOutput;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
@@ -15,12 +18,13 @@ public class led extends SubsystemBase {
 
     private boolean intaking = false;
     private boolean holding = false;
+    @AutoLogOutput
     private boolean homed = false;
 
-    private AddressableLED led = new AddressableLED(1);
-    private AddressableLEDBuffer buffer = new AddressableLEDBuffer(50);
+    private AddressableLED led = new AddressableLED(0);
+    private AddressableLEDBuffer buffer = new AddressableLEDBuffer(48);
 
-    private LEDPattern elevPos = LEDPattern.solid(Color.kGray).mask(LEDPattern.progressMaskLayer(() -> pos));
+    private LEDPattern elevPos = LEDPattern.solid(Color.kTeal).mask(LEDPattern.progressMaskLayer(() -> pos));
 
     public led() {
         led.setLength(buffer.getLength());
@@ -30,17 +34,19 @@ public class led extends SubsystemBase {
     
     @Override
     public void periodic() {
-        if(holding){
-            c = Color.kGreen;
-        } else {
-            c = Color.kYellow;        }
-        elevPos = LEDPattern.solid(c).mask(LEDPattern.progressMaskLayer(() -> pos));
-        if(intaking && !holding){
-            elevPos.blink(Seconds.of(.25));
-        }
         if(!homed){
-            elevPos = LEDPattern.solid(Color.kRed).breathe(Seconds.of(1));
+            elevPos = LEDPattern.solid(Color.kRed).breathe(Seconds.of(2));
+        } else {
+            if(holding){
+                c = Color.kGreen;
+            } else {
+                c = Color.kYellow;        }
+            elevPos = LEDPattern.solid(c).mask(LEDPattern.progressMaskLayer(() -> pos));
+            if(intaking && !holding){
+                elevPos.blink(Seconds.of(.25));
+            }
         }
+        elevPos = elevPos.atBrightness(Percent.of(10));
 
         elevPos.applyTo(buffer);
 

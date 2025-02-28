@@ -14,20 +14,30 @@ public class Buttons extends SubsystemBase{
         this.ios = buttons;
         this.inputs = new ButtonIOInputsAutoLogged[buttons.length];
 
-        for(ButtonIOInputsAutoLogged input : inputs){
-            input = new ButtonIOInputsAutoLogged();
+        for(ButtonIOInputsAutoLogged i : inputs){
+            i = new ButtonIOInputsAutoLogged();
         }
     }
 
     @Override
     public void periodic() {
         for(int i = 0; i < ios.length; i++){
+            if(inputs[i] == null){
+                inputs[i] = new ButtonIOInputsAutoLogged();
+            }
             ios[i].updateInputs(inputs[i]);
             Logger.processInputs("buttons/"+i, inputs[i]);
         }
     }
 
     public boolean get(int index) {
-        return inputs[index].pressed;
+        if(index < inputs.length){
+            if(inputs[index] == null){
+                inputs[index] = new ButtonIOInputsAutoLogged();
+            }
+            return inputs[index].pressed;
+        } else {
+            return false;
+        }
     }
 }
