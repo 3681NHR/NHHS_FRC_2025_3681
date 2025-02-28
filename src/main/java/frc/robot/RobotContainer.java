@@ -42,6 +42,7 @@ import static edu.wpi.first.units.Units.Meters;
 
 import static frc.utils.ControllerMap.*;
 
+import java.security.cert.Extension;
 import java.util.function.DoubleSupplier;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
@@ -331,7 +332,7 @@ public class RobotContainer {
         reefIndex = Constants.OperatorConstants.REEF_ROTS.length-1;
       }
     }));
-
+ 
     //physical button
     new Trigger(() -> buttons.get(0)).onTrue(new DisabledInstantCommand(() -> {
       if(DriverStation.isDisabled()){
@@ -364,6 +365,10 @@ public class RobotContainer {
     new Trigger(() -> driverController.getRawButton(LB)).or(() -> operatorController.getRawButton(LB))
       .onTrue(new MoveAffector(elevator, wrist, target))
       .onFalse(new MoveAffector(elevator, wrist, AffectorPosition.STOW));
+
+    new Trigger(() -> driverController.getRawButton(X))
+    .and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(Constants.positions.REEFS, drive.getPose())) < .5)
+    .whileTrue(drive.driveToPose(ExtraMath.getNearestPose(Constants.positions.REEFS, drive.getPose() )));
   }
 
 

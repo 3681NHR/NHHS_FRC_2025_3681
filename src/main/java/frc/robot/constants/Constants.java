@@ -67,5 +67,25 @@ public final class Constants {
     public static final boolean STARTING_FOD = true;
     public static final boolean STARTING_DIRECT_ANGLE = false;
   }
+  public static class positions{
+    public static final Pose2d[] REEFS = {
+      new Pose2d(0, 0, Rotation2d.fromDegrees(270)),//TODO
+      new Pose2d(0, 0, Rotation2d.fromDegrees(270)),//TODO
 
+      new Pose2d(0, 0, Rotation2d.fromDegrees(330)),//TODO
+      new Pose2d(0, 0, Rotation2d.fromDegrees(330)),//TODO
+
+      new Pose2d(0, 0, Rotation2d.fromDegrees(30)),//TODO
+      new Pose2d(0, 0, Rotation2d.fromDegrees(30)),//TODO
+
+      new Pose2d(0, 0, Rotation2d.fromDegrees(90)),//TODO
+      new Pose2d(0, 0, Rotation2d.fromDegrees(90)),//TODO
+
+      new Pose2d(0, 0, Rotation2d.fromDegrees(150)),//TODO
+      new Pose2d(0, 0, Rotation2d.fromDegrees(150)),//TODO
+
+      new Pose2d(0, 0, Rotation2d.fromDegrees(210)),//TODO
+      new Pose2d(0, 0, Rotation2d.fromDegrees(210)),//TODO
+    };
+  }
 }
