@@ -6,6 +6,11 @@ import static frc.robot.constants.DriveConstants.*;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.IdealStartingState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.util.PathPlannerLogging;
 
 import edu.wpi.first.hal.FRCNetComm.tInstances;
@@ -26,15 +31,18 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.Constants;
+import frc.robot.constants.DriveConstants;
 import frc.robot.constants.Constants.RobotMode;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionEstimate;
 import frc.utils.LoggedField2d;
 import frc.utils.SparkOdometryThread;
 
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -384,4 +392,9 @@ public class Drive extends SubsystemBase {
     return gyroInputs.yawVelocityRadPerSec;
   }
 
+  public Command driveToPose(Pose2d p){
+    List<Waypoint> points = PathPlannerPath.waypointsFromPoses(getPose(), p);
+    PathConstraints constraints = new PathConstraints(DriveConstants.MAX_SPEED, DriveConstants.MAX_SPEED*2, DriveConstants.ANGLE_MAX_VELOCITY, DriveConstants.ANGLE_MAX_VELOCITY*5);
+    return AutoBuilder.followPath(new PathPlannerPath(points, constraints, new IdealStartingState(0, getPose().getRotation()), new GoalEndState(0, p.getRotation())));
+  }
 }

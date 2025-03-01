@@ -23,7 +23,7 @@ public class MoveAffector extends Command {
   @Override
   public void initialize() {
     elevator.setTargetPos(pos.elev);
-    wrist.setPos(pos.wrist);
+    wrist.setPosSet(pos.wrist);
   }
 
   @Override

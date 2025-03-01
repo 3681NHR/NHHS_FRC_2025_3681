@@ -4,7 +4,7 @@ import edu.wpi.first.math.util.Units;
 
 public class WristConstants {
     public static final double POS_OFFSET = 0.0;
-    public static final double POS_FACTOR = Math.PI/20;
+    public static final double POS_FACTOR = 2*Math.PI;
 
     public static final double POS_P = 0.5;
     public static final double POS_D = 0.0;
@@ -15,7 +15,7 @@ public class WristConstants {
     public static final double POS_MAX_SPEED = 10;
     public static final double POS_MAX_ACCEL = 0.0;
 
-    public static final int MOTOR_MAX_CURRENT = 40;
+    public static final int MOTOR_MAX_CURRENT = 30;
 
     public static final int ENCODER_ID = 3;
     public static final int MOTOR_ID = 42;

@@ -1,5 +1,6 @@
 package frc.robot.subsystems.wrist;
 
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
@@ -7,16 +8,22 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static frc.robot.constants.WristConstants.*;
+
+import java.util.function.DoubleSupplier;
 
 public class Wrist extends SubsystemBase {
 
     private WristIO io;
     private WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
 
-    private double pos;
+    @AutoLogOutput
+    private double posSet;
+    @AutoLogOutput
+    private boolean brake;
 
     private Alert noLim = new Alert("wrist limits not enforced", AlertType.kWarning);
     private LoggedNetworkBoolean limits = new LoggedNetworkBoolean("overrides/wristLimits", true);
@@ -31,24 +38,37 @@ public class Wrist extends SubsystemBase {
         Logger.processInputs("wrist", inputs);
 
         if(DriverStation.isDisabled()){
-            pos = inputs.posRad;
+            posSet = inputs.posRad;
         }
 
         noLim.set(!limits.get());
         if(limits.get()){
-            pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
+            posSet = MathUtil.clamp(posSet, MIN_POS, MAX_POS);
         }
 
-        io.setPos(pos);
+        io.setPos(posSet);
     }
 
-    public void setPos(double pos){
-        this.pos = pos;
+    public void setPosSet(double pos){
+        this.posSet = pos;
     }
     public double getPos(){
         return inputs.posRad;
     }
     public double getPosSet(){
-        return pos;
+        return posSet;
+    }
+    public Command man(DoubleSupplier move){
+        return run(() -> {
+            setPosSet(getPosSet() + move.getAsDouble());
+        });
+    }
+    public void setBrake(boolean brake){
+        io.setBrake(brake);
+        this.brake = brake;
+    }
+    public void toggleBrake(){
+        setBrake(!brake);
+        this.brake = !brake;
     }
 }

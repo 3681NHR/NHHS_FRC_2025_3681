@@ -10,7 +10,7 @@ public final class ElevatorConstants {
     public static final double HOME_POS = 0;
 
     public static final double MIN_POS = 0.0;
-    public static final double MAX_POS = 1.5;
+    public static final double MAX_POS = 1.75;
 
     public static final double DIST_PER_PULSE = Math.PI*2 / 2048;
     public static final double BUILTIN_POS_FACTOR = 0.0266670930055;

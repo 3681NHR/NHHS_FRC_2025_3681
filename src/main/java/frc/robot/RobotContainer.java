@@ -4,6 +4,8 @@ import frc.robot.commands.AnglePresetDriveCommand;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.HomeElevator;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.MoveAffector;
+import frc.robot.constants.AffectorPosition;
 import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.ElevatorConstants;
@@ -17,6 +19,9 @@ import frc.robot.subsystems.elevator.ElevatorIOSim;
 import frc.robot.subsystems.elevator.ElevatorIOSpark;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIOSpark;
+import frc.robot.subsystems.physButtons.ButtonIO;
+import frc.robot.subsystems.physButtons.ButtonIODIO;
+import frc.robot.subsystems.physButtons.Buttons;
 import frc.robot.subsystems.swerve.*;
 import frc.robot.subsystems.vision.CameraIO;
 import frc.robot.subsystems.vision.CameraIOPhoton;
@@ -37,6 +42,7 @@ import static edu.wpi.first.units.Units.Meters;
 
 import static frc.utils.ControllerMap.*;
 
+import java.security.cert.Extension;
 import java.util.function.DoubleSupplier;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
@@ -77,6 +83,7 @@ public class RobotContainer {
   private Elevator elevator;
   private Wrist wrist;
   private Intake intake;
+  private Buttons buttons;
 
   private led led = new led();
 
@@ -92,20 +99,6 @@ public class RobotContainer {
 
   private boolean fod = Constants.drive.STARTING_FOD;
   private boolean directAngle = Constants.drive.STARTING_DIRECT_ANGLE;
-
-  private Trigger lockPose;
-  private Trigger rstGyro;
-  private Trigger toggleFOD;
-  private Trigger toggleDA;
-
-  private Trigger autoAimReef;
-  private Trigger autoAimStation;
-  private Trigger autoAimFar;//barge or prosseser
-
-  private Trigger reefAimUp;
-  private Trigger reefAimDown;
-
-  private Trigger toggleElevBrake;
 
   private int reefIndex = 0;
   private int farIndex = 0;
@@ -123,8 +116,6 @@ public class RobotContainer {
   private DoubleSupplier leftTrigger;
   private DoubleSupplier rightTrigger;
 
-  private DigitalInput brakeDio = new DigitalInput(2);
-
   private RumbleHandler rumbler = new RumbleHandler(driverController);
 
   private PowerDistribution pdp = new PowerDistribution(1  , ModuleType.kRev);
@@ -133,6 +124,8 @@ public class RobotContainer {
       new Alert("Driver controller disconnected (port 0).", AlertType.kWarning);
   private final Alert operatorDisconnected =
       new Alert("Operator controller disconnected (port 1).", AlertType.kWarning);
+
+  private AffectorPosition target = AffectorPosition.STOW;
 
   public RobotContainer() {
 
@@ -198,6 +191,7 @@ public class RobotContainer {
         elevator = new Elevator(new ElevatorIOSpark());
         wrist = new Wrist(new WristIOSpark());
         intake = new Intake(new IntakeIOSpark());
+        buttons = new Buttons(new ButtonIODIO(2));
         break;
 
       case SIM:
@@ -276,7 +270,7 @@ public class RobotContainer {
     );
 
     drive.setDefaultCommand(driveCommand);
-    
+    wrist.setDefaultCommand(wrist.man(operatorController::getRightY));
     elevator.setDefaultCommand(elevator.man(() -> (operatorController.getRightTriggerAxis()-operatorController.getLeftTriggerAxis())*OperatorConstants.ELEVATOR_MAN_SENS));
   }
 
@@ -286,103 +280,105 @@ public class RobotContainer {
       resetOdometry.set(false);
       drive.setPose(Constants.STARTING_POSE);
     }));
-
-    if(RobotBase.isReal()){
-      lockPose = new Trigger(driverController::getStartButton);
-      rstGyro = new Trigger(driverController::getBackButton);
-      autoAimReef = new Trigger(driverController::getYButton);
-      toggleFOD = new Trigger(driverController::getLeftStickButton);
-      toggleDA = new Trigger(driverController::getRightStickButton);
-      autoAimStation = new Trigger(driverController::getBButton);
-
-    } else {
-      lockPose = new Trigger(() -> driverController.getRawButton(LOGO_RIGHT));
-      rstGyro = new Trigger(() -> driverController.getRawButton(LOGO_LEFT));
-      autoAimReef = new Trigger(() -> driverController.getRawButton(Y));
-      toggleFOD = new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON));
-      toggleDA = new Trigger(() -> driverController.getRawButton(RIGHT_STICK_BUTTON));
-      autoAimStation = new Trigger(() -> driverController.getRawButton(B));
-    }
-    autoAimFar = new Trigger(() -> driverController.getPOV() == 0);
     
-    reefAimUp = new Trigger(() -> driverController.getPOV() == 90);
-    reefAimDown = new Trigger(() -> driverController.getPOV() == 270);
-
-    toggleElevBrake = new Trigger(() -> brakeDio.get());
-      
-    lockPose.whileTrue(new InstantCommand(() -> {
+    
+    //lock in place
+    new Trigger(() -> driverController.getRawButton(LOGO_RIGHT)).whileTrue(new InstantCommand(() -> {
       drive.stopWithX();
       rumbler.overrideQue(new Rumble(.1, 0.25));
     }, drive).repeatedly());
 
-    rstGyro.onTrue(new InstantCommand(() -> {
+    //reset angle
+    new Trigger(() -> driverController.getRawButton(LOGO_LEFT)).onTrue(new InstantCommand(() -> {
       drive.resetGyro(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? Math.PI : 0);
       rumbler.overrideQue(RumblePreset.TAP.load());
     }));
 
-    toggleFOD.onTrue(new InstantCommand(() -> {
+    //fod toggle
+    new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON)).onTrue(new InstantCommand(() -> {
     this.fod = !this.fod;
     }));
-
-    toggleDA.onTrue(new InstantCommand(() -> {
+    //DA toggle
+    new Trigger(() -> driverController.getRawButton(RIGHT_STICK_BUTTON)).onTrue(new InstantCommand(() -> {
       this.directAngle = !this.directAngle;
     }));
-
+    //timer alert
     new Trigger(() -> TimerHandler.getTeleopRemaining()<Constants.ENDGAME_TIME).onTrue(new InstantCommand(() -> {
       rumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());
     }));
-    
-    autoAimStation.onTrue(new AnglePresetDriveCommand(
+    //aim to station
+    new Trigger(() -> driverController.getRawButton(B)).onTrue(new AnglePresetDriveCommand(
       driverSticks,
       drive,
       () -> stationAngle
     ));
-
-    autoAimReef.onTrue(new AnglePresetDriveCommand(driverSticks, drive, () -> reefAngle));
-    
-    autoAimFar.onTrue(new InstantCommand(() -> {
+    //aim for reef
+    new Trigger(() -> driverController.getRawButton(Y)).onTrue(new AnglePresetDriveCommand(driverSticks, drive, () -> reefAngle));
+    //aim for far elemant(prossesor or barge)
+    new Trigger(() -> driverController.getPOV() == 0).onTrue(new InstantCommand(() -> {
       farIndex++;
       farIndex = farIndex % 2;
-    }));
-    autoAimFar.onTrue(new AnglePresetDriveCommand(driverSticks, drive, () -> farAngle));
+    }).andThen(new AnglePresetDriveCommand(driverSticks, drive, () -> farAngle)));
 
-    reefAimUp.onTrue(new InstantCommand(() -> {
+    //change target reef
+    new Trigger(() -> driverController.getPOV() == 90).or(() -> operatorController.getRawButton(LOGO_RIGHT)).onTrue(new InstantCommand(() -> {
       reefIndex++;
       reefIndex = reefIndex % Constants.OperatorConstants.REEF_ROTS.length;
     }));
-    reefAimDown.onTrue(new InstantCommand(() -> {
+    new Trigger(() -> driverController.getPOV() == 270).or(() -> operatorController.getRawButton(LOGO_LEFT)).onTrue(new InstantCommand(() -> {
       reefIndex--;
       reefIndex = reefIndex % Constants.OperatorConstants.REEF_ROTS.length;
       if(reefIndex < 0){
         reefIndex = Constants.OperatorConstants.REEF_ROTS.length-1;
       }
     }));
-
-    toggleElevBrake.onTrue(new DisabledInstantCommand(() -> {
-      elevator.toggleBrake();
+ 
+    //physical button
+    new Trigger(() -> buttons.get(0)).onTrue(new DisabledInstantCommand(() -> {
+      if(DriverStation.isDisabled()){
+        elevator.toggleBrake();
+        wrist.toggleBrake();
+      }
+    })).debounce(1).onTrue(new DisabledInstantCommand(() -> {
+      elevator.resetPos(ElevatorConstants.HOME_POS);
+      elevator.setHomed(true);
     }));
 
-    new Trigger(() -> operatorController.getAButton()).onTrue(new HomeElevator(elevator));
-    //new Trigger(() -> operatorController.getBButton()).onTrue(new DisabledInstantCommand(led::togglePattern, led));
-    
-    new Trigger(() -> operatorController.getBButton()).whileTrue(Commands.run(() -> {
-      wrist.setPos(wrist.getPosSet() + 0.1);
-    }));
-    new Trigger(() -> operatorController.getXButton()).whileTrue(Commands.run(() -> {
-      wrist.setPos(wrist.getPosSet() - 0.1);
-    }));
-    
+    //home
+    new Trigger(() -> operatorController.getRawButton(A)).onTrue(new HomeElevator(elevator));
+        
     //intake controls
-    new Trigger(() -> driverController.getRightBumperButton()).or(() -> operatorController.getRightBumperButton()).onTrue(new InstantCommand(() -> {
+    new Trigger(() -> driverController.getRawButton(RB)).or(() -> operatorController.getRawButton(RB)).whileTrue(new IntakeCommand(intake));
+    new Trigger(() -> operatorController.getRawButton(Y)).onTrue(new InstantCommand(() -> {
       intake.setVoltage(-IntakeConstants.SPEED);
     })).onFalse(new InstantCommand(() -> {
-      intake.stop();
+      intake.stop(); 
     }));
-    new Trigger(() -> operatorController.getYButton()).whileTrue(new IntakeCommand(intake));
+
+    //set affector target
+    new Trigger(() -> operatorController.getPOV() == 180).onTrue(new InstantCommand(() -> {target = AffectorPosition.L1;}));
+    new Trigger(() -> operatorController.getPOV() == 90).onTrue(new InstantCommand(() -> {target = AffectorPosition.STATION;}));
+    new Trigger(() -> operatorController.getPOV() == 270).onTrue(new InstantCommand(() -> {target = target == AffectorPosition.L2 ? AffectorPosition.L3 : AffectorPosition.L2;}));
+    new Trigger(() -> operatorController.getPOV() == 0).onTrue(new InstantCommand(() -> {target = AffectorPosition.L4;}));
+
+    //go to affector target
+    new Trigger(() -> driverController.getRawButton(LB)).or(() -> operatorController.getRawButton(LB))
+      .onTrue(new MoveAffector(elevator, wrist, target))
+      .onFalse(new MoveAffector(elevator, wrist, AffectorPosition.STOW));
+
+    //new Trigger(() -> driverController.getRawButton(X))
+    //.and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(Constants.positions.REEFS, drive.getPose())) < .5)
+    //.whileTrue(drive.driveToPose(ExtraMath.getNearestPose(Constants.positions.REEFS, drive.getPose() )));
   }
 
+
   public void Periodic(){
+    //update leds
     led.setpos(elevator.getPositionSet() / ElevatorConstants.MAX_POS);
+    led.setHolding(intake.isHolding());
+    led.setIntaking(intake.isMoving());
+    led.setHomed(elevator.isHomed());
+
     Logger.recordOutput("fieldOrientedDrive", getFOD());
     Logger.recordOutput("directAngle", getDirectAngle());
 
@@ -417,6 +413,7 @@ public class RobotContainer {
     driverDisconnected.set(!driverController.isConnected());
     operatorDisconnected.set(!operatorController.isConnected());
   }
+
   public void SimPeriodic(){
     Logger.recordOutput("simulatedVoltage", BatteryVoltageSim.getInstance().calculateVoltage());
 
@@ -442,5 +439,10 @@ public class RobotContainer {
   
   public boolean getFOD(){return fod;}
   public boolean getDirectAngle(){return directAngle;}
+
+  public void enable(){
+    elevator.setBrake(true);
+    wrist.setBrake(true);
+  }
 
 }

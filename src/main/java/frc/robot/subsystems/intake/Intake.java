@@ -6,6 +6,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
+import frc.robot.subsystems.intake.*;
+
 public class Intake extends SubsystemBase {
     private final IntakeIO io;
     private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
@@ -42,5 +44,8 @@ public class Intake extends SubsystemBase {
     }
     public boolean getHoldLock() {
         return holdLock.get();
+    }
+    public boolean isMoving(){
+        return Math.abs(inputs.motorVoltage)> 1;
     }
 }

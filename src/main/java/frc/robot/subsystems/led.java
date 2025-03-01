@@ -1,36 +1,30 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Percent;
-import static edu.wpi.first.units.Units.Second;
-import java.util.stream.Stream;
+import static edu.wpi.first.units.Units.Seconds;
 
-import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.AutoLogOutput;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.LEDPattern;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.LEDPattern.GradientType;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class led extends SubsystemBase {
 
-    private boolean pattOn = true;
     private double pos;
+    private Color c = Color.kTeal;
 
-    private AddressableLED led = new AddressableLED(1);
-    private AddressableLEDBuffer buffer = new AddressableLEDBuffer(100);
+    private boolean intaking = false;
+    private boolean holding = false;
+    @AutoLogOutput
+    private boolean homed = false;
 
-    private LEDPattern patt = LEDPattern.gradient(GradientType.kContinuous, Color.kRed, Color.kBlue)
-            .scrollAtRelativeSpeed(Percent.per(Second).of(25))
-            .synchronizedBlink(RobotController::getRSLState);
-    private LEDPattern alliance;
+    private AddressableLED led = new AddressableLED(0);
+    private AddressableLEDBuffer buffer = new AddressableLEDBuffer(48);
 
-    private Color[] colors = new Color[buffer.getLength()];
-
+    private LEDPattern elevPos = LEDPattern.solid(Color.kTeal).mask(LEDPattern.progressMaskLayer(() -> pos));
 
     public led() {
         led.setLength(buffer.getLength());
@@ -40,27 +34,36 @@ public class led extends SubsystemBase {
     
     @Override
     public void periodic() {
-        if(pattOn){
-            patt.applyTo(buffer);
+        if(!homed){
+            elevPos = LEDPattern.solid(Color.kRed).breathe(Seconds.of(2));
         } else {
-            alliance = LEDPattern.solid(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? Color.kBlue : Color.kRed)
-            .mask(LEDPattern.progressMaskLayer(() -> pos));
-
-            alliance.applyTo(buffer);
+            if(holding){
+                c = Color.kGreen;
+            } else {
+                c = Color.kYellow;        }
+            elevPos = LEDPattern.solid(c).mask(LEDPattern.progressMaskLayer(() -> pos));
+            if(intaking && !holding){
+                elevPos.blink(Seconds.of(.25));
+            }
         }
+        elevPos = elevPos.atBrightness(Percent.of(10));
+
+        elevPos.applyTo(buffer);
+
         led.setData(buffer);
-
-        for(int i = 0; i < buffer.getLength(); i++) {
-            colors[i] = buffer.getLED(i);
-        }
-        Logger.recordOutput("led/buffer", Stream.of(colors).map(t -> t.toHexString()).toArray(String[]::new));
     }
 
-    public void togglePattern() {
-        pattOn = !pattOn;
-    }
     public void setpos(double pos){
         this.pos = pos;
+    }
+    public void setHolding(boolean holding){
+        this.holding = holding;
+    }
+    public void setIntaking(boolean in){
+        this.intaking = in;
+    }
+    public void setHomed(boolean homed){
+        this.homed = homed;
     }
     
 }

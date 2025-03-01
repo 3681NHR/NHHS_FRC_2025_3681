@@ -20,7 +20,7 @@ public class Elevator extends SubsystemBase {
     private ElevatorIO io;
     private ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
     @AutoLogOutput
-    private double pos = 0.0;
+    private double posSet = 0.0;
 
     @AutoLogOutput
     private boolean homed = false;
@@ -52,12 +52,12 @@ public class Elevator extends SubsystemBase {
                 io.resetElevatorPosition(0);
             }
             if(homed && limits.get()){
-                pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
+                posSet = MathUtil.clamp(posSet, MIN_POS, MAX_POS);
             }
 
-            io.setElevatorTargetLocation(pos);
+            io.setElevatorTargetLocation(posSet);
         } else {
-            pos = inputs.elevatorPositionMeters;
+            posSet = inputs.elevatorPositionMeters;
         }
 
         noLim.set(!homed || openloop || !limits.get());
@@ -76,11 +76,11 @@ public class Elevator extends SubsystemBase {
     }
 
     public void setTargetPos(double pos){
-        this.pos = pos;
+        this.posSet = pos;
         openloop = false;
     }
     public double getPositionSet(){
-        return pos;
+        return posSet;
     }
     public double getPosition(){
         return inputs.elevatorPositionMeters;
@@ -94,15 +94,19 @@ public class Elevator extends SubsystemBase {
 
     public Command man(DoubleSupplier change){
         return run(() -> {
-            pos += change.getAsDouble();
+            posSet += change.getAsDouble();
         }).beforeStarting(() -> {
             //reset pos on start to avoid jumping
-            pos = inputs.elevatorPositionMeters;
+            posSet = inputs.elevatorPositionMeters;
         });
     }
 
     public void toggleBrake(){
         io.setElevatorNeutralMode(brake);
         brake = !brake;
+    }
+    public void setBrake(boolean brake){
+        io.setElevatorNeutralMode(brake);
+        this.brake = brake;
     }
 }
