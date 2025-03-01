@@ -60,7 +60,7 @@ public class VisionConstants {
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)
-  public static double LIN_STD_DEV_BASELINE = 0.01; // Meters
+  public static double LIN_STD_DEV_BASELINE = 0.002; // Meters
   public static double ANG_STD_DEV_BASELINE = 0.25; // Radians
 
   // Standard deviation multipliers for each camera
@@ -71,7 +71,7 @@ public class VisionConstants {
         1.0, // front
       };
 
-  public static final FilterStrategy POSE_FILTER = FilterStrategy.MEDIAN;
+  public static final FilterStrategy POSE_FILTER = FilterStrategy.SINGLE_POLE_IIR;
 
   public static final double ANGLE_P = 0.001;
   public static final double ANGLE_D = 0.001;

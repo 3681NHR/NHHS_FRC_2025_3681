@@ -366,9 +366,11 @@ public class RobotContainer {
       .onTrue(new MoveAffector(elevator, wrist, target))
       .onFalse(new MoveAffector(elevator, wrist, AffectorPosition.STOW));
 
-    //new Trigger(() -> driverController.getRawButton(X))
-    //.and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(Constants.positions.REEFS, drive.getPose())) < .5)
-    //.whileTrue(drive.driveToPose(ExtraMath.getNearestPose(Constants.positions.REEFS, drive.getPose() )));
+    new Trigger(() -> driverController.getRawButton(X))
+    .and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(Constants.positions.REEFS, drive.getPose())) < .5)
+    .whileTrue(Commands.run(() -> {
+      drive.driveToPose(ExtraMath.getNearestPose(Constants.positions.REEFS, drive.getPose()));
+    }));
   }
 
 

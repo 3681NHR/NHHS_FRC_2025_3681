@@ -53,6 +53,24 @@ public final class ExtraMath {
   public static double holdPositive(double in){
     return in<0 ? 0 : in;
   }
+  public static Pose2d getNearestPose(Pose2d[] poses, Pose2d current){
+    double min = Double.MAX_VALUE;
+    Pose2d out = poses[0];
+    for(Pose2d pose : poses){
+      double dist = current.getTranslation().getDistance(pose.getTranslation());
+      dist += Math.abs(current.getRotation().minus(pose.getRotation()).getRadians());
+      dist = Math.abs(dist/2.0);
+      if(dist < min){
+        min = dist;
+        out = pose;
+      }
+    }
+    return out;
+  }
+  
+  public static double getDistance(Pose2d a, Pose2d b){
+    return a.getTranslation().getDistance(b.getTranslation());
+  }
   /**
    * Derrivitive class
    */
@@ -71,23 +89,6 @@ public final class ExtraMath {
       init = true;
     }
 
-    public Pose2d getNearestPose(Pose2d[] poses, Pose2d current){
-      double min = Double.MAX_VALUE;
-      Pose2d out = poses[0];
-      for(Pose2d pose : poses){
-        double dist = current.getTranslation().getDistance(pose.getTranslation());
-        dist += Math.abs(current.getRotation().minus(pose.getRotation()).getRadians());
-        dist = Math.abs(dist/2.0);
-        if(dist < min){
-          min = dist;
-          out = pose;
-        }
-      }
-      return out;
-    }
-    public double getDistance(Pose2d a, Pose2d b){
-      return a.getTranslation().getDistance(b.getTranslation());
-    }
     /**
      * constructs a new Derrivitive object, first update will return 0
      */

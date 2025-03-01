@@ -22,6 +22,6 @@ public class WristConstants {
 
     public static final boolean MOTOR_INVERT = true;
 
-    public static final double MAX_POS = Units.degreesToRadians(360);
-    public static final double MIN_POS = Units.degreesToRadians(-360);
+    public static final double MAX_POS = Units.degreesToRadians(100);
+    public static final double MIN_POS = Units.degreesToRadians(-90);
 }
