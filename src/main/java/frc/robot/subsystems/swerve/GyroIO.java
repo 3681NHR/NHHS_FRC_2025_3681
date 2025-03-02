@@ -1,22 +1,3 @@
-package frc.robot.subsystems.swerve;
-
-import org.littletonrobotics.junction.AutoLog;
-
-import edu.wpi.first.math.geometry.Rotation2d;
-
-public interface GyroIO {
-    
-  @AutoLog
-  public static class GyroIOInputs {
-    public boolean connected = false;
-    public Rotation2d yawPosition = new Rotation2d();
-    public double yawPositionRad = 0;
-    public double yawVelocityRadPerSec = 0.0;
-    public double[] odometryYawTimestamps = new double[] {};
-    public Rotation2d[] odometryYawPositions = new Rotation2d[] {};
-  }
-
-  public default void updateInputs(GyroIOInputs inputs) {}
-
-  public default void reset(double headingRad) {}
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:67f93a5657565c0a76b1d7e8c03cd87fc7bb456398bc401adfb0fe1a003dafd7
+size 635

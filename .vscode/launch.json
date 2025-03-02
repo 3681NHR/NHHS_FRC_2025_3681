@@ -1,21 +1,3 @@
-{
-  // Use IntelliSense to learn about possible attributes.
-  // Hover to view descriptions of existing attributes.
-  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-  "version": "0.2.0",
-  "configurations": [
-
-    {
-      "type": "wpilib",
-      "name": "WPILib Desktop Debug",
-      "request": "launch",
-      "desktop": true,
-    },
-    {
-      "type": "wpilib",
-      "name": "WPILib roboRIO Debug",
-      "request": "launch",
-      "desktop": false,
-    }
-  ]
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:9f92dab0e7303752294d6f61e59c36ba9a4dd6275ddefdf3e5a017e5c496c1e0
+size 498

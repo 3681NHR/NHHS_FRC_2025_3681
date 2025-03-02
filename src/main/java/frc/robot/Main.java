@@ -1,22 +1,3 @@
-
-package frc.robot;
-
-import edu.wpi.first.wpilibj.RobotBase;
-
-/**
- * Do NOT add any static variables to this class, or any initialization at all. Unless you know what
- * you are doing, do not modify this file except to change the parameter class to the startRobot
- * call.
- */
-public final class Main {
-  private Main() {}
-
-  /**
-   * Main initialization function. Do not perform any initialization here.
-   *
-   * <p>If you change your main robot class, change the parameter type.
-   */
-  public static void main(String... args) {
-    RobotBase.startRobot(Robot::new);
-  }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:7420a677a468a4203ccaafef511b6a636f4d6e69447bccb08193f3d2d4de5db2
+size 576

@@ -1,13 +1,3 @@
-{
-  "imu": {
-    "type": "pigeon2",
-    "id": 30
-  },
-  "invertedIMU": false,
-  "modules": [
-    "frontleft.json",
-    "frontright.json",
-    "backleft.json",
-    "backright.json"
-  ]
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:6080b8abdd460d790a86ee94e7e4a3bcbe714763f0979ee15fcac1471857e012
+size 185

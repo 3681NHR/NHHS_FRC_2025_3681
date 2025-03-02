@@ -1,15 +1,3 @@
-package frc.utils;
-
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.Subsystem;
-
-public class DisabledInstantCommand extends InstantCommand {
-    public DisabledInstantCommand(Runnable toRun, Subsystem... requirements) {
-        super(toRun, requirements);
-    }
-
-    @Override
-    public boolean runsWhenDisabled() {
-        return true;
-    }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:e5cffee22128dc1047cfa59db69ae21a723fcd5fdcd026e545ad4e5eab888dcb
+size 390

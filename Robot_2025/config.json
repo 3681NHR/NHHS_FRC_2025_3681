@@ -1,24 +1,3 @@
-{
-    "name": "swarve",
-    "rotations": [{ "axis": "x", "degrees": 90 }],
-    "position": [0, 0, 0.09],
-    "cameras": [],
-    "components": [
-        {
-            "zeroedRotations": [{ "axis": "x" , "degrees": 270 }, { "axis": "y" , "degrees": 270 }],
-            "zeroedPosition": [0, 0, 0]
-        },
-        {
-            "zeroedRotations": [{ "axis": "x" , "degrees": 270 }, { "axis": "y" , "degrees": 270 }],
-            "zeroedPosition": [0, 0, 0]
-        },
-        {
-            "zeroedRotations": [{ "axis": "x" , "degrees": 270 }, { "axis": "y" , "degrees": 270 }],
-            "zeroedPosition": [0, 0, 0]
-        },
-        {
-            "zeroedRotations": [{ "axis": "x" , "degrees": 0 }],
-            "zeroedPosition": [0.122, 0.025, -0.116]
-        }
-    ]
-  }
+version https://git-lfs.github.com/spec/v1
+oid sha256:8a01ac69bce106e273ea2595dcc4108c90c8e1ecd6f5092a7780b99182271178
+size 777
