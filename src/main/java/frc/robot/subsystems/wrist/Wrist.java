@@ -64,11 +64,11 @@ public class Wrist extends SubsystemBase {
         });
     }
     public void setBrake(boolean brake){
-        io.setBrake(brake);
         this.brake = brake;
+        io.setBrake(brake);
     }
     public void toggleBrake(){
-        setBrake(!brake);
         this.brake = !brake;
+        setBrake(brake);
     }
 }

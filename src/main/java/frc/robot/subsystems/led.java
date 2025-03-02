@@ -22,7 +22,7 @@ public class led extends SubsystemBase {
     private boolean homed = false;
 
     private AddressableLED led = new AddressableLED(0);
-    private AddressableLEDBuffer buffer = new AddressableLEDBuffer(48);
+    private AddressableLEDBuffer buffer = new AddressableLEDBuffer(49);
 
     private LEDPattern elevPos = LEDPattern.solid(Color.kTeal).mask(LEDPattern.progressMaskLayer(() -> pos));
 
@@ -46,7 +46,7 @@ public class led extends SubsystemBase {
                 elevPos.blink(Seconds.of(.25));
             }
         }
-        elevPos = elevPos.atBrightness(Percent.of(10));
+        elevPos = elevPos.atBrightness(Percent.of(50));
 
         elevPos.applyTo(buffer);
 

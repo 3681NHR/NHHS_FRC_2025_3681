@@ -3,6 +3,8 @@ package frc.robot.subsystems.intake;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import static frc.robot.constants.IntakeConstants.MOTOR_RUNNING_THRESHOLD;
+
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
@@ -46,6 +48,6 @@ public class Intake extends SubsystemBase {
         return holdLock.get();
     }
     public boolean isMoving(){
-        return Math.abs(inputs.motorVoltage)> 1;
+        return Math.abs(inputs.motorVoltage) > MOTOR_RUNNING_THRESHOLD;
     }
 }

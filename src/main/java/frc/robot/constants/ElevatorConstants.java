@@ -14,7 +14,7 @@ public final class ElevatorConstants {
 
     public static final double DIST_PER_PULSE = Math.PI*2 / 2048;
     public static final double BUILTIN_POS_FACTOR = 0.0266670930055;
-    public static final double POS_FACTOR = DIST_PER_PULSE * 0.32;
+    public static final double POS_FACTOR = DIST_PER_PULSE * 1;
 
     public static final double ENCODER_DIVERGANCE_THRESH = 1;
     

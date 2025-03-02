@@ -7,6 +7,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
@@ -61,6 +62,7 @@ public class WristIOSpark implements WristIO{
     }
     @Override
     public void setBrake(boolean brake){
+        Logger.recordOutput("test", "e");
         config.idleMode(brake ? IdleMode.kBrake : IdleMode.kCoast);
         SparkUtil.tryUntilOk(motor, 
         5, 
@@ -73,7 +75,7 @@ public class WristIOSpark implements WristIO{
 
     @Override
     public void updateInputs(WristIOInputs in){
-        pos = (encoder.get()*POS_FACTOR) + POS_OFFSET;
+        pos = MathUtil.inputModulus(((encoder.get()*POS_FACTOR) + POS_OFFSET), -Math.PI, Math.PI);
         vel = velDeriv.calculate(pos, 0.02);
 
         double pidOut = pid.calculate(pos, posSet);

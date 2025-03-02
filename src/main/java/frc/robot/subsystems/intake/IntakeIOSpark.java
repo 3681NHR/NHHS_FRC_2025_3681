@@ -55,7 +55,7 @@ public class IntakeIOSpark implements IntakeIO {
         inputs.motorVelocityRPM = encoder.getVelocity();
         inputs.motorPositionRotations = encoder.getPosition();
 
-        inputs.holding = holdingSens.get();
+        inputs.holding = !holdingSens.get();
     }
     
     @Override

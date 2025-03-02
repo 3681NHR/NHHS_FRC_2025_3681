@@ -270,7 +270,7 @@ public class RobotContainer {
     );
 
     drive.setDefaultCommand(driveCommand);
-    wrist.setDefaultCommand(wrist.man(operatorController::getRightY));
+    wrist.setDefaultCommand(wrist.man(() -> operatorController.getRightY() * 0.02));
     elevator.setDefaultCommand(elevator.man(() -> (operatorController.getRightTriggerAxis()-operatorController.getLeftTriggerAxis())*OperatorConstants.ELEVATOR_MAN_SENS));
   }
 

@@ -91,7 +91,7 @@ public class ElevatorIOSpark implements ElevatorIO {
     }
 
     public void updateInputs(ElevatorIOInputs inputs) {
-        encoderFallback = divergenceAlert.get();
+        //encoderFallback = divergenceAlert.get();
         if(encoderFallback){
             vel = (motorEncoder.getVelocity() * Builtinfactor) - pos;
             pos = motorEncoder.getPosition() * Builtinfactor;
