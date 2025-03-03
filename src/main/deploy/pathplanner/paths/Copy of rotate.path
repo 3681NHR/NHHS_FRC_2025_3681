@@ -1,3 +1,54 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:1919cdbe87de4a95dc5c36260471208146b7588ec45d7f3c98483133e4aa3681
-size 1102
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.0,
+        "y": 7.0
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.6818209816766494,
+        "y": 7.1444806645079675
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 2.0,
+        "y": 7.0
+      },
+      "prevControl": {
+        "x": 2.7952617920480782,
+        "y": 7.4962941313400995
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.7,
+    "maxAcceleration": 17.0,
+    "maxAngularVelocity": 597.8815,
+    "maxAngularAcceleration": 2575.846,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -2.931519627864077
+  },
+  "reversed": false,
+  "folder": "tuning and test",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 178.11388354769844
+  },
+  "useDefaultConstraints": true
+}

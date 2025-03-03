@@ -1,3 +1,60 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e06ab01fe98b2e789242fe6f7c8671ff0949ba5fb5b70a12c0fa83edcb05a835
-size 1688
+{
+    "name": "Shotgun Shrimp",
+    "rotations": [
+        { "axis": "x", "degrees": 180 },
+        { "axis": "z", "degrees": 180 }
+    ],
+    "position": [-1.483, 1.261, 0.21],
+    "cameras": [
+        {
+            "name": "front",
+            "fov": 85,
+            "resolution": [800, 600],
+            "position": [0.248, -0.208, 0.31],
+            "rotations": [
+                { "axis": "y", "degrees": -15 },
+                { "axis": "z", "degrees": 70 }
+            ]
+        },
+        {
+            "name": "back",
+            "fov": 85,
+            "resolution": [800, 600],
+            "position": [-0.105, -0.168, 0.273],
+            "rotations": [
+                { "axis": "y", "degrees": -20 },
+                { "axis": "z", "degrees": 110 }
+            ]
+        }
+    ],
+    "components": [
+        {
+            "zeroedRotations": [
+                { "axis": "z" , "degrees": -90 },
+                { "axis": "y" , "degrees": 180 }
+            ],
+            "zeroedPosition": [0.085, 0.135, 0.1195]
+        },
+        {
+            "zeroedRotations": [
+                { "axis": "x" , "degrees": 180 },
+                { "axis": "z" , "degrees": 180 }
+            ],
+            "zeroedPosition": [-1.48, 1.26, 0.0015]
+        },
+        {
+            "zeroedRotations": [
+                { "axis": "z" , "degrees": 0 },
+                { "axis": "y" , "degrees": 0 }
+            ],
+            "zeroedPosition": [0, 0, -0.04]
+        },
+        {
+            "zeroedRotations": [
+                { "axis": "z" , "degrees": 0 },
+                { "axis": "y" , "degrees": 0 }
+            ],
+            "zeroedPosition": [-0.1508125, 0, 0.0508]
+        }
+    ]
+  }

@@ -1,3 +1,51 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ead91726bf6d7bd84856a29dfe6094cfbfe2cd768e504cf4a888b7b6d0f39f48
-size 1356
+package frc.robot.subsystems.intake;
+
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import static frc.robot.constants.IntakeConstants.MOTOR_RUNNING_THRESHOLD;
+
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
+
+public class Intake extends SubsystemBase {
+    private final IntakeIO io;
+    private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
+    
+    private LoggedNetworkBoolean holdLock = new LoggedNetworkBoolean("overrides/holdLock", true);
+    
+    public Intake(IntakeIO io) {
+        this.io = io;
+    }
+    
+    @Override
+    public void periodic() {
+        io.updateInputs(inputs);
+        Logger.processInputs("Intake", inputs);
+
+        if (DriverStation.isDisabled()) {
+            stop();
+        }
+    }
+    
+    public void setVoltage(double volts) {
+        io.setVoltage(volts);
+    }
+
+    public void stop() {
+        setVoltage(0.0);
+    }
+    public boolean isHolding() {
+        return inputs.holding;
+    }
+    
+    public void setBrakeMode(boolean enable) {
+        io.setNeutralMode(enable);
+    }
+    public boolean getHoldLock() {
+        return holdLock.get();
+    }
+    public boolean isMoving(){
+        return Math.abs(inputs.motorVoltage) > MOTOR_RUNNING_THRESHOLD;
+    }
+}

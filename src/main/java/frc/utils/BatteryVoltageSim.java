@@ -1,3 +1,43 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:f8ab1aa79ffbd65e0664710be8fad2fcb8e384ab4fcdec3e027f8bb39ee3c7be
-size 1257
+package frc.utils;
+
+import java.util.ArrayList;
+import java.util.function.DoubleSupplier;
+
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+
+public class BatteryVoltageSim {
+    private static BatteryVoltageSim instance;
+
+    private double voltage = 11.5;//unloaded voltage
+    private double nominalcurrent = 20.0;//default current draw
+    private double current = 0.0;
+
+    private ArrayList<DoubleSupplier> currentSources = new ArrayList<>();
+
+    private BatteryVoltageSim(){
+        currentSources.add(()->nominalcurrent);
+    }
+    public static synchronized BatteryVoltageSim getInstance(){
+        if(instance == null){
+            instance = new BatteryVoltageSim();
+        }
+        return instance;
+    }
+
+    public void addCurrentSource(DoubleSupplier currentSource){
+        currentSources.add(currentSource);
+    }
+    
+    public double calculateVoltage(){
+        current = 0.0;
+        for(DoubleSupplier currentSource : currentSources){
+            current += currentSource.getAsDouble();
+        }
+
+        double Loadvoltage = BatterySim.calculateLoadedBatteryVoltage(voltage, 0.015, current);
+        RoboRioSim.setVInVoltage(voltage);
+        return Loadvoltage;
+    }    
+
+}

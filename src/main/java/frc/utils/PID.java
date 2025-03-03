@@ -1,3 +1,15 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:6d996bfadcdd5407fbc3888d4d4873468c489fdee60a77789dfefe747d246500
-size 395
+package frc.utils;
+
+import edu.wpi.first.math.controller.PIDController;
+
+public class PID extends PIDController{
+    public PID(double kP, double kI, double kD){
+        super(kP, kI, kD);
+    }
+    public PID(double kP, double kI, double kD, double period){
+        super(kP, kI, kD, period);
+    }
+    public PID(PIDGains.PID gains){
+        super(gains.kP(), gains.kI(), gains.kD());
+    }
+}

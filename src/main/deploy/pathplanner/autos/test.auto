@@ -1,3 +1,25 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:332532c25d8fb350c08ec6db134edc4705caf25347ebdac75a225984462dabe9
-size 412
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "rotate"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Copy of rotate"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}

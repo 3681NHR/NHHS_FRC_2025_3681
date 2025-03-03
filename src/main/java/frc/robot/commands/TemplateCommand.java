@@ -1,3 +1,30 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d8c8e73871c0038964f2b46a09480e8dd03f7922f6450933f495dd304107e1f9
-size 386
+package frc.robot.commands;
+
+import edu.wpi.first.wpilibj2.command.Command;
+
+public class TemplateCommand extends Command {
+
+  public TemplateCommand() {
+    
+  }
+
+  @Override
+  public void initialize() {
+    
+  }
+
+  @Override
+  public void execute() {
+
+  }
+
+  @Override
+  public void end(boolean interrupted) {
+
+  }
+
+  @Override
+  public boolean isFinished() {
+    return false;
+  }
+}

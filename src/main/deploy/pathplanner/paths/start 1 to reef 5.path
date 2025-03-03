@@ -1,3 +1,54 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:78c85f2ce0cff91aea3bc4f7f75884e4a63531ba66f14e955895d44b828b1666
-size 1151
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.017905498341587,
+        "y": 7.253
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.9044623012992155,
+        "y": 6.649634187945211
+      },
+      "isLocked": false,
+      "linkedName": "start p1"
+    },
+    {
+      "anchor": {
+        "x": 3.935982526529257,
+        "y": 5.159065028776996
+      },
+      "prevControl": {
+        "x": 4.728209951968773,
+        "y": 5.636016340899099
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "reef p5"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.7,
+    "maxAcceleration": 17.0,
+    "maxAngularVelocity": 597.8815,
+    "maxAngularAcceleration": 2575.846,
+    "nominalVoltage": 12.0,
+    "unlimited": true
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -148.37671671133734
+  },
+  "reversed": false,
+  "folder": "from start 1",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 179.51277024968022
+  },
+  "useDefaultConstraints": true
+}

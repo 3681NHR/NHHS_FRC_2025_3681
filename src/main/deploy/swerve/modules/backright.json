@@ -1,3 +1,23 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d5a36b51de26c5f6dd1de4e868cea2c5342359842321f6ed411865b4edaf14a4
-size 338
+{
+  "location": {
+    "front": -14,
+    "left": -12.875
+  },
+  "absoluteEncoderOffset": 0,
+  "drive": {
+    "type": "sparkmax",
+    "id": 14
+  },
+  "angle": {
+    "type": "sparkmax",
+    "id": 24
+  },
+  "encoder": {
+    "type": "attached"
+  },
+  "inverted": {
+    "drive": true,
+    "angle": false
+  },
+  "absoluteEncoderInverted": true
+}

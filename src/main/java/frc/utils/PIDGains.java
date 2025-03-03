@@ -1,3 +1,44 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:fbbe485b920ee7e48345ffaa9e59a75c1c3b5d91c7a6be010e102a8682f54a5e
-size 1401
+package frc.utils;
+
+public class PIDGains {
+    /**
+     * simple record for PID gains
+     */
+    public static record PID(double kP, double kI, double kD) {
+        public PID {
+            if (kP < 0 || kI < 0 || kD < 0) {
+                throw new IllegalArgumentException("PID values must be positive");
+            }
+        }
+    }
+    /**
+     * simple record for PID gains, includes max speed and max acceleration
+     */
+    public static record ProfiledPID(double kP, double kI, double kD, double maxSpeed, double maxAccel) {
+        public ProfiledPID {
+            if (kP < 0 || kI < 0 || kD < 0) {
+                throw new IllegalArgumentException("PID values must be positive");
+            }
+        }
+    }
+    /**
+     * simple record for feedforward gains
+     */
+    public static record SimpleFF(double kS, double kV, double kA) {
+        public SimpleFF {
+            if (kS < 0 || kV < 0 || kA < 0) {
+                throw new IllegalArgumentException("FF values must be positive");
+            }
+        }
+    }
+    /**
+     * simple record for feedforward gains, includes kG for elevator and arm ff
+     */
+    public static record GravityFF(double kS, double kG, double kV, double kA) {
+        public GravityFF {
+            if (kS < 0 || kV < 0 || kA < 0) {
+                throw new IllegalArgumentException("FF values must be positive");
+            }
+        }
+    }
+}

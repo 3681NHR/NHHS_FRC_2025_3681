@@ -1,3 +1,22 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:a0c161b883c80b6c7477f1cba6904f03d544c5bd905f098994ed6b8aa56daf5d
-size 350
+{
+  "optimalVoltage": 12,
+  "wheelGripCoefficientOfFriction": 1.19,
+  "currentLimit": {
+    "drive": 40,
+    "angle": 20
+  },
+  "conversionFactors": {
+    "angle": {
+      "gearRatio": 21.42,
+      "factor": 360
+    },
+    "drive": {
+      "diameter": 4,
+      "gearRatio": 6.75
+    }
+  },
+  "rampRate": {
+    "drive": 0.125,
+    "angle": 0.125
+  }
+}

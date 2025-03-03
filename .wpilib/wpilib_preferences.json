@@ -1,3 +1,6 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:cf2ca14f9000dce990a27b40e70d2edafc0999d74a6d3ecd0026502fafca7a9f
-size 120
+{
+    "enableCppIntellisense": false,
+    "currentLanguage": "java",
+    "projectYear": "2025",
+    "teamNumber": 3681
+}

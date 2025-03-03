@@ -1,3 +1,20 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8d7887f64062988358e7790f7d2e4ed7d6e2d1ec8c9595feea990975704271fe
-size 375
+package frc.robot.subsystems.physButtons;
+
+import java.util.function.BooleanSupplier;
+
+
+public class ButtonIOSim implements ButtonIO {
+
+    private final BooleanSupplier io;
+
+
+    public ButtonIOSim(BooleanSupplier io) {
+        this.io = io;
+    }
+
+    @Override
+    public void updateInputs(ButtonIOInputs inputs) {
+        inputs.pressed = io.getAsBoolean();
+    }
+    
+}

@@ -1,3 +1,16 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:8dcc943e5bec75f927a83c4a6d3fd9345ac19da45fd796f453d534114c08d4db
-size 528
+package frc.utils;
+
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.ElevatorFeedforward;
+
+public class ElevatorFF extends ElevatorFeedforward{
+    public ElevatorFF(double kS, double kG, double kV, double kA){
+        super(kS, kG, kV, kA);
+    }
+    public ElevatorFF(double kS, double kG, double kV, double kA, double dt){
+        super(kS, kG, kV, kA, dt);
+    }
+    public ElevatorFF(PIDGains.GravityFF gains){
+        super(gains.kS(), gains.kG(), gains.kV(), gains.kA());
+    }
+}
