@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class led extends SubsystemBase {
+public class Led extends SubsystemBase {
 
     private Color c = Color.kTeal;
 
@@ -23,7 +23,7 @@ public class led extends SubsystemBase {
 
     private LEDPattern elevPos;
 
-    public led() {
+    public Led() {
         led.setLength(buffer.getLength());
 
         led.start();
@@ -34,15 +34,7 @@ public class led extends SubsystemBase {
         if(!homed){
             elevPos = LEDPattern.solid(Color.kRed).breathe(Seconds.of(2));
         } else {
-            if(holding){
-                c = Color.kGreen;
-            } else {
-                c = Color.kOrange;    
-            }
-            if(ready){
-                c = Color.kWhite;
-            }
-            
+
             elevPos = LEDPattern.solid(c);
             if(intaking){
                 elevPos = elevPos.blink(Seconds.of(.25));
@@ -55,17 +47,13 @@ public class led extends SubsystemBase {
         led.setData(buffer);
     }
 
-    public void setHolding(boolean holding){
-        this.holding = holding;
-    }
     public void setIntaking(boolean in){
         this.intaking = in;
     }
     public void setHomed(boolean homed){
         this.homed = homed;
-    }
-    public void setReady(boolean ready){
-        this.ready = ready;
-    }
-    
+    }  
+    public void setColor(Color c){
+        this.c = c;
+    }  
 }

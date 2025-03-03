@@ -5,11 +5,15 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.WristConstants;
 
 import static frc.robot.constants.WristConstants.*;
 
@@ -74,5 +78,12 @@ public class Wrist extends SubsystemBase {
 
     public boolean inPosition(){
         return Math.abs(inputs.posRad - posSet) < POS_TOLERANCE;
+    }
+
+    public Pose3d getAScopePoseWrist(double elevatorHeight){
+        return new Pose3d(WristConstants.WRIST_POS.plus(new Translation3d(0, 0, elevatorHeight)), new Rotation3d(getPos()- (Math.PI/2.0), 0, 0));
+    }
+    public void stop(){
+        setPosSet(getPos());
     }
 }

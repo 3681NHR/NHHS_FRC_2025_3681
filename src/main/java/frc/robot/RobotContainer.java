@@ -13,7 +13,8 @@ import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.constants.WristConstants;
-import frc.robot.subsystems.led;
+import frc.robot.subsystems.Led;
+import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
@@ -99,7 +100,9 @@ public class RobotContainer {
   private Intake intake;
   private Buttons buttons;
 
-  private led led = new led();
+  private Led led = new Led();
+
+  private Superstructure superstructure;
 
   private final XboxController driverController =
       new XboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
@@ -254,6 +257,7 @@ public class RobotContainer {
         break;
     }
 
+    superstructure = new Superstructure(elevator, wrist, intake, drive, led);
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -369,7 +373,7 @@ public class RobotContainer {
     new Trigger(() -> operatorController.getRawButton(A)).onTrue(new HomeElevator(elevator));
         
     //intake controls
-    new Trigger(() -> driverController.getRawButton(RB)).or(() -> operatorController.getRawButton(RB)).whileTrue(new IntakeCommand(intake));
+    new Trigger(() -> driverController.getRawButton(RB)).or(() -> operatorController.getRawButton(RB)).onTrue();
     new Trigger(() -> operatorController.getRawButton(Y)).onTrue(new InstantCommand(() -> {
       intake.setVoltage(-IntakeConstants.SPEED);
     })).onFalse(new InstantCommand(() -> {
@@ -384,7 +388,7 @@ public class RobotContainer {
 
     //go to affector target
     new Trigger(() -> driverController.getRawButton(LB)).or(() -> operatorController.getRawButton(LB))
-      .whileTrue(new MoveAffector(elevator, wrist, () -> target));
+      .whileTrue(new InstantCommand(() -> superstructure.prepareScore(target)));
 
     new Trigger(() -> driverController.getRawButton(X))
     .and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(Constants.positions.REEFS, drive.getPose())) < .5)
@@ -395,17 +399,6 @@ public class RobotContainer {
 
 
   public void Periodic(){
-    Logger.recordOutput("poses/Wrist(3)", new Pose3d(WristConstants.WRIST_POS.plus(new Translation3d(0, 0, elevator.getPosition())), new Rotation3d(wrist.getPos()- (Math.PI/2.0), 0, 0)));
-
-    //update leds
-    led.setHolding(intake.isHolding());
-    led.setIntaking(intake.isMoving());
-    led.setHomed(elevator.isHomed());
-    led.setReady(
-      (
-        (target.isScoring() && intake.isHolding()) || //holding while scoring or
-        (target == AffectorPosition.STATION && !intake.isHolding())//not holding while going to station
-      ) && elevator.inPosition() && wrist.inPosition());//and in position
 
     Logger.recordOutput("fieldOrientedDrive", getFOD());
     Logger.recordOutput("directAngle", getDirectAngle());

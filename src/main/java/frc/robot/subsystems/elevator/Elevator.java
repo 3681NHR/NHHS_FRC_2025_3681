@@ -80,9 +80,6 @@ public class Elevator extends SubsystemBase {
         }
 
         noLim.set(!homed || openloop || !limits.get());
-
-        Logger.recordOutput("poses/innerStage(2)", new Pose3d(new Translation3d(0, 0, getPosition()), new Rotation3d()));
-        Logger.recordOutput("poses/middleStage(1)", new Pose3d(new Translation3d(0, 0, getPosition()*0.544561), new Rotation3d()));
     }
 
     public void setHomed(boolean homed){
@@ -138,5 +135,14 @@ public class Elevator extends SubsystemBase {
 
     public void sysId(Voltage v){
         setVoltage(v.baseUnitMagnitude());
+    }
+    public Pose3d getAScopePoseInnerStage(){
+        return new Pose3d(new Translation3d(0, 0, getPosition()), new Rotation3d());
+    }
+    public Pose3d getAScopePoseMiddleStage(){
+        return new Pose3d(new Translation3d(0, 0, getPosition()*0.544561), new Rotation3d());
+    }
+    public void stop(){
+        setTargetPos(getPosition());
     }
 }

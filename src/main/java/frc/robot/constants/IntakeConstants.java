@@ -15,5 +15,4 @@ public class IntakeConstants {
     
     public static final Translation3d WRIST_POS = new Translation3d(0.25, -0.25, 0.585);
     public static final double pivotToCoral = 0.15;
-    public static final double coralOut = -0.1;
 }

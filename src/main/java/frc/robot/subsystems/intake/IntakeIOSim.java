@@ -4,7 +4,6 @@ package frc.robot.subsystems.intake;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
-import static frc.robot.constants.IntakeConstants.coralOut;
 import static frc.robot.constants.IntakeConstants.pivotToCoral;
 
 import org.ironmaple.simulation.SimulatedArena;
@@ -60,13 +59,6 @@ public class IntakeIOSim implements IntakeIO {
 
         if(holding){
             coralLocation += vel * Units.inchesToMeters(1.5) * 0.02;
-
-            Logger.recordOutput("poses/coral", new Pose3d(
-                WristConstants.WRIST_POS.plus(new Translation3d(0, Math.cos(wrist.getPos())*pivotToCoral, elevator.getPosition() + Math.sin(wrist.getPos())*pivotToCoral)),
-                new Rotation3d(0, -wrist.getPos()+Math.PI/2, 0).rotateBy(new Rotation3d(0, 0, Math.PI/2))
-            ));
-        } else {
-            Logger.recordOutput("poses/coral",  new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()));
         }
         if(!holding && wrist.getPos() < 0 && voltage > 1){
             holding = true;

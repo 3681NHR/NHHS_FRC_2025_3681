@@ -48,4 +48,7 @@ public class Intake extends SubsystemBase {
     public boolean isMoving(){
         return Math.abs(inputs.motorVoltage) > MOTOR_RUNNING_THRESHOLD;
     }
+    public boolean isIntaking(){
+        return inputs.motorVoltage > MOTOR_RUNNING_THRESHOLD;
+    }
 }
