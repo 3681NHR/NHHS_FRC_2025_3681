@@ -54,7 +54,7 @@ public class IntakeIOSim implements IntakeIO {
         inputs.motorVoltage = voltage;
         inputs.motorCurrent = 0;
         inputs.motorTemperature = -1;
-        inputs.motorVelocityRPM = vel;
+        inputs.motorVelocityRPM = Units.radiansPerSecondToRotationsPerMinute(vel);
 
         inputs.holding = holding;
 

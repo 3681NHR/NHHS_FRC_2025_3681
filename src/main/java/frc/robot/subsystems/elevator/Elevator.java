@@ -3,6 +3,9 @@ package frc.robot.subsystems.elevator;
 import static frc.robot.constants.ElevatorConstants.MAX_POS;
 import static frc.robot.constants.ElevatorConstants.MIN_POS;
 import static frc.robot.constants.ElevatorConstants.POS_TOLERANCE;
+import static frc.robot.constants.ElevatorConstants.TIMEOUT;
+import static frc.robot.constants.ElevatorConstants.VRAMP;
+import static frc.robot.constants.ElevatorConstants.VSTEP;
 
 import java.util.function.DoubleSupplier;
 
@@ -14,10 +17,13 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 
 public class Elevator extends SubsystemBase {
 
@@ -36,12 +42,21 @@ public class Elevator extends SubsystemBase {
 
     private LoggedNetworkBoolean limits = new LoggedNetworkBoolean("overrides/elevatorLimits", true);
 
+    private SysIdRoutine sysid;
     @AutoLogOutput
     private boolean brake = true;
     
     public Elevator(ElevatorIO io){
         this.io = io;
 
+        sysid = new SysIdRoutine(new Config(
+            VRAMP,
+            VSTEP,
+            TIMEOUT
+        ), new SysIdRoutine.Mechanism(
+            (v) -> sysId(v), 
+            null, 
+            this));
     }
 
     @Override
@@ -119,5 +134,9 @@ public class Elevator extends SubsystemBase {
     
     public boolean inPosition(){
         return Math.abs(inputs.elevatorPositionMeters - posSet) < POS_TOLERANCE;
+    }
+
+    public void sysId(Voltage v){
+        setVoltage(v.baseUnitMagnitude());
     }
 }

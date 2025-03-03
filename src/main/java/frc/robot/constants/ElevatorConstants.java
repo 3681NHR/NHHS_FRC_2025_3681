@@ -1,6 +1,14 @@
 package frc.robot.constants;
 
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
+
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.VoltageUnit;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.units.measure.Voltage;
 import frc.utils.PIDGains;
 
 public final class ElevatorConstants {
@@ -37,4 +45,8 @@ public final class ElevatorConstants {
     public static final PIDGains.ProfiledPID POS_PID_SIM = new PIDGains.ProfiledPID(0, 0, 0, 1.75, 1.75*5);
 
     public static final double POS_TOLERANCE = Units.inchesToMeters(2.5);
+    
+    public static final Voltage VSTEP = Volts.of(3);
+    public static final Velocity<VoltageUnit> VRAMP = Volts.of(.5).per(Second);
+    public static final Time TIMEOUT = Seconds.of(3);
 }
