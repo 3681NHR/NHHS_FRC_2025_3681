@@ -1,7 +1,10 @@
 package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Percent;
+import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
+
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
@@ -14,14 +17,14 @@ public class Led extends SubsystemBase {
     private Color c = Color.kTeal;
 
     private boolean intaking = false;
-    private boolean holding = false;
-    private boolean ready = false;
     private boolean homed = false;
 
     private AddressableLED led = new AddressableLED(0);
     private AddressableLEDBuffer buffer = new AddressableLEDBuffer(49);
 
     private LEDPattern elevPos;
+
+    private LoggedNetworkBoolean gayMode = new LoggedNetworkBoolean("gay mode", false);
 
     public Led() {
         led.setLength(buffer.getLength());
@@ -41,6 +44,9 @@ public class Led extends SubsystemBase {
             }
         }
         elevPos = elevPos.atBrightness(Percent.of(50));
+        if(gayMode.get()){
+            elevPos = LEDPattern.rainbow(255, 255).scrollAtRelativeSpeed(Percent.per(Second).of(25));
+        }
 
         elevPos.applyTo(buffer);
 

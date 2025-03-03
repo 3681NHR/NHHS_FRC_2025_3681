@@ -1,9 +1,7 @@
 package frc.robot.constants;
 
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import frc.utils.PID;
 import frc.utils.PIDGains;
 
 public class WristConstants {

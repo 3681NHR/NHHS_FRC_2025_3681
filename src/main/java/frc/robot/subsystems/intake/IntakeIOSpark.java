@@ -1,7 +1,5 @@
 package frc.robot.subsystems.intake;
 
-
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 

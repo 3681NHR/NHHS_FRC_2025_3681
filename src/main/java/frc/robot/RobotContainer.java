@@ -14,7 +14,6 @@ import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.constants.WristConstants;
 import frc.robot.subsystems.Led;
-import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
@@ -57,9 +56,6 @@ import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
-import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
-import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
-import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -70,8 +66,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.Unit;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -80,7 +74,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
-import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -101,8 +95,6 @@ public class RobotContainer {
   private Buttons buttons;
 
   private Led led = new Led();
-
-  private Superstructure superstructure;
 
   private final XboxController driverController =
       new XboxController(OperatorConstants.DRIVER_CONTROLLER_PORT);
@@ -257,7 +249,6 @@ public class RobotContainer {
         break;
     }
 
-    superstructure = new Superstructure(elevator, wrist, intake, drive, led);
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
@@ -373,7 +364,7 @@ public class RobotContainer {
     new Trigger(() -> operatorController.getRawButton(A)).onTrue(new HomeElevator(elevator));
         
     //intake controls
-    new Trigger(() -> driverController.getRawButton(RB)).or(() -> operatorController.getRawButton(RB)).onTrue();
+    new Trigger(() -> driverController.getRawButton(RB)).or(() -> operatorController.getRawButton(RB)).whileTrue(new IntakeCommand(intake));
     new Trigger(() -> operatorController.getRawButton(Y)).onTrue(new InstantCommand(() -> {
       intake.setVoltage(-IntakeConstants.SPEED);
     })).onFalse(new InstantCommand(() -> {
@@ -388,7 +379,7 @@ public class RobotContainer {
 
     //go to affector target
     new Trigger(() -> driverController.getRawButton(LB)).or(() -> operatorController.getRawButton(LB))
-      .whileTrue(new InstantCommand(() -> superstructure.prepareScore(target)));
+      .whileTrue(new MoveAffector(elevator, wrist, () -> target));
 
     new Trigger(() -> driverController.getRawButton(X))
     .and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(Constants.positions.REEFS, drive.getPose())) < .5)
@@ -466,4 +457,31 @@ public class RobotContainer {
     wrist.setBrake(true);
   }
 
+
+  public void updateAScopePoses(){
+    Logger.recordOutput("componentPoses", new Pose3d[] {
+        elevator.getAScopePoseMiddleStage(),
+        elevator.getAScopePoseInnerStage(),
+        wrist.getAScopePoseWrist(elevator.getPosition()),
+        intake.isHolding() ? new Pose3d(
+            WristConstants.WRIST_POS.plus(new Translation3d(0, Math.cos(wrist.getPos())*IntakeConstants.pivotToCoral, elevator.getPosition() + Math.sin(wrist.getPos())*IntakeConstants.pivotToCoral)),
+            new Rotation3d(0, -wrist.getPos()+Math.PI/2, 0).rotateBy(new Rotation3d(0, 0, Math.PI/2))
+        ) : new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
+    });
+}
+public void updateLEDs(){
+    led.setColor(
+        isReady() ? Color.kWhite
+        : intake.isHolding() ? Color.kGreen : Color.kOrange
+    );
+    led.setHomed(elevator.isHomed());
+    led.setIntaking(intake.isMoving());
+}
+
+public boolean isReady(){
+  return elevator.isHomed()//elevator homed
+   && elevator.inPosition() && wrist.inPosition()//in pos
+   && (target.isScoring() ? intake.isHolding() || !intake.getHoldLock() : true)//holding if in scoring pos
+   && (target == AffectorPosition.STATION ? intake.isIntaking() : true);//intaking if in station pos
+}
 }

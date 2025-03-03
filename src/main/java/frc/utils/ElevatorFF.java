@@ -1,6 +1,5 @@
 package frc.utils;
 
-import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ElevatorFeedforward;
 
 public class ElevatorFF extends ElevatorFeedforward{
