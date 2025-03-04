@@ -13,8 +13,12 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.constants.WristConstants;
 
+import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.constants.WristConstants.*;
 
 import java.util.function.DoubleSupplier;
@@ -32,8 +36,19 @@ public class Wrist extends SubsystemBase {
     private Alert noLim = new Alert("wrist limits not enforced", AlertType.kWarning);
     private LoggedNetworkBoolean limits = new LoggedNetworkBoolean("overrides/wristLimits", true);
 
+    private SysIdRoutine sysid;
+
     public Wrist(WristIO io){
         this.io = io;
+
+        sysid = new SysIdRoutine(
+            new Config(
+                VRAMP,
+                VSTEP,
+                TIMEOUT,
+                (s) -> Logger.recordOutput("Wrist/sysisState", s.toString())
+            ), 
+            new Mechanism((v) -> setVoltage(v.in(Volts)), null, this));
     }
 
     @Override
@@ -85,5 +100,16 @@ public class Wrist extends SubsystemBase {
     }
     public void stop(){
         setPosSet(getPos());
+    }
+
+    public void setVoltage(double v){
+        io.setVoltage(v);
+    }
+
+    public Command sysIdQuasistatic(SysIdRoutine.Direction dir){
+        return sysid.quasistatic(dir);
+    }
+    public Command sysIdDynamic(SysIdRoutine.Direction dir){
+        return sysid.dynamic(dir);
     }
 }

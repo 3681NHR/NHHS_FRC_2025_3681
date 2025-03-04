@@ -20,6 +20,8 @@ public class MoveAffector extends Command {
     this.pos = pos;
     addRequirements(elevator, wrist);
   }
+  @Override
+  public String getName(){return "move affector";}
 
   @Override
   public void initialize() {

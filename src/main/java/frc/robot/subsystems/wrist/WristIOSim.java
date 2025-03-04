@@ -71,4 +71,8 @@ public class WristIOSim implements WristIO {
         in.motoroutVolts = ffOut + pidOut;
         in.motorTemp = 0.0;
     }
+
+    public void setVoltage(double v) {
+
+    }
 }

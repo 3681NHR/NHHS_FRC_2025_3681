@@ -1,3 +1,5 @@
+/* I wrote this robot code with furry paws on. Just thought I would mention that. -yarden*/
+
 package frc.robot;
 
 import frc.robot.commands.AnglePresetDriveCommand;
@@ -269,7 +271,23 @@ public class RobotContainer {
           drive.angleSysIdQuasistatic(SysIdRoutine.Direction.kForward).andThen(drive.angleSysIdQuasistatic(SysIdRoutine.Direction.kReverse)));
       autoChooser.addOption(
           "Angle SysId (Dynamic Forward/Reverse)", drive.angleSysIdDynamic(SysIdRoutine.Direction.kForward).andThen(drive.angleSysIdDynamic(SysIdRoutine.Direction.kReverse)));
-    }
+      autoChooser.addOption(
+        "Elevator SysId (Quasistatic Forward)", elevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward).withName("sysid"));
+      autoChooser.addOption(
+        "Elevator SysId (Quasistatic Reverse)", elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse).withName("sysid"));
+      autoChooser.addOption(
+        "Elevator SysId (Dynamic Forward)", elevator.sysIdDynamic(SysIdRoutine.Direction.kForward).withName("sysid"));
+      autoChooser.addOption(
+        "Elevator SysId (Dynamic Reverse)", elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse).withName("sysid"));
+      autoChooser.addOption(
+        "Wrist SysId (Quasistatic Forward)", wrist.sysIdQuasistatic(SysIdRoutine.Direction.kForward).withName("sysid"));
+      autoChooser.addOption(
+        "Wrist SysId (Quasistatic Reverse)", wrist.sysIdQuasistatic(SysIdRoutine.Direction.kReverse).withName("sysid"));
+      autoChooser.addOption(
+        "Wrist SysId (Dynamic Forward)", wrist.sysIdDynamic(SysIdRoutine.Direction.kForward).withName("sysid"));
+      autoChooser.addOption(
+        "Wrist SysId (Dynamic Reverse)", wrist.sysIdDynamic(SysIdRoutine.Direction.kReverse).withName("sysid"));
+      } 
 
     configureBindings();
 
@@ -286,7 +304,7 @@ public class RobotContainer {
     );
 
     drive.setDefaultCommand(driveCommand);
-    wrist.setDefaultCommand(wrist.man(() -> ExtraMath.processInput(operatorController.getRightY(), -0.015 * WristConstants.POS_PID.maxSpeed(), 1.0, 0.05)));
+    wrist.setDefaultCommand(wrist.man(() -> ExtraMath.processInput(operatorController.getRightY(), -0.01 * WristConstants.POS_PID.maxSpeed(), 1.0, 0.05)));
     elevator.setDefaultCommand(elevator.man(() -> (operatorController.getRightTriggerAxis()-operatorController.getLeftTriggerAxis())*OperatorConstants.ELEVATOR_MAN_SENS));
   }
 
@@ -352,8 +370,8 @@ public class RobotContainer {
     //physical button
     new Trigger(() -> buttons.get(0)).onTrue(new DisabledInstantCommand(() -> {
       if(DriverStation.isDisabled()){
-        elevator.toggleBrake();
-        wrist.toggleBrake();
+        //elevator.toggleBrake();
+        //wrist.toggleBrake();
       }
     })).debounce(1).onTrue(new DisabledInstantCommand(() -> {
       elevator.resetPos(ElevatorConstants.HOME_POS);
@@ -390,6 +408,9 @@ public class RobotContainer {
 
 
   public void Periodic(){
+    led.setHomed(elevator.isHomed());
+    led.setIntaking(intake.isMoving());
+    led.setColor(isReady() ? Color.kWhite : intake.isHolding() ? Color.kGreen : Color.kOrange);
 
     Logger.recordOutput("fieldOrientedDrive", getFOD());
     Logger.recordOutput("directAngle", getDirectAngle());
@@ -424,6 +445,8 @@ public class RobotContainer {
 
     driverDisconnected.set(!driverController.isConnected());
     operatorDisconnected.set(!operatorController.isConnected());
+
+    updateAScopePoses();
   }
 
   public void SimPeriodic(){
@@ -482,6 +505,7 @@ public boolean isReady(){
   return elevator.isHomed()//elevator homed
    && elevator.inPosition() && wrist.inPosition()//in pos
    && (target.isScoring() ? intake.isHolding() || !intake.getHoldLock() : true)//holding if in scoring pos
-   && (target == AffectorPosition.STATION ? intake.isIntaking() : true);//intaking if in station pos
+   && (target == AffectorPosition.STATION ? intake.isIntaking() : true)//intaking if in station pos
+   && target != AffectorPosition.STOW;
 }
 }

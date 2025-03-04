@@ -1,5 +1,6 @@
 package frc.robot.subsystems.elevator;
 
+import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.constants.ElevatorConstants.MAX_POS;
 import static frc.robot.constants.ElevatorConstants.MIN_POS;
 import static frc.robot.constants.ElevatorConstants.POS_TOLERANCE;
@@ -42,6 +43,8 @@ public class Elevator extends SubsystemBase {
 
     private LoggedNetworkBoolean limits = new LoggedNetworkBoolean("overrides/elevatorLimits", true);
 
+    double volt = 0.0;
+
     private SysIdRoutine sysid;
     @AutoLogOutput
     private boolean brake = true;
@@ -52,9 +55,10 @@ public class Elevator extends SubsystemBase {
         sysid = new SysIdRoutine(new Config(
             VRAMP,
             VSTEP,
-            TIMEOUT
-        ), new SysIdRoutine.Mechanism(
-            (v) -> sysId(v), 
+            TIMEOUT,
+            (state) -> Logger.recordOutput("Elevator/SysIdState", state.toString())), 
+            new SysIdRoutine.Mechanism(
+            this::sysId, 
             null, 
             this));
     }
@@ -63,6 +67,9 @@ public class Elevator extends SubsystemBase {
     public void periodic(){
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
+
+
+        Logger.recordOutput("Elevator/currentCommand", getCurrentCommand() != null ? getCurrentCommand().getName() : "none");
 
         notHomed.set(!homed);
 
@@ -77,6 +84,7 @@ public class Elevator extends SubsystemBase {
             io.setElevatorTargetLocation(posSet);
         } else {
             posSet = inputs.elevatorPositionMeters;
+            io.moveElevatorOpenLoop(volt);
         }
 
         noLim.set(!homed || openloop || !limits.get());
@@ -91,6 +99,7 @@ public class Elevator extends SubsystemBase {
 
     public void setVoltage(double voltage){
         io.moveElevatorOpenLoop(voltage);
+        volt = voltage;
         openloop = true;
     }
 
@@ -117,7 +126,7 @@ public class Elevator extends SubsystemBase {
         }).beforeStarting(() -> {
             //reset pos on start to avoid jumping
             posSet = inputs.elevatorPositionMeters;
-        });
+        }).withName("man");
     }
 
     public void toggleBrake(){
@@ -134,7 +143,9 @@ public class Elevator extends SubsystemBase {
     }
 
     public void sysId(Voltage v){
-        setVoltage(v.baseUnitMagnitude());
+        openloop = true;
+        Logger.recordOutput("elevatorsysid vout", v);
+        setVoltage(v.in(Volts));
     }
     public Pose3d getAScopePoseInnerStage(){
         return new Pose3d(new Translation3d(0, 0, getPosition()), new Rotation3d());
@@ -145,4 +156,13 @@ public class Elevator extends SubsystemBase {
     public void stop(){
         setTargetPos(getPosition());
     }
+    /** Returns a command to run a quasistatic test in the specified direction. */
+  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return sysid.quasistatic(direction);
+  }
+
+  /** Returns a command to run a dynamic test in the specified direction. */
+  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+    return  sysid.dynamic(direction);
+  }
 }

@@ -20,7 +20,7 @@ public class Led extends SubsystemBase {
     private boolean homed = false;
 
     private AddressableLED led = new AddressableLED(0);
-    private AddressableLEDBuffer buffer = new AddressableLEDBuffer(49);
+    private AddressableLEDBuffer buffer = new AddressableLEDBuffer(50);
 
     private LEDPattern elevPos;
 
@@ -40,10 +40,10 @@ public class Led extends SubsystemBase {
 
             elevPos = LEDPattern.solid(c);
             if(intaking){
-                elevPos = elevPos.blink(Seconds.of(.25));
+                elevPos = elevPos.blink(Seconds.of(.125));
             }
         }
-        elevPos = elevPos.atBrightness(Percent.of(50));
+        elevPos = elevPos.atBrightness(Percent.of(25));
         if(gayMode.get()){
             elevPos = LEDPattern.rainbow(255, 255).scrollAtRelativeSpeed(Percent.per(Second).of(25));
         }

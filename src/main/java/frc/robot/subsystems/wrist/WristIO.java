@@ -10,6 +10,7 @@ public interface WristIO {
 
     public default void setBrake(boolean brake) {}
 
+    public default void setVoltage(double v) {}
     @AutoLog
     public class WristIOInputs{
         public double posRad = 0.0;
