@@ -5,6 +5,9 @@ import static frc.robot.constants.ElevatorConstants.*;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
 import frc.utils.ProfiledPID;
 
 public class ElevatorIOSim implements ElevatorIO{
@@ -20,7 +23,18 @@ public class ElevatorIOSim implements ElevatorIO{
     
     private ProfiledPID pid = new ProfiledPID(POS_PID_SIM);
 
+    private ElevatorSim sim = new ElevatorSim(
+        LinearSystemId.identifyPositionSystem(POS_FF.kV(), POS_FF.kA()),
+        DCMotor.getNEO(2),
+        MIN_POS,
+        MAX_POS,
+        true,
+        0,
+        0, 0
+    )
+
     public ElevatorIOSim(){
+    
     }
     
     
