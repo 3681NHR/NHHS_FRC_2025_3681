@@ -37,9 +37,12 @@ public class DriveConstants {
     public static final double ANGLE_MAX_VELOCITY = 11.2;
     public static boolean USE_VISION = true;
 
-    public static final PIDGains.PID TRANS_PID = new PIDGains.PID(5, 0.0, 0.0);
-    public static final PIDGains.PID TRANS_PID_SIM = new PIDGains.PID(5, 0.0, 0.0);
-    public static final double MAX_SPEED = 4.1;
+    public static final PIDGains.PID AUTO_ANGLE_PID = new PIDGains.PID(5, 0.0, 0.0);//TODO tune
+    public static final PIDGains.PID AUTO_ANGLE_PID_SIM = new PIDGains.PID(5, 0.0, 0.0);
+    
+    public static final PIDGains.PID TRANS_PID = new PIDGains.PID(6, 0.0, 0.0);//TODO tune
+    public static final PIDGains.PID TRANS_PID_SIM = new PIDGains.PID(6, 0.0, 0.0);
+    public static final double MAX_SPEED = 4.1;//TODO tune
 
     public static final double ODOMETRY_FREQ = 100.0; // Hz
     public static final double WIDTH = Units.inchesToMeters(22);
@@ -86,8 +89,8 @@ public class DriveConstants {
       (2 * Math.PI) / 60.0 / DRIVE_REDUCTION; // Rotor RPM -> Wheel Rad/Sec
 
   // Drive PID configuration
-  public static final PIDGains.PID DRIVE_PID = new PIDGains.PID(0.01, 0.0, 0.0);
-  public static final PIDGains.SimpleFF DRIVE_FF = new PIDGains.SimpleFF(0.11, 0.13, 0.1);
+  public static final PIDGains.PID DRIVE_PID = new PIDGains.PID(0.01, 0.0, 0.0);//TODO should tune
+  public static final PIDGains.SimpleFF DRIVE_FF = new PIDGains.SimpleFF(0.11, 0.13, 0.1);//TODO needs sysid
   
   public static final PIDGains.PID DRIVE_PID_SIM = new PIDGains.PID(0.01, 0.0, 0.0);
   public static final PIDGains.SimpleFF DRIVE_FF_SIM = new PIDGains.SimpleFF(0.11, 0.13, 0.1);
@@ -104,8 +107,8 @@ public class DriveConstants {
   public static final double TURN_ENCODER_VEL_FACTOR = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
 
   // Turn PID configuration
-  public static final PIDGains.ProfiledPID TURN_PID = new PIDGains.ProfiledPID(0.75, 0.0, 0.0, Math.PI*8, Math.PI*80);
-  public static final PIDGains.SimpleFF TURN_FF = new PIDGains.SimpleFF(0.125, 0.0, 0.0);//kv and ka do nothing
+  public static final PIDGains.ProfiledPID TURN_PID = new PIDGains.ProfiledPID(0.75, 0.0, 0.0, Math.PI*8, Math.PI*80);//TODO needs tuning
+  public static final PIDGains.SimpleFF TURN_FF = new PIDGains.SimpleFF(0.125, 0.0, 0.0);//TODO needs tuning and sysid
   
   public static final PIDGains.ProfiledPID TURN_PID_SIM = new PIDGains.ProfiledPID(12.5, 0.0, 0.5, Math.PI*8, Math.PI*80);
   public static final PIDGains.SimpleFF TURN_FF_SIM = new PIDGains.SimpleFF(0.015, 0.0, 0.0);

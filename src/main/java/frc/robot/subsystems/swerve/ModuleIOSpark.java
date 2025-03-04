@@ -21,6 +21,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
+import frc.utils.ProfiledPID;
 import frc.utils.SimpleFF;
 import frc.utils.SparkOdometryThread;
 
@@ -42,7 +43,8 @@ public class ModuleIOSpark implements ModuleIO {
 
   // Closed loop controllers
   private final SparkClosedLoopController driveController;
-  private final SparkClosedLoopController turnController;
+  private final ProfiledPID turnPID = new ProfiledPID(TURN_PID);
+  private final SimpleFF turnFF = new SimpleFF(TURN_FF);
   private final SimpleFF driveFF = new SimpleFF(DRIVE_FF);
 
   // Queue inputs from odometry thread
@@ -98,7 +100,6 @@ public class ModuleIOSpark implements ModuleIO {
     driveEncoder = driveSpark.getEncoder();
     turnEncoder = turnSpark.getAbsoluteEncoder();
     driveController = driveSpark.getClosedLoopController();
-    turnController = turnSpark.getClosedLoopController();
 
     // Configure drive motor
     var driveConfig = new SparkMaxConfig();
@@ -152,17 +153,7 @@ public class ModuleIOSpark implements ModuleIO {
         .averageDepth(8);
     turnConfig
         .closedLoop
-        .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
-        .positionWrappingEnabled(true)
-        .positionWrappingInputRange(TURN_MIN_POS, TURN_MAX_POS)
-        .pidf(
-            TURN_PID.kP(), 
-            TURN_PID.kI(), 
-            TURN_PID.kD(), 0.0)
-        .maxMotion
-        .positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal)
-        .maxAcceleration(TURN_PID.maxAccel(), ClosedLoopSlot.kSlot0)
-        .maxVelocity(TURN_PID.maxSpeed(), ClosedLoopSlot.kSlot0);
+        .feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
     turnConfig
         .signals
         .absoluteEncoderPositionAlwaysOn(true)
@@ -179,6 +170,7 @@ public class ModuleIOSpark implements ModuleIO {
             turnSpark.configure(
                 turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
 
+    turnPID.enableContinuousInput(TURN_MIN_POS, TURN_MAX_POS);
     // Create odometry queues
     timestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
     drivePositionQueue =
@@ -244,13 +236,9 @@ public class ModuleIOSpark implements ModuleIO {
             ArbFFUnits.kVoltage);
     }
     if(turnClosedLoop){
-        double ffVolts = TURN_FF.kS() * Math.signum(turnGoal);
-        turnController.setReference(
-            turnGoal,
-            ControlType.kPosition,
-            ClosedLoopSlot.kSlot0,
-            ffVolts,
-            ArbFFUnits.kVoltage);
+        double ffVolts = turnFF.calculate(turnPID.getSetpoint().velocity);
+        turnPID.setGoal(turnGoal);
+        turnSpark.setVoltage(ffVolts + turnPID.calculate(turnEncoder.getPosition()));
     }
         
   }
