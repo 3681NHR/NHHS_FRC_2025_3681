@@ -137,7 +137,7 @@ public class DriveCommands {
     double omega =
     MathUtil.clamp(
         angleController.calculate(
-            drive.getRotation().getRadians(), rotationSupplier.get().rotateBy(DriverStation.getAlliance().isPresent()&& DriverStation.getAlliance().get() == Alliance.Red ? Rotation2d.k180deg : new Rotation2d()).getRadians()),
+            drive.getRotation().getRadians(), rotationSupplier.get().rotateBy(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? Rotation2d.k180deg : new Rotation2d()).getRadians()),
     -ANGLE_MAX_VELOCITY, ANGLE_MAX_VELOCITY);
 
     Logger.recordOutput("angletarget", angleController.getSetpoint());
