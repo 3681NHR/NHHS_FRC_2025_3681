@@ -8,6 +8,8 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import frc.utils.BatteryVoltageSim;
+import frc.utils.ElevatorFF;
 import frc.utils.ProfiledPID;
 
 public class ElevatorIOSim implements ElevatorIO{
@@ -22,6 +24,7 @@ public class ElevatorIOSim implements ElevatorIO{
     private boolean openloop = false;
     
     private ProfiledPID pid = new ProfiledPID(POS_PID_SIM);
+    private ElevatorFF ff = new ElevatorFF(POS_FF_SIM);
 
     private ElevatorSim sim = new ElevatorSim(
         LinearSystemId.identifyPositionSystem(POS_FF.kV(), POS_FF.kA()),
@@ -31,25 +34,32 @@ public class ElevatorIOSim implements ElevatorIO{
         true,
         0,
         0, 0
-    )
+    );
 
     public ElevatorIOSim(){
-    
+        BatteryVoltageSim.getInstance().addCurrentSource(()-> sim.getCurrentDrawAmps());
     }
     
     
     public void updateInputs(ElevatorIOInputs inputs) {
-        pos = pid.getSetpoint().position;
-        vel = (pos-lastPos)/0.02;
-        lastPos = pos;
+
+        sim.update(0.02);
+
+        pos = sim.getPositionMeters();
+        vel = sim.getVelocityMetersPerSecond();
 
         posSetpoint = MathUtil.clamp(posSetpoint, MIN_POS, MAX_POS);
 
         double pidOut = pid.calculate(pos, posSetpoint);
+        double ffOut = ff.calculate(pos, pid.getSetpoint().velocity);
         Logger.recordOutput("Elevator/pidOut", pidOut);
         Logger.recordOutput("Elevator/target", posSetpoint);
         Logger.recordOutput("Elevator/setpoint", pid.getSetpoint().position);
-
+        if(!openloop){
+            sim.setInputVoltage(ffOut + pidOut);
+        } else {
+            sim.setInputVoltage(voltsOut);
+        }
 
         inputs.elevatorPositionMeters = pos;
         inputs.elevatorVelocityMetersPerSec = vel;
