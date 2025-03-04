@@ -23,6 +23,7 @@ import static frc.robot.constants.ElevatorConstants.*;
 import static frc.utils.SparkUtil.*;
 
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 public class ElevatorIOSpark implements ElevatorIO {
 
@@ -50,6 +51,8 @@ public class ElevatorIOSpark implements ElevatorIO {
 
     private ProfiledPID pid = new ProfiledPID(POS_PID);
     private ElevatorFF ff = new ElevatorFF(POS_FF);
+
+    private LoggedNetworkBoolean fallback = new LoggedNetworkBoolean("overrides/elevator encoder fallback", true);
 
     public ElevatorIOSpark(){
         
@@ -80,9 +83,9 @@ public class ElevatorIOSpark implements ElevatorIO {
     }
 
     public void updateInputs(ElevatorIOInputs inputs) {
-        //encoderFallback = divergenceAlert.get();
+        encoderFallback = fallback.get();
         if(encoderFallback){
-            vel = (motorEncoder.getVelocity() * Builtinfactor) - pos;
+            vel = (motorEncoder.getVelocity() * Builtinfactor/60.0);
             pos = motorEncoder.getPosition() * Builtinfactor;
         } else {
             pos = encoder.getDistance() + posOffset;

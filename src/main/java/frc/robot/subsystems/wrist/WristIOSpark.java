@@ -34,6 +34,9 @@ public class WristIOSpark implements WristIO{
 
     private Derrivitive velDeriv = new Derrivitive();
 
+    private boolean openloop = false;
+    private double vout = 0.0;
+
     public WristIOSpark(){
         config
             .idleMode(IdleMode.kBrake)
@@ -58,11 +61,12 @@ public class WristIOSpark implements WristIO{
     @Override
     public void setPos(double pos){
         posSet = pos;
+        openloop = false;
     }
     @Override
     public void setBrake(boolean brake){
         Logger.recordOutput("test", "e");
-        config.idleMode(brake ? IdleMode.kBrake : IdleMode.kCoast);
+        config.idleMode(IdleMode.kBrake);
         SparkUtil.tryUntilOk(motor, 
         5, 
         () -> motor.configure(
@@ -84,8 +88,11 @@ public class WristIOSpark implements WristIO{
         Logger.recordOutput("Wrist/PID set", pid.getSetpoint().position);
         Logger.recordOutput("Wrist/PID out", pidOut);
         Logger.recordOutput("Wrist/FF out", ffOut);
-
-        motor.setVoltage(pidOut + ffOut);
+        if(openloop){
+            motor.setVoltage(vout);
+        } else {
+            motor.setVoltage(pidOut + ffOut);
+        }
 
         in.motorCurrentAmps = motor.getOutputCurrent();
         in.motoroutVolts = motor.getBusVoltage()*motor.getAppliedOutput();
@@ -93,5 +100,10 @@ public class WristIOSpark implements WristIO{
 
         in.posRad = pos;
         in.velRadPerSec = vel;
+    }
+
+    public void setVoltage(double v) {
+        openloop = true;
+        vout = v;
     }
 }
