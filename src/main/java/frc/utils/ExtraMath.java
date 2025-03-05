@@ -106,6 +106,7 @@ public final class ExtraMath {
       value = mesurement;
       if(!init){
         oldValue = value;
+        init = true;
       }
       double out = (value-oldValue)/dt;
       oldValue = value;

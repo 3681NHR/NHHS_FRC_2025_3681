@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.AffectorPosition;
 import frc.robot.constants.ElevatorConstants;
@@ -30,15 +31,17 @@ public class HomeElevator extends Command{
     public void initialize() {
         zeroTimeStamp = Double.NaN; // Initializing starting time stamp
         elevator.setHomed(false); // Setting zeroed field within the subsystem to be false.
+        elevator.setTargetPos(elevator.getPosition());
+        elevator.setVoltage(0);
     }
 
     @Override
     public void execute() {
         if (manageTimer(ElevatorConstants.HOME_MIN_VEL)) {
+            elevator.setVoltage(0.0);
             elevator.resetPos(ElevatorConstants.HOME_POS);
             elevator.setHomed(true);
             zeroTimeStamp = Double.NaN;
-            elevator.setVoltage(0.0);
         } else {
             elevator.setVoltage(ElevatorConstants.HOME_VOLTAGE);
         }
@@ -48,11 +51,10 @@ public class HomeElevator extends Command{
     public void end(boolean interrupted) {
         // Stopping the motors
         elevator.setVoltage(0.0);
-
         if (!interrupted) {
             elevator.setHomed(true);
-            elevator.setTargetPos(AffectorPosition.STOW.elev);
         }
+        elevator.setTargetPos(elevator.getPosition());
     }
 
     @Override
@@ -66,7 +68,7 @@ public class HomeElevator extends Command{
                 zeroTimeStamp = Logger.getTimestamp();
                 return false;
             } else {
-                return Logger.getTimestamp() - zeroTimeStamp >= ElevatorConstants.HOME_STOP_TIME;
+                return Logger.getTimestamp() - zeroTimeStamp >= Units.secondsToMilliseconds(ElevatorConstants.HOME_STOP_TIME);
             }
         } else {
             zeroTimeStamp = Double.NaN;

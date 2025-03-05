@@ -70,12 +70,14 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -103,6 +105,8 @@ public class RobotContainer {
       
   private final XboxController operatorController =
       new XboxController(OperatorConstants.OPERATOR_CONTROLLER_PORT);
+  // private DigitalInput holdingSens = new DigitalInput(5);
+
 
   private LoggedNetworkBoolean resetOdometry = new LoggedNetworkBoolean("resetOdometry", false);
   private LoggedDashboardChooser<Command> autoChooser;
@@ -304,7 +308,7 @@ public class RobotContainer {
     );
 
     drive.setDefaultCommand(driveCommand);
-    wrist.setDefaultCommand(wrist.man(() -> ExtraMath.processInput(operatorController.getRightY(), -0.01 * WristConstants.POS_PID.maxSpeed(), 1.0, 0.05)));
+    wrist.setDefaultCommand(wrist.man(() -> ExtraMath.processInput(operatorController.getRightY(), -0.02 * WristConstants.POS_PID.maxSpeed(), 1.0, 0.05)));
     elevator.setDefaultCommand(elevator.man(() -> (operatorController.getRightTriggerAxis()-operatorController.getLeftTriggerAxis())*OperatorConstants.ELEVATOR_MAN_SENS));
   }
 
@@ -397,7 +401,10 @@ public class RobotContainer {
 
     //go to affector target
     new Trigger(() -> driverController.getRawButton(LB)).or(() -> operatorController.getRawButton(LB))
-      .whileTrue(new MoveAffector(elevator, wrist, () -> target));
+      .onTrue(new InstantCommand(() -> {
+        elevator.setTargetPos(target.elev);
+        wrist.setPosSet(target.wrist);
+      }));
 
     new Trigger(() -> driverController.getRawButton(X))
     .and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(Constants.positions.REEFS, drive.getPose())) < .5)
@@ -408,8 +415,10 @@ public class RobotContainer {
 
 
   public void Periodic(){
+    // SmartDashboard.putBoolean("holding", !holdingSens.get());
     led.setHomed(elevator.isHomed());
     led.setIntaking(intake.isMoving());
+    
     led.setColor(isReady() ? Color.kWhite : intake.isHolding() ? Color.kGreen : Color.kOrange);
 
     Logger.recordOutput("fieldOrientedDrive", getFOD());

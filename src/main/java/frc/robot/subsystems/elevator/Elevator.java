@@ -98,9 +98,9 @@ public class Elevator extends SubsystemBase {
     }
 
     public void setVoltage(double voltage){
-        io.moveElevatorOpenLoop(voltage);
-        volt = voltage;
         openloop = true;
+        volt = voltage;
+        io.moveElevatorOpenLoop(voltage);
     }
 
     public void setTargetPos(double pos){
@@ -144,7 +144,6 @@ public class Elevator extends SubsystemBase {
 
     public void sysId(Voltage v){
         openloop = true;
-        Logger.recordOutput("elevatorsysid vout", v);
         setVoltage(v.in(Volts));
     }
     public Pose3d getAScopePoseInnerStage(){

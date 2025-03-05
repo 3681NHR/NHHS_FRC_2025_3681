@@ -16,8 +16,8 @@ public class WristConstants {
     public static final double POS_OFFSET = Units.degreesToRadians(20.37);
     public static final double POS_FACTOR = -2*Math.PI;
 
-    public static final PIDGains.ProfiledPID POS_PID = new PIDGains.ProfiledPID(0.1, 0, 0, 10, 20);
-    public static final PIDGains.GravityFF POS_FF = new PIDGains.GravityFF(0.2, 0.3, 0.8, 0.1);
+    public static final PIDGains.ProfiledPID POS_PID = new PIDGains.ProfiledPID(3, 0, 0.25, 7, 7*2);
+    public static final PIDGains.GravityFF POS_FF = new PIDGains.GravityFF(0.17559, 0.35237, 0.75785, 0.13344);
 
     public static final PIDGains.ProfiledPID POS_PID_SIM = new PIDGains.ProfiledPID(1, 0, 1, 10, 20);
     public static final PIDGains.GravityFF POS_FF_SIM = new PIDGains.GravityFF(0, 0.5, 0.5, 0);
@@ -36,7 +36,7 @@ public class WristConstants {
 
     public static final Translation3d WRIST_POS = new Translation3d(0.25, 0.18, 0.585);
     
-    public static final Voltage VSTEP = Volts.of(2);
+    public static final Voltage VSTEP = Volts.of(1.5);
     public static final Velocity<VoltageUnit> VRAMP = Volts.of(.5).per(Second);
     public static final Time TIMEOUT = Seconds.of(7);
 }
