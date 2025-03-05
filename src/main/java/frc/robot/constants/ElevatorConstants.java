@@ -45,7 +45,7 @@ public final class ElevatorConstants {
     public static final PIDGains.ProfiledPID POS_PID_SIM = new PIDGains.ProfiledPID(0, 0, 0, 1.75, 1.75*5);
     public static final PIDGains.GravityFF POS_FF_SIM = new PIDGains.GravityFF(0.19349, 0.35424, 4.5227, 0.3535);
 
-    public static final double POS_TOLERANCE = Units.inchesToMeters(2.5);
+    public static final double POS_TOLERANCE = 0.15;
     
     public static final Voltage VSTEP = Volts.of(5);
     public static final Velocity<VoltageUnit> VRAMP = Volts.of(.5).per(Second);

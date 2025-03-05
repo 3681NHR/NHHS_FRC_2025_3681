@@ -529,6 +529,7 @@ public boolean isReady(){
    && elevator.inPosition() && wrist.inPosition()//in pos
    && (target.isScoring() ? intake.isHolding() || !intake.getHoldLock() : true)//holding if in scoring pos
    && (target == AffectorPosition.STATION ? intake.isIntaking() : true)//intaking if in station pos
-   && target != AffectorPosition.STOW;
+   && elevator.getPositionSet() == target.elev
+   && wrist.getPosSet() == target.wrist;
 }
 }

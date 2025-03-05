@@ -32,7 +32,7 @@ public class WristConstants {
     public static final double MAX_POS = Units.degreesToRadians(90);
     public static final double MIN_POS = Units.degreesToRadians(-70);
 
-    public static final double POS_TOLERANCE = Units.degreesToRadians(5);
+    public static final double POS_TOLERANCE = 0.125;
 
     public static final Translation3d WRIST_POS = new Translation3d(0.25, 0.18, 0.585);
     
