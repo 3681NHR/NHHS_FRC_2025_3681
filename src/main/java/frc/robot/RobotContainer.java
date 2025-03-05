@@ -8,6 +8,7 @@ import frc.robot.commands.HomeElevator;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.MoveAffector;
 import frc.robot.constants.AffectorPosition;
+import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.ElevatorConstants;
@@ -16,6 +17,7 @@ import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.constants.WristConstants;
 import frc.robot.subsystems.Led;
+import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
@@ -97,6 +99,7 @@ public class RobotContainer {
   private Wrist wrist;
   private Intake intake;
   private Buttons buttons;
+  private Climber climber;
 
   private Led led = new Led();
 
@@ -145,6 +148,8 @@ public class RobotContainer {
   private AffectorPosition target = AffectorPosition.STOW;
 
   public RobotContainer() {
+    climber = new Climber();
+
     Logger.recordOutput("zero", new Pose3d());
 
     DriverStation.silenceJoystickConnectionWarning(true);
@@ -411,6 +416,15 @@ public class RobotContainer {
     .whileTrue(Commands.run(() -> {
       drive.driveToPose(ExtraMath.getNearestPose(Constants.positions.REEFS, drive.getPose()));
     }));
+
+    //climber
+    new Trigger(() -> operatorController.getRawButton(X))
+      .onTrue(new InstantCommand(() -> climber.setVoltage(ClimberConstants.EXTEND_VOLTAGE)))
+      .onFalse(new InstantCommand(() -> climber.setVoltage(0)));
+    
+    new Trigger(() -> operatorController.getRawButton(B))
+      .onTrue(new InstantCommand(() -> climber.setVoltage(ClimberConstants.RETRACT_VOLTAGE)))
+      .onFalse(new InstantCommand(() -> climber.setVoltage(0)));
   }
 
 

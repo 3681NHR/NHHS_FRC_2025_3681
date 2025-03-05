@@ -107,7 +107,7 @@ public class DriveConstants {
   public static final double TURN_ENCODER_VEL_FACTOR = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
 
   // Turn PID configuration
-  public static final PIDGains.ProfiledPID TURN_PID = new PIDGains.ProfiledPID(0.75, 0.0, 0.0, Math.PI*8, Math.PI*80);//TODO needs tuning
+  public static final PIDGains.ProfiledPID TURN_PID = new PIDGains.ProfiledPID(7.5, 0.0, 0.0, Math.PI*8, Math.PI*80);//TODO needs tuning
   public static final PIDGains.SimpleFF TURN_FF = new PIDGains.SimpleFF(0.125, 0.0, 0.0);//TODO needs tuning and sysid
   
   public static final PIDGains.ProfiledPID TURN_PID_SIM = new PIDGains.ProfiledPID(12.5, 0.0, 0.5, Math.PI*8, Math.PI*80);
