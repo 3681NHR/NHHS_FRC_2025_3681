@@ -25,7 +25,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "g to east"
+            "pathName": "g to east station"
           }
         },
         {
@@ -37,7 +37,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "es to d"
+            "pathName": "east station to d"
           }
         },
         {
@@ -55,7 +55,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "d to es"
+            "pathName": "d to east station"
           }
         },
         {
@@ -67,7 +67,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "es to c"
+            "pathName": "east station to c"
           }
         },
         {
@@ -77,15 +77,15 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "c to es"
-          }
-        },
-        {
           "type": "named",
           "data": {
             "name": "score"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "c to east station"
           }
         }
       ]

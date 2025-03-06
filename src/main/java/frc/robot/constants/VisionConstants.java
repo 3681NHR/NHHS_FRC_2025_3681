@@ -26,8 +26,10 @@ public class VisionConstants {
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
   // Camera names, must match names configured on coprocessor
-  public static String CAMERA_0_NAME = "back";
-  public static String CAMERA_1_NAME = "front";
+  public static String[] CAMERA_NAMES = {
+    "back",
+    "front"
+  };
 
   // Robot to camera transforms
   public static Transform3d CAMERA_0_ROBOT_TO_CAM =
@@ -60,8 +62,8 @@ public class VisionConstants {
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)
-  public static double LIN_STD_DEV_BASELINE = 0.02; // Meters
-  public static double ANG_STD_DEV_BASELINE = 0.05; // Radians
+  public static double LIN_STD_DEV_BASELINE = 0.1; // Meters
+  public static double ANG_STD_DEV_BASELINE = 0.1; // Radians
 
   // Standard deviation multipliers for each camera
   // (Adjust to trust some cameras more than others)
@@ -72,5 +74,7 @@ public class VisionConstants {
       };
 
   public static final FilterStrategy POSE_FILTER = FilterStrategy.MEAN;
+  //SP and rate lim have problems with time
+  //rate lim cant reset, will cause problems
 
 }

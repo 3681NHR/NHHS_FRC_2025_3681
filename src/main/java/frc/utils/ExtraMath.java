@@ -4,6 +4,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.lang.Math;
+import java.util.ArrayList;
 import java.util.stream.Stream;
 
 public final class ExtraMath {
@@ -116,6 +117,34 @@ public final class ExtraMath {
     }
     public void reset(double initMesure){
       oldValue = initMesure;
+    }
+  }
+
+  public static class MovingAverageFilter{
+    private ArrayList<Double> window = new ArrayList<>();
+    private int taps;
+
+    public MovingAverageFilter(int taps){
+      this.taps = taps;
+    }
+
+    public double calculate(double in){
+      window.add(in);
+      if(window.size() > taps){
+        window.remove(0);
+      }
+      double t = 0;
+      for(double x : window){
+        t += x;
+      }
+
+      t = t/window.size();
+
+      return t;
+    }
+
+    public void reset(){
+      window.clear();
     }
   }
 }

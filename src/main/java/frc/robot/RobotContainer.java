@@ -202,8 +202,8 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         vision = new Vision(
-          new CameraIOPhoton(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM),
-          new CameraIOPhoton(VisionConstants.CAMERA_1_NAME, VisionConstants.CAMERA_1_ROBOT_TO_CAM));
+          new CameraIOPhoton(VisionConstants.CAMERA_NAMES[0], VisionConstants.CAMERA_0_ROBOT_TO_CAM),
+          new CameraIOPhoton(VisionConstants.CAMERA_NAMES[1], VisionConstants.CAMERA_1_ROBOT_TO_CAM));
         drive =
             new Drive(
                 new GyroIOPigeon2(),
@@ -221,8 +221,8 @@ public class RobotContainer {
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         vision = new Vision(
-          new CameraIOPhotonSim(VisionConstants.CAMERA_0_NAME, VisionConstants.CAMERA_0_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose),
-          new CameraIOPhotonSim(VisionConstants.CAMERA_1_NAME, VisionConstants.CAMERA_1_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose)
+          new CameraIOPhotonSim(VisionConstants.CAMERA_NAMES[0], VisionConstants.CAMERA_0_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose),
+          new CameraIOPhotonSim(VisionConstants.CAMERA_NAMES[1], VisionConstants.CAMERA_1_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose)
           );
         if(driveSim != null){
           drive =

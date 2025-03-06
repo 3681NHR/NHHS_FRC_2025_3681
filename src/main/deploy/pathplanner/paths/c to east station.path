@@ -8,8 +8,8 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.8381691275253678,
-        "y": 3.0197572156032773
+        "x": 2.9805573076064658,
+        "y": 2.68411208541557
       },
       "isLocked": false,
       "linkedName": "c"
@@ -20,30 +20,49 @@
         "y": 0.8075
       },
       "prevControl": {
-        "x": 1.7009569045037423,
-        "y": 1.5292174458098495
+        "x": 2.475654293670393,
+        "y": 2.7372367177351458
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "east 1"
     }
   ],
-  "rotationTargets": [],
-  "constraintZones": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.21400198552280777,
+      "rotationDegrees": -29.999999999999996
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0,
+      "maxWaypointRelativePos": 0.3444229291234203,
+      "constraints": {
+        "maxVelocity": 4.6,
+        "maxAcceleration": 4.0,
+        "maxAngularVelocity": 597.8815,
+        "maxAngularAcceleration": 1541.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
       "name": "station",
-      "waypointRelativePos": 0.4992555831265538,
+      "waypointRelativePos": 0.1987952497461643,
       "endWaypointRelativePos": null,
       "command": null
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 4.1,
-    "maxAcceleration": 6.7,
+    "maxVelocity": 4.6,
+    "maxAcceleration": 8.0,
     "maxAngularVelocity": 597.8815,
-    "maxAngularAcceleration": 2575.846,
+    "maxAngularAcceleration": 1541.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },

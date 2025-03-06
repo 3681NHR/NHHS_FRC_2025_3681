@@ -12,8 +12,11 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.Constants;
 import frc.robot.constants.VisionConstants;
+import frc.robot.constants.Constants.RobotMode;
 import frc.robot.subsystems.vision.CameraIO.TargetObservation;
+import frc.utils.ExtraMath.MovingAverageFilter;
 
 import static frc.robot.constants.VisionConstants.*;
 
@@ -36,9 +39,9 @@ public class Vision extends SubsystemBase {
   private LinearFilter yFilterSP = LinearFilter.singlePoleIIR(0.2, 0.02);
   private LinearFilter tFilterSP = LinearFilter.singlePoleIIR(0.2, 0.02);
 
-  private LinearFilter xFilterMean = LinearFilter.movingAverage(15);
-  private LinearFilter yFilterMean = LinearFilter.movingAverage(15);
-  private LinearFilter tFilterMean = LinearFilter.movingAverage(15);
+  private MovingAverageFilter xFilterMean = new MovingAverageFilter(10);
+  private MovingAverageFilter yFilterMean = new MovingAverageFilter(10);
+  private MovingAverageFilter tFilterMean = new MovingAverageFilter(10);
 
   private MedianFilter xFilterMedian = new MedianFilter(15);
   private MedianFilter yFilterMedian = new MedianFilter(15);
@@ -70,7 +73,7 @@ public class Vision extends SubsystemBase {
   public void periodic() {
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
-      Logger.processInputs("Vision/Camera: " + io[i].getName() == null ? Integer.toString(i) : io[i].getName(), inputs[i]);
+      Logger.processInputs(CAMERA_NAMES[i], inputs[i]);
     }
 
     // Initialize logging values
@@ -211,6 +214,9 @@ public class Vision extends SubsystemBase {
 
     latestEstimateFinal = new VisionEstimate[latestEstimateRaw.length];
 
+    if(latestEstimateRaw.length <= 0){
+      clearFilters();
+    }
     for (int i=0; i<latestEstimateRaw.length; i++) {
       latestEstimateFinal[i] = new VisionEstimate(
         FilterPose(latestEstimateRaw[i].pose, VisionConstants.POSE_FILTER),
@@ -221,13 +227,12 @@ public class Vision extends SubsystemBase {
 
     Logger.recordOutput("Vision/Summary/ProssesedPose", Stream.of(latestEstimateFinal).map(t -> t.pose).toArray(Pose2d[]::new));
 
-    if(DriverStation.isTest()){
-      Logger.recordOutput("Vision/Summary/RawPose", Stream.of(latestEstimateFinal).map(t -> t.pose).toArray(Pose2d[]::new));
-      Logger.recordOutput("Vision/Summary/SPFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.SINGLE_POLE_IIR)).toArray(Pose2d[]::new));
-      Logger.recordOutput("Vision/Summary/MeanFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.MEAN)).toArray(Pose2d[]::new));
-      Logger.recordOutput("Vision/Summary/MedianFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.MEDIAN)).toArray(Pose2d[]::new));
-      Logger.recordOutput("Vision/Summary/RateLimFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.RATE_LIM)).toArray(Pose2d[]::new));
-    }
+    Logger.recordOutput("Vision/Summary/RawPose", Stream.of(latestEstimateRaw).map(t -> t.pose).toArray(Pose2d[]::new));
+    Logger.recordOutput("Vision/Summary/SPFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.SINGLE_POLE_IIR)).toArray(Pose2d[]::new));
+    Logger.recordOutput("Vision/Summary/MeanFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.MEAN)).toArray(Pose2d[]::new));
+    Logger.recordOutput("Vision/Summary/MedianFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.MEDIAN)).toArray(Pose2d[]::new));
+    Logger.recordOutput("Vision/Summary/RateLimFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.RATE_LIM)).toArray(Pose2d[]::new));
+    
 
     allTagPoses.clear();
     allRobotPoses.clear();
@@ -305,5 +310,18 @@ public class Vision extends SubsystemBase {
     
   }
 
- 
+  private void clearFilters(){
+    xFilterMean.reset();
+    yFilterMean.reset();
+    tFilterMean.reset();
+
+    xFilterMedian.reset();
+    yFilterMedian.reset();
+    tFilterMedian.reset();
+
+    xFilterSP.reset();
+    yFilterSP.reset();
+    tFilterSP.reset();
+
+  }
 }
