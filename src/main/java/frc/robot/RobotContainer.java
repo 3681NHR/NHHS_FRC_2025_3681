@@ -332,7 +332,7 @@ public class RobotContainer {
     wrist.setPosSet(AffectorPosition.STOW.wrist);
   }, elevator, wrist, intake));
 
-NamedCommands.registerCommand("score", Commands.run(() -> intake.setVoltage(IntakeConstants.SPEED),intake).finallyDo(() -> intake.stop()));
+NamedCommands.registerCommand("score", Commands.run(() -> intake.setVoltage(IntakeConstants.SPEED),intake).finallyDo(() -> intake.stop()).until(() -> !intake.isHolding()));
 
     drive.setDefaultCommand(driveCommand);
     wrist.setDefaultCommand(wrist.man(() -> ExtraMath.processInput(operatorController.getRightY(), -0.02 * WristConstants.POS_PID.maxSpeed(), 1.0, 0.05)));

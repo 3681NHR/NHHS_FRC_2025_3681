@@ -3,35 +3,42 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.5265000000000001,
-        "y": 1.685
+        "x": 1.6769999999999998,
+        "y": 0.8075
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.2959273190186242,
-        "y": 1.616829966098828
+        "x": 2.2881393750940395,
+        "y": 1.0860023813742665
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "east 1"
     },
     {
       "anchor": {
-        "x": 4.576881720430106,
-        "y": 1.6590501792114685
+        "x": 3.4515,
+        "y": 3.0890000000000004
       },
       "prevControl": {
-        "x": 3.642377319027351,
-        "y": 1.6294475920014626
+        "x": 1.6308463413322156,
+        "y": 2.0208368416326
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "c"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "L2",
+      "waypointRelativePos": 0.6997518610421899,
+      "endWaypointRelativePos": null,
+      "command": null
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 4.1,
     "maxAcceleration": 6.7,
@@ -42,13 +49,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -178.84668808547192
+    "rotation": -31.7594800848128
   },
   "reversed": false,
-  "folder": "tuning and test",
+  "folder": "east station to reef",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": 143.77505574447966
   },
   "useDefaultConstraints": true
 }

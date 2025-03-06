@@ -36,17 +36,17 @@ public class Vision extends SubsystemBase {
   private LinearFilter yFilterSP = LinearFilter.singlePoleIIR(0.2, 0.02);
   private LinearFilter tFilterSP = LinearFilter.singlePoleIIR(0.2, 0.02);
 
-  private LinearFilter xFilterMean = LinearFilter.movingAverage(5);
-  private LinearFilter yFilterMean = LinearFilter.movingAverage(5);
-  private LinearFilter tFilterMean = LinearFilter.movingAverage(5);
+  private LinearFilter xFilterMean = LinearFilter.movingAverage(15);
+  private LinearFilter yFilterMean = LinearFilter.movingAverage(15);
+  private LinearFilter tFilterMean = LinearFilter.movingAverage(15);
 
-  private MedianFilter xFilterMedian = new MedianFilter(5);
-  private MedianFilter yFilterMedian = new MedianFilter(5);
-  private MedianFilter tFilterMedian = new MedianFilter(5);
+  private MedianFilter xFilterMedian = new MedianFilter(15);
+  private MedianFilter yFilterMedian = new MedianFilter(15);
+  private MedianFilter tFilterMedian = new MedianFilter(15);
 
   private SlewRateLimiter xFilterRate = new SlewRateLimiter(10);
   private SlewRateLimiter yFilterRate = new SlewRateLimiter(10);
-  private SlewRateLimiter tFilterRate = new SlewRateLimiter(15);
+  private SlewRateLimiter tFilterRate = new SlewRateLimiter(20);
 
   public Vision(CameraIO... io) {
     this.io = io;
@@ -131,7 +131,7 @@ public class Vision extends SubsystemBase {
         }
 
         double stdDevFactor =
-        Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount();
+        Math.pow(observation.averageTagDistance(), 3.0) / observation.tagCount();
         double linearStdDev = LIN_STD_DEV_BASELINE * stdDevFactor;
         double angularStdDev = ANG_STD_DEV_BASELINE * stdDevFactor;
         if (cameraIndex < CAM_STD_DEV_FACTORS.length) {

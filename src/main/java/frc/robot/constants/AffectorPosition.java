@@ -6,7 +6,7 @@ public enum AffectorPosition {
     STOW   (0.0, Units.degreesToRadians(90)),
     L1     (0.0, Units.degreesToRadians(90)),
     L2     (0.195, 0.942),
-    L3     (0.668, 0.942),
+    L3     (0.662, 0.942),
     L4     (1.6, 0.165),
     STATION(0.532, -0.873);
 

@@ -27,6 +27,12 @@
           "data": {
             "pathName": "f to east station"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "station"
+          }
         }
       ]
     }
