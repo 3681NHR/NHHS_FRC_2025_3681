@@ -24,7 +24,7 @@ public class Led extends SubsystemBase {
 
     private LEDPattern elevPos;
 
-    private LoggedNetworkBoolean gayMode = new LoggedNetworkBoolean("gay mode", false);
+    private LoggedNetworkBoolean rainbow = new LoggedNetworkBoolean("LED color test override(TEST1)", false);
 
     public Led() {
         led.setLength(buffer.getLength());
@@ -44,7 +44,7 @@ public class Led extends SubsystemBase {
             }
         }
         elevPos = elevPos.atBrightness(Percent.of(25));
-        if(gayMode.get()){
+        if(rainbow.get()){
             elevPos = LEDPattern.rainbow(255, 255).scrollAtRelativeSpeed(Percent.per(Second).of(25));
         }
 
