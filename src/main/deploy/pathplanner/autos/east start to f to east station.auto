@@ -7,13 +7,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "rotate"
+            "pathName": "start east to f"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.1
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "score"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Copy of rotate"
+            "pathName": "f to east station"
           }
         }
       ]

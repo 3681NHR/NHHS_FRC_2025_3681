@@ -69,11 +69,32 @@ public final class Constants {
   }
   public static class positions{
     public static final Pose2d[] REEFS = {
-      new Pose2d(0, 0, Rotation2d.fromDegrees(270)),//TODO
-      new Pose2d(0, 0, Rotation2d.fromDegrees(270)),//TODO
+      new Pose2d(3.101, 4.425, Rotation2d.fromDegrees(270)),//TODO A
+      new Pose2d(3.101, 4.093, Rotation2d.fromDegrees(270)),//TODO B
 
-      new Pose2d(0, 0, Rotation2d.fromDegrees(330)),//TODO
-      new Pose2d(0, 0, Rotation2d.fromDegrees(330)),//TODO
+      new Pose2d(3.451, 3.030, Rotation2d.fromDegrees(330)),//TODO C
+      new Pose2d(3.725, 2.874, Rotation2d.fromDegrees(330)),//TODO D
+
+      new Pose2d(4.816, 2.650, Rotation2d.fromDegrees(30)),//TODO E
+      new Pose2d(5.109, 2.787, Rotation2d.fromDegrees(30)),//TODO F
+
+      new Pose2d(5.109, 5.109, Rotation2d.fromDegrees(90)),//TODO G
+      new Pose2d(5.879, 3.957, Rotation2d.fromDegrees(90)),//TODO H
+
+      new Pose2d(5.548, 5.010, Rotation2d.fromDegrees(150)),//TODO I
+      new Pose2d(5.236, 5.205, Rotation2d.fromDegrees(150)),//TODO J
+
+      new Pose2d(4.115, 5.429, Rotation2d.fromDegrees(210)),//TODO K
+      new Pose2d(3.851, 5.273, Rotation2d.fromDegrees(210)),//TODO L
+    };
+
+    
+    public static final Pose2d[] RED_REEFS = {
+      new Pose2d(3.101, 4.425, Rotation2d.fromDegrees(270)),//TODO A
+      new Pose2d(3.101, 4.093, Rotation2d.fromDegrees(270)),//TODO B
+
+      new Pose2d(3.451, 3.030, Rotation2d.fromDegrees(330)),//TODO C
+      new Pose2d(3.725, 2.874, Rotation2d.fromDegrees(330)),//TODO D
 
       new Pose2d(0, 0, Rotation2d.fromDegrees(30)),//TODO
       new Pose2d(0, 0, Rotation2d.fromDegrees(30)),//TODO

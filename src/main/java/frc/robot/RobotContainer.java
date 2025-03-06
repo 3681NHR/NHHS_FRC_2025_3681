@@ -7,6 +7,7 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.HomeElevator;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.MoveAffector;
+import frc.robot.commands.StationIntake;
 import frc.robot.constants.AffectorPosition;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.Constants;
@@ -63,6 +64,7 @@ import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -312,6 +314,26 @@ public class RobotContainer {
       drive
     );
 
+    NamedCommands.registerCommand("station", new StationIntake(elevator, wrist, intake));
+    NamedCommands.registerCommand("L2", Commands.run(() -> {
+        elevator.setTargetPos(AffectorPosition.L2.elev);
+        wrist.setPosSet(AffectorPosition.L2.wrist);
+      }, elevator, wrist, intake));
+    NamedCommands.registerCommand("L3", Commands.run(() -> {
+      elevator.setTargetPos(AffectorPosition.L3.elev);
+      wrist.setPosSet(AffectorPosition.L3.wrist);
+    }, elevator, wrist, intake));
+  NamedCommands.registerCommand("L4", Commands.run(() -> {
+    elevator.setTargetPos(AffectorPosition.L4.elev);
+    wrist.setPosSet(AffectorPosition.L4.wrist);
+  }, elevator, wrist, intake));
+  NamedCommands.registerCommand("stow", Commands.run(() -> {
+    elevator.setTargetPos(AffectorPosition.STOW.elev);
+    wrist.setPosSet(AffectorPosition.STOW.wrist);
+  }, elevator, wrist, intake));
+
+NamedCommands.registerCommand("score", Commands.run(() -> intake.setVoltage(IntakeConstants.SPEED),intake).finallyDo(() -> intake.stop()));
+
     drive.setDefaultCommand(driveCommand);
     wrist.setDefaultCommand(wrist.man(() -> ExtraMath.processInput(operatorController.getRightY(), -0.02 * WristConstants.POS_PID.maxSpeed(), 1.0, 0.05)));
     elevator.setDefaultCommand(elevator.man(() -> (operatorController.getRightTriggerAxis()-operatorController.getLeftTriggerAxis())*OperatorConstants.ELEVATOR_MAN_SENS));
@@ -412,9 +434,9 @@ public class RobotContainer {
       }));
 
     new Trigger(() -> driverController.getRawButton(X))
-    .and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(Constants.positions.REEFS, drive.getPose())) < .5)
+    .and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? Constants.positions.REEFS : Constants.positions.RED_REEFS, drive.getPose())) < .5)
     .whileTrue(Commands.run(() -> {
-      drive.driveToPose(ExtraMath.getNearestPose(Constants.positions.REEFS, drive.getPose()));
+      drive.driveToPose(ExtraMath.getNearestPose(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? Constants.positions.REEFS : Constants.positions.RED_REEFS, drive.getPose()));
     }));
 
     //climber

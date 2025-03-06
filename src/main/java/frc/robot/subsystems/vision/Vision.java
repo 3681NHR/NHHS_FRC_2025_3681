@@ -180,6 +180,7 @@ public class Vision extends SubsystemBase {
       allTagPoses.addAll(tagPoses);
       allRobotPoses.addAll(robotPoses);
       allRobotPosesAccepted.addAll(robotPosesAccepted);
+      allRobotPosesRejected.addAll(robotPosesRejected);
       allEstimates.addAll(estimates);
 
       tagPoses.clear();
