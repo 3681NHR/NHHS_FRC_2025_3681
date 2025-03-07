@@ -6,7 +6,13 @@ import static frc.robot.constants.DriveConstants.*;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.IdealStartingState;
+import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
 import com.pathplanner.lib.util.PathPlannerLogging;
+
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
@@ -28,12 +34,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.Constants;
+import frc.robot.constants.DriveConstants;
 import frc.robot.constants.Constants.RobotMode;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionEstimate;
 import frc.utils.LoggedField2d;
 import frc.utils.SparkOdometryThread;
 
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -46,6 +54,7 @@ public class Drive extends SubsystemBase {
   private final Module[] modules = new Module[4]; // FL, FR, BL, BR
   private final SysIdRoutine driveSysId;
   private final SysIdRoutine steerSysId;
+  private final SysIdRoutine angleSysId;
   private final Vision vision;
   private LoggedField2d field = new LoggedField2d();
   private final Alert gyroDisconnectedAlert =
@@ -90,7 +99,7 @@ public class Drive extends SubsystemBase {
         this::getChassisSpeeds,
         this::runVelocity,
         new PPHolonomicDriveController(
-            new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+            new PIDConstants(TRANS_PID.kP(), TRANS_PID.kI(), TRANS_PID.kD()), new PIDConstants(AUTO_ANGLE_PID.kP(), AUTO_ANGLE_PID.kI(), AUTO_ANGLE_PID.kD())),
         PP_CONFIG,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
@@ -125,6 +134,15 @@ public class Drive extends SubsystemBase {
                 (state) -> Logger.recordOutput("Drive/SteerSysIdState", state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> runSteerCharacterization(voltage.in(Volts)), null, this));
+    angleSysId =
+    new SysIdRoutine(
+        new SysIdRoutine.Config(
+            null,
+            null,
+            Seconds.of(10),
+            (state) -> Logger.recordOutput("Drive/AngleSysIdState", state.toString())),
+        new SysIdRoutine.Mechanism(
+            (voltage) -> runAngleCharacterization(voltage.in(Volts)), null, this));
 
     YAGSLWidget.maxAngularVelocity = getMaxAngularSpeedRadPerSec();
     YAGSLWidget.maxSpeed = getMaxLinearSpeedMetersPerSec();
@@ -156,6 +174,10 @@ public class Drive extends SubsystemBase {
       }
     }
     odometryLock.unlock();
+
+
+    Logger.recordOutput("Drive/CurrentCommand", getCurrentCommand() != null ? getCurrentCommand().getName() : "none");
+
 
     // Stop moving when disabled
     if (DriverStation.isDisabled()) {
@@ -231,6 +253,7 @@ public class Drive extends SubsystemBase {
     // Log unoptimized setpoints
     Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
     Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
+    Logger.recordOutput("SwerveChassisSpeeds/SetpointAngularVel", discreteSpeeds.omegaRadiansPerSecond);
     
     // Send setpoints to modules
     for (int i = 0; i < 4; i++) {
@@ -253,6 +276,10 @@ public class Drive extends SubsystemBase {
     for (int i = 0; i < 4; i++) {
       modules[i].runSteerCharacterization(output);
     }
+  }
+  /** spins robot*/
+  public void runAngleCharacterization(double output) {
+    runVelocity(new ChassisSpeeds(0, 0, output));
   }
 
   /** Stops the drive. */
@@ -296,6 +323,17 @@ public class Drive extends SubsystemBase {
   public Command steerSysIdDynamic(SysIdRoutine.Direction direction) {
     return run(() -> runSteerCharacterization(0.0)).withTimeout(1.0).andThen(steerSysId.dynamic(direction));
   }
+  /** Returns a command to run a quasistatic test in the specified direction. */
+  public Command angleSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return run(() -> runAngleCharacterization(0.0))
+        .withTimeout(1.0)
+        .andThen(angleSysId.quasistatic(direction));
+  }
+  /** Returns a command to run a dynamic test in the specified direction. */
+  public Command angleSysIdDynamic(SysIdRoutine.Direction direction) {
+    return run(() -> runAngleCharacterization(0.0)).withTimeout(1.0).andThen(angleSysId.dynamic(direction));
+  }
+
   /** Returns the module states (turn angles and drive velocities) for all of the modules. */
   @AutoLogOutput(key = "SwerveStates/Measured")
   private SwerveModuleState[] getModuleStates() {
@@ -355,5 +393,11 @@ public class Drive extends SubsystemBase {
 
   public double getAngulerVelocity(){
     return gyroInputs.yawVelocityRadPerSec;
+  }
+
+  public Command driveToPose(Pose2d p){
+    List<Waypoint> points = PathPlannerPath.waypointsFromPoses(getPose(), p);
+    PathConstraints constraints = new PathConstraints(DriveConstants.MAX_SPEED, DriveConstants.MAX_SPEED*2, DriveConstants.ANGLE_MAX_VELOCITY, DriveConstants.ANGLE_MAX_VELOCITY*5);
+    return AutoBuilder.followPath(new PathPlannerPath(points, constraints, new IdealStartingState(0, getPose().getRotation()), new GoalEndState(0, p.getRotation())));
   }
 }

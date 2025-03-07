@@ -1,7 +1,10 @@
 package frc.utils;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import java.lang.Math;
+import java.util.ArrayList;
 
 public final class ExtraMath {
     
@@ -21,7 +24,6 @@ public final class ExtraMath {
    * @param val - number to process
    * @param multiplier - multiplier for input, mainly used for inverting
    * @param square - polynomial curve value, roughly y=x^s {@link https://docs.wpilib.org/en/stable/docs/software/hardware-apis/motors/wpi-drive-classes.html#squaring-inputs}
-   * swerve subsystem drive commands square internaly, so this should not be used
    * @param deadZone - deadzone for input {@link https://docs.wpilib.org/en/stable/docs/software/hardware-apis/motors/wpi-drive-classes.html#input-deadband}
    * @return
    */
@@ -52,23 +54,96 @@ public final class ExtraMath {
   public static double holdPositive(double in){
     return in<0 ? 0 : in;
   }
+  public static Pose2d getNearestPose(Pose2d[] poses, Pose2d current){
+    double min = Double.MAX_VALUE;
+    Pose2d out = poses[0];
+    for(Pose2d pose : poses){
+      double dist = current.getTranslation().getDistance(pose.getTranslation());
+      dist += Math.abs(current.getRotation().minus(pose.getRotation()).getRadians());
+      dist = Math.abs(dist/2.0);
+      if(dist < min){
+        min = dist;
+        out = pose;
+      }
+    }
+    return out;
+  }
+  
+  public static double getDistance(Pose2d a, Pose2d b){
+    return a.getTranslation().getDistance(b.getTranslation());
+  }
+  
+  /**
+   * Derrivitive class
+   */
   public static class Derrivitive{
 
     private double value;
     private double oldValue;
+    private boolean init = false;
+
+    /**
+     * constructs a new Derrivitive object, first update will be based off initial mesurement
+     * @param initMesure initial mesurement
+     */
     public Derrivitive(double initMesure){
-      value = initMesure;
       oldValue = initMesure;
+      init = true;
     }
 
+    /**
+     * constructs a new Derrivitive object, first update will return 0
+     */
+    public Derrivitive(){
+      init = false;
+    }
+
+    /**
+     * calculate the rate of change of a mesurement
+     * @param mesurement current mesurement
+     * @param dt time since last update
+     * @return  rate of change
+     */
     public double calculate(double mesurement, double dt){
+      value = mesurement;
+      if(!init){
+        oldValue = value;
+        init = true;
+      }
       double out = (value-oldValue)/dt;
       oldValue = value;
       return out;
     }
     public void reset(double initMesure){
-      value = initMesure;
       oldValue = initMesure;
+    }
+  }
+
+  public static class MovingAverageFilter{
+    private ArrayList<Double> window = new ArrayList<>();
+    private int taps;
+
+    public MovingAverageFilter(int taps){
+      this.taps = taps;
+    }
+
+    public double calculate(double in){
+      window.add(in);
+      if(window.size() > taps){
+        window.remove(0);
+      }
+      double t = 0;
+      for(double x : window){
+        t += x;
+      }
+
+      t = t/window.size();
+
+      return t;
+    }
+
+    public void reset(){
+      window.clear();
     }
   }
 }

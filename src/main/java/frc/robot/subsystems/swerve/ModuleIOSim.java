@@ -11,13 +11,12 @@ import java.util.Arrays;
 import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
 import org.ironmaple.simulation.motorsims.SimulatedMotorController;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import frc.utils.BatteryVoltageSim;
+import frc.utils.PID;
+import frc.utils.ProfiledPID;
+import frc.utils.SimpleFF;
 import frc.utils.SparkUtil;
 
 /** Physics sim implementation of module IO. */
@@ -31,10 +30,10 @@ public class ModuleIOSim implements ModuleIO {
   private boolean driveClosedLoop = false;
   private boolean turnClosedLoop = false;
 
-  private PIDController driveController = new PIDController(DRIVE_SIM_P, DRIVE_SIM_I, DRIVE_SIM_D);
-  private ProfiledPIDController turnController = new ProfiledPIDController(TURN_SIM_P, TURN_SIM_I, TURN_SIM_D, new Constraints(TURN_MAX_SPEED, TURN_MAX_ACCEL));
+  private PID driveController = new PID(DRIVE_PID_SIM);
+  private ProfiledPID turnController = new ProfiledPID(TURN_PID_SIM);
 
-  private final SimpleMotorFeedforward driveFF = new SimpleMotorFeedforward(DRIVE_SIM_S, DRIVE_SIM_V, DRIVE_SIM_A);
+  private final SimpleFF driveFF = new SimpleFF(DRIVE_FF_SIM);
 
   private double driveAppliedVolts = 0.0;
   private double turnAppliedVolts = 0.0;
@@ -74,7 +73,7 @@ public class ModuleIOSim implements ModuleIO {
       driveController.reset();
     }
     if (turnClosedLoop) {
-      turnAppliedVolts = TURN_SIM_F * Math.signum(turnController.getSetpoint().position) + turnController.calculate(turnPosRad, turnGoal);
+      turnAppliedVolts = TURN_FF_SIM.kS() * Math.signum(turnController.getSetpoint().position) + turnController.calculate(turnPosRad, turnGoal);
     } else {
       turnController.reset(turnPosRad);;
     }

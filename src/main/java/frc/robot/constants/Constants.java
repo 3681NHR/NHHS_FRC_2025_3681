@@ -24,11 +24,11 @@ public final class Constants {
     SIM,
     REPLAY
   }
-  public static RobotMode SIM_MODE = RobotMode.SIM;
+  public static RobotMode SIM_MODE = RobotMode.REPLAY;
   public static RobotMode MODE = RobotBase.isReal() ? RobotMode.REAL : SIM_MODE;
 
   public static final double AUTO_TIME = 15;
-  public static final double TELEOP_TIME = 135;//2:15
+  public static final double TELEOP_TIME = 150;//2:15
   public static final double ENDGAME_TIME = 20;//time remaining in teleop when endgame starts
 
   public static final Pose2d STARTING_POSE = new Pose2d(new Translation2d(2.3, 4), Rotation2d.fromDegrees(0));
@@ -43,6 +43,8 @@ public final class Constants {
     public static final double RIGHT_DEADBAND = 0.15;
 
     public static final double ANGLE_DEADBAND = 0.5;
+
+    public static final double ELEVATOR_MAN_SENS = 0.05;
     
     //Curvature (rotation curve only applies when using anguler velocity)
     public static final double TRANSLATION_CURVE = 1.5;
@@ -65,5 +67,46 @@ public final class Constants {
     public static final boolean STARTING_FOD = true;
     public static final boolean STARTING_DIRECT_ANGLE = false;
   }
+  public static class positions{
+    public static final Pose2d[] REEFS = {
+      new Pose2d(3.101, 4.425, Rotation2d.fromDegrees(270)),//TODO A
+      new Pose2d(3.101, 4.093, Rotation2d.fromDegrees(270)),//TODO B
 
+      new Pose2d(3.451, 3.030, Rotation2d.fromDegrees(330)),//TODO C
+      new Pose2d(3.725, 2.874, Rotation2d.fromDegrees(330)),//TODO D
+
+      new Pose2d(4.816, 2.650, Rotation2d.fromDegrees(30)),//TODO E
+      new Pose2d(5.109, 2.787, Rotation2d.fromDegrees(30)),//TODO F
+
+      new Pose2d(5.109, 5.109, Rotation2d.fromDegrees(90)),//TODO G
+      new Pose2d(5.879, 3.957, Rotation2d.fromDegrees(90)),//TODO H
+
+      new Pose2d(5.548, 5.010, Rotation2d.fromDegrees(150)),//TODO I
+      new Pose2d(5.236, 5.205, Rotation2d.fromDegrees(150)),//TODO J
+
+      new Pose2d(4.115, 5.429, Rotation2d.fromDegrees(210)),//TODO K
+      new Pose2d(3.851, 5.273, Rotation2d.fromDegrees(210)),//TODO L
+    };
+
+    
+    public static final Pose2d[] RED_REEFS = {
+      new Pose2d(3.101, 4.425, Rotation2d.fromDegrees(270)),//TODO A
+      new Pose2d(3.101, 4.093, Rotation2d.fromDegrees(270)),//TODO B
+
+      new Pose2d(3.451, 3.030, Rotation2d.fromDegrees(330)),//TODO C
+      new Pose2d(3.725, 2.874, Rotation2d.fromDegrees(330)),//TODO D
+
+      new Pose2d(0, 0, Rotation2d.fromDegrees(30)),//TODO
+      new Pose2d(0, 0, Rotation2d.fromDegrees(30)),//TODO
+
+      new Pose2d(0, 0, Rotation2d.fromDegrees(90)),//TODO
+      new Pose2d(0, 0, Rotation2d.fromDegrees(90)),//TODO
+
+      new Pose2d(0, 0, Rotation2d.fromDegrees(150)),//TODO
+      new Pose2d(0, 0, Rotation2d.fromDegrees(150)),//TODO
+
+      new Pose2d(0, 0, Rotation2d.fromDegrees(210)),//TODO
+      new Pose2d(0, 0, Rotation2d.fromDegrees(210)),//TODO
+    };
+  }
 }
