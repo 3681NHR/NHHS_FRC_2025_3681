@@ -215,7 +215,7 @@ public class RobotContainer {
         elevator = new Elevator(new ElevatorIOSpark());
         wrist = new Wrist(new WristIOSpark());
         intake = new Intake(new IntakeIOSpark());
-        buttons = new Buttons(new ButtonIODIO(2));
+        buttons = new Buttons(new ButtonIODIO(4));
         break;
 
       case SIM:
@@ -261,6 +261,28 @@ public class RobotContainer {
         buttons = new Buttons(new ButtonIO() {});
         break;
     }
+
+    
+    NamedCommands.registerCommand("station", new StationIntake(elevator, wrist, intake));
+    NamedCommands.registerCommand("L2", Commands.runOnce(() -> {
+        elevator.setTargetPos(AffectorPosition.L2.elev);
+        wrist.setPosSet(AffectorPosition.L2.wrist);
+      }, elevator, wrist, intake));
+    NamedCommands.registerCommand("L3", Commands.runOnce(() -> {
+      elevator.setTargetPos(AffectorPosition.L3.elev);
+      wrist.setPosSet(AffectorPosition.L3.wrist);
+    }, elevator, wrist, intake));
+  NamedCommands.registerCommand("L4", Commands.runOnce(() -> {
+    elevator.setTargetPos(AffectorPosition.L4.elev);
+    wrist.setPosSet(AffectorPosition.L4.wrist);
+  }, elevator, wrist, intake));
+  NamedCommands.registerCommand("stow", Commands.runOnce(() -> {
+    elevator.setTargetPos(AffectorPosition.STOW.elev);
+    wrist.setPosSet(AffectorPosition.STOW.wrist);
+  }, elevator, wrist, intake));
+
+NamedCommands.registerCommand("score", Commands.run(() -> intake.setVoltage(IntakeConstants.SPEED),intake).finallyDo(() -> intake.stop()).until(() -> !intake.isHolding()));
+
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -313,26 +335,6 @@ public class RobotContainer {
       () -> this.getFOD(),
       drive
     );
-
-    NamedCommands.registerCommand("station", new StationIntake(elevator, wrist, intake));
-    NamedCommands.registerCommand("L2", Commands.run(() -> {
-        elevator.setTargetPos(AffectorPosition.L2.elev);
-        wrist.setPosSet(AffectorPosition.L2.wrist);
-      }, elevator, wrist, intake));
-    NamedCommands.registerCommand("L3", Commands.run(() -> {
-      elevator.setTargetPos(AffectorPosition.L3.elev);
-      wrist.setPosSet(AffectorPosition.L3.wrist);
-    }, elevator, wrist, intake));
-  NamedCommands.registerCommand("L4", Commands.run(() -> {
-    elevator.setTargetPos(AffectorPosition.L4.elev);
-    wrist.setPosSet(AffectorPosition.L4.wrist);
-  }, elevator, wrist, intake));
-  NamedCommands.registerCommand("stow", Commands.run(() -> {
-    elevator.setTargetPos(AffectorPosition.STOW.elev);
-    wrist.setPosSet(AffectorPosition.STOW.wrist);
-  }, elevator, wrist, intake));
-
-NamedCommands.registerCommand("score", Commands.run(() -> intake.setVoltage(IntakeConstants.SPEED),intake).finallyDo(() -> intake.stop()).until(() -> !intake.isHolding()));
 
     drive.setDefaultCommand(driveCommand);
     wrist.setDefaultCommand(wrist.man(() -> ExtraMath.processInput(operatorController.getRightY(), -0.02 * WristConstants.POS_PID.maxSpeed(), 1.0, 0.05)));
@@ -404,7 +406,7 @@ NamedCommands.registerCommand("score", Commands.run(() -> intake.setVoltage(Inta
         //elevator.toggleBrake();
         //wrist.toggleBrake();
       }
-    })).debounce(1).onTrue(new DisabledInstantCommand(() -> {
+    })).debounce(1).onFalse(new DisabledInstantCommand(() -> {
       elevator.resetPos(ElevatorConstants.HOME_POS);
       elevator.setHomed(true);
     }));

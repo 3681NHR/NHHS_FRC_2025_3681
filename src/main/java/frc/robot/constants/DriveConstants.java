@@ -37,12 +37,12 @@ public class DriveConstants {
     public static final double ANGLE_MAX_VELOCITY = 11.2;
     public static boolean USE_VISION = true;
 
-    public static final PIDGains.PID AUTO_ANGLE_PID = new PIDGains.PID(5, 0.0, 0.0);//TODO tune
+    public static final PIDGains.PID AUTO_ANGLE_PID = new PIDGains.PID(8, 0.0, 0.0);//TODO tune
     public static final PIDGains.PID AUTO_ANGLE_PID_SIM = new PIDGains.PID(5, 0.0, 0.0);
     
-    public static final PIDGains.PID TRANS_PID = new PIDGains.PID(6, 0.0, 0.0);//TODO tune
+    public static final PIDGains.PID TRANS_PID = new PIDGains.PID(10, 0.0, 0.0);//TODO tune
     public static final PIDGains.PID TRANS_PID_SIM = new PIDGains.PID(6, 0.0, 0.0);
-    public static final double MAX_SPEED = 4.1;//TODO tune
+    public static final double MAX_SPEED = 4.7;//TODO tune
 
     public static final double ODOMETRY_FREQ = 100.0; // Hz
     public static final double WIDTH = Units.inchesToMeters(22);

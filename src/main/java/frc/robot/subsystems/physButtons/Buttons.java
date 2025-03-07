@@ -25,7 +25,7 @@ public class Buttons extends SubsystemBase{
                 inputs[i] = new ButtonIOInputsAutoLogged();
             }
             ios[i].updateInputs(inputs[i]);
-            Logger.processInputs("buttons/"+i, inputs[i]);
+            Logger.processInputs("button"+i, inputs[i]);
         }
     }
 

@@ -35,7 +35,7 @@ public class StationIntake extends Command {
 
   @Override
   public void execute() {
-    timeout = startTime-Logger.getTimestamp();
+    //timeout = startTime-Logger.getTimestamp();
 
     elevator.setTargetPos(AffectorPosition.STATION.elev);
     wrist.setPosSet(AffectorPosition.STATION.wrist);
@@ -50,6 +50,6 @@ public class StationIntake extends Command {
 
   @Override
   public boolean isFinished() {
-    return intake.isHolding() && stopOnHold || timeout >= 60;
+    return intake.isHolding();// || timeout >= 10;
   }
 }

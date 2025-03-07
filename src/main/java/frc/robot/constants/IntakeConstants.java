@@ -4,7 +4,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 
 public class IntakeConstants {
     public static final int MOTOR_ID = 51;
-    public static final int SENS_ID = 5;
+    public static final int SENS_ID = 2;
     
     public static final double SPEED = 5;
     public static final double MOTOR_RUNNING_THRESHOLD = 1.0;
