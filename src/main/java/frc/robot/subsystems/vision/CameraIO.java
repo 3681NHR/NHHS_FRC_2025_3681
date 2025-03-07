@@ -13,7 +13,7 @@ public interface CameraIO {
     public PoseObservation[] poseObservations = new PoseObservation[0];
     public int[] tagIds = new int[0];
     public TargetObservation latestTargetObservation = new TargetObservation(new Rotation2d(), new Rotation2d(), -1);
-    public TargetObservation[] targets;
+    public TargetObservation[] targets = new TargetObservation[0];
   }
 
   /** Represents the angle to a simple target, not used for pose estimation. */

@@ -1,7 +1,6 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -16,6 +15,7 @@ import frc.robot.constants.Constants;
 import frc.robot.subsystems.swerve.Drive;
 import frc.utils.ExtraMath;
 import frc.utils.Joystick;
+import frc.utils.PID;
 import frc.utils.Joystick.duelJoystickAxis;
 
 import static frc.robot.constants.DriveConstants.*;
@@ -30,11 +30,9 @@ public class DriveCommands {
 
     
     // Create PID controller
-    static PIDController angleController =
-        new PIDController(
-        RobotBase.isReal() ? ANGLE_P : ANGLE_SIM_P, 
-            0.0,
-            RobotBase.isReal() ? ANGLE_D : ANGLE_SIM_D);
+    static PID angleController =
+        new PID(
+        RobotBase.isReal() ? ANGLE_PID : ANGLE_PID_SIM);
 
     static double rx = 0;
     static double ry = 0;
@@ -138,7 +136,7 @@ public class DriveCommands {
     double omega =
     MathUtil.clamp(
         angleController.calculate(
-            drive.getRotation().getRadians(), rotationSupplier.get().rotateBy(DriverStation.getAlliance().isPresent()&& DriverStation.getAlliance().get() == Alliance.Red ? Rotation2d.k180deg : new Rotation2d()).getRadians()),
+            drive.getRotation().getRadians(), rotationSupplier.get().rotateBy(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? Rotation2d.k180deg : new Rotation2d()).getRadians()),
     -ANGLE_MAX_VELOCITY, ANGLE_MAX_VELOCITY);
 
     Logger.recordOutput("angletarget", angleController.getSetpoint());

@@ -2,101 +2,45 @@ package frc.robot.subsystems.elevator;
 
 import static frc.robot.constants.ElevatorConstants.*;
 
-import org.littletonrobotics.junction.Logger;
-
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ElevatorFeedforward;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import frc.utils.BatteryVoltageSim;
 
 public class ElevatorIOSim implements ElevatorIO{
 
+    private double pos = 0.0;
+    private double vel = 0.0;
     
-        private ElevatorSim sim = new ElevatorSim(
-            DCMotor.getNEO(2),
-            GEARING,
-            MASS,
-            DRUM_RAD,
-            MIN_POS,
-            MAX_POS,
-            true,
-            1.0,
-            0.01,
-            0.0
-        );
-    
-        
-        private Encoder encoder = new Encoder(ENCODER_ID_A, ENCODER_ID_B);
-        private EncoderSim encoder_sim = new EncoderSim(encoder);
+    private double voltsOut = 0.0;
 
-        private LinearFilter posFilter = LinearFilter.movingAverage(5);
-        
-        private double posOffset = 0.0;
-        private double pos = 0.0;
-        private double lastPos = 0.0;
-        private double vel = 0.0;
-        private double posSetpoint = 0.0;
-    
-        private double voltsOut = 0.0;
-        private boolean openloop = false;
-    
-        private ProfiledPIDController pid = new ProfiledPIDController(
-            SIM_POS_P,
-            0,
-            SIM_POS_D,
-            new Constraints(
-            POS_MAX_SPEED,
-            POS_MAX_ACCEL
-        )
-    );
-    private ElevatorFeedforward ff = new ElevatorFeedforward(
-        SIM_POS_S,
-        SIM_POS_G,
-        SIM_POS_V,
-        SIM_POS_A
+    private ElevatorSim sim = new ElevatorSim(
+        LinearSystemId.identifyPositionSystem(POS_FF.kV(), POS_FF.kA()),
+        DCMotor.getNEO(2),
+        MIN_POS,
+        MAX_POS,
+        true,
+        0,
+        0, 0
     );
 
     public ElevatorIOSim(){
-        BatteryVoltageSim.getInstance().addCurrentSource(sim::getCurrentDrawAmps);
-
-        
-        encoder.reset();
-        encoder.setDistancePerPulse(BUILTIN_POS_FACTOR);
-        encoder.setReverseDirection(BUILTIN_ENCODER_INVERT);
-
-        pid.reset(encoder.getDistance() + posOffset);
+        BatteryVoltageSim.getInstance().addCurrentSource(()-> sim.getCurrentDrawAmps());
     }
     
     
     public void updateInputs(ElevatorIOInputs inputs) {
-        encoder_sim.setDistance(sim.getPositionMeters());
-        pos = posFilter.calculate(encoder.getDistance() + posOffset);
-        vel = (pos-lastPos)/0.02;
-        lastPos = pos;
 
-        posSetpoint = MathUtil.clamp(posSetpoint, MIN_POS, MAX_POS);
+        sim.update(0.02);
 
-        double pidOut = pid.calculate(pos, posSetpoint);
-        double ffOut = ff.calculate(pid.getSetpoint().velocity);
-        Logger.recordOutput("elevator/pidOut", pidOut);
-        Logger.recordOutput("elevator/ffOut", ffOut);
-        Logger.recordOutput("elevator/target", posSetpoint);
-        Logger.recordOutput("elevator/setpoint", pid.getSetpoint().position);
-        if(!openloop){
-            voltsOut = pidOut + ffOut;
-        }
+        pos = sim.getPositionMeters();
+        vel = sim.getVelocityMetersPerSecond();
+        
         sim.setInputVoltage(voltsOut);
 
         inputs.elevatorPositionMeters = pos;
         inputs.elevatorVelocityMetersPerSec = vel;
 
-        inputs.motor1CurrentAmps = sim.getCurrentDrawAmps()/2;
         inputs.motor1Voltage = voltsOut/2;
         inputs.motor1TempC = -1;
 
@@ -104,18 +48,11 @@ public class ElevatorIOSim implements ElevatorIO{
         inputs.motor2Voltage = inputs.motor1Voltage;
         inputs.motor2TempC = inputs.motor1TempC;
 
-        sim.update(0.02);
     }
     
-    public void setElevatorTargetLocation(double targetMeters) {
-        posSetpoint = targetMeters;
-        openloop = false;
-    }
     
-    public void moveElevatorOpenLoop(double voltage) {
-        openloop = true;
+    public void setVoltage(double voltage) {
         voltsOut = voltage;
-        sim.setInputVoltage(voltsOut);
     }
     
     public void setElevatorNeutralMode(boolean brake) {
@@ -123,8 +60,7 @@ public class ElevatorIOSim implements ElevatorIO{
     }
     
     public void resetElevatorPosition(double posMeters) {
-        //TODO reset
-        posOffset = posMeters;
+        //not used
     }
 
 }

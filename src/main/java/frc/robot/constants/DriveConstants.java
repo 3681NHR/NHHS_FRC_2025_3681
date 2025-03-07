@@ -28,23 +28,22 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
-import edu.wpi.first.units.measure.Voltage; 
+import edu.wpi.first.units.measure.Voltage;
+import frc.utils.PIDGains; 
 
 public class DriveConstants {
-    public static final double ANGLE_P = 0.5;
-    public static final double ANGLE_D = 0.025;
-    public static final double ANGLE_SIM_P = 0.5;
-    public static final double ANGLE_SIM_D = 0.025;
+    public static final PIDGains.PID ANGLE_PID = new PIDGains.PID(0.5, 0.0, 0.025);
+    public static final PIDGains.PID ANGLE_PID_SIM = new PIDGains.PID(0.5, 0.0, 0.025);
     public static final double ANGLE_MAX_VELOCITY = 11.2;
     public static boolean USE_VISION = true;
 
-    public static final double TRANS_P = 5;
-    public static final double TRANS_D = 0.0;
-    public static final double TRANS_SIM_P = 5;
-    public static final double TRANS_SIM_D = 0.0;
-    public static final double TRANS_MAX_VELOCITY = 4.8;
+    public static final PIDGains.PID AUTO_ANGLE_PID = new PIDGains.PID(8, 0.0, 0.0);//TODO tune
+    public static final PIDGains.PID AUTO_ANGLE_PID_SIM = new PIDGains.PID(5, 0.0, 0.0);
+    
+    public static final PIDGains.PID TRANS_PID = new PIDGains.PID(10, 0.0, 0.0);//TODO tune
+    public static final PIDGains.PID TRANS_PID_SIM = new PIDGains.PID(6, 0.0, 0.0);
+    public static final double MAX_SPEED = 4.7;//TODO tune
 
-    public static final double MAX_SPEED = 4.1;
     public static final double ODOMETRY_FREQ = 100.0; // Hz
     public static final double WIDTH = Units.inchesToMeters(22);
     public static final double LENGTH = Units.inchesToMeters(25);
@@ -90,18 +89,11 @@ public class DriveConstants {
       (2 * Math.PI) / 60.0 / DRIVE_REDUCTION; // Rotor RPM -> Wheel Rad/Sec
 
   // Drive PID configuration
-  public static final double DRIVE_P = 0.01;
-  public static final double DRIVE_I = 0.0;
-  public static final double DRIVE_D = 0.0;
-  public static final double DRIVE_S = 0.11;
-  public static final double DRIVE_V = 0.13;
-  public static final double DRIVE_A = 0.1;
-  public static final double DRIVE_SIM_P = 0.01;
-  public static final double DRIVE_SIM_I = 0.0;
-  public static final double DRIVE_SIM_D = 0.0;
-  public static final double DRIVE_SIM_S = 0.11;
-  public static final double DRIVE_SIM_V = 0.155;
-  public static final double DRIVE_SIM_A = 0.1;
+  public static final PIDGains.PID DRIVE_PID = new PIDGains.PID(0.01, 0.0, 0.0);//TODO should tune
+  public static final PIDGains.SimpleFF DRIVE_FF = new PIDGains.SimpleFF(0.11, 0.13, 0.1);//TODO needs sysid
+  
+  public static final PIDGains.PID DRIVE_PID_SIM = new PIDGains.PID(0.01, 0.0, 0.0);
+  public static final PIDGains.SimpleFF DRIVE_FF_SIM = new PIDGains.SimpleFF(0.11, 0.13, 0.1);
 
   // Turn motor configuration
   public static final boolean TURN_INVERT = true;
@@ -115,21 +107,16 @@ public class DriveConstants {
   public static final double TURN_ENCODER_VEL_FACTOR = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
 
   // Turn PID configuration
-  public static final double TURN_P = 0.75;
-  public static final double TURN_I = 0.0;
-  public static final double TURN_D = 0.0;
-  public static final double TURN_F = 0.125;
-  public static final double TURN_MAX_SPEED = Math.PI*2*4;//4 rot per sec
-  public static final double TURN_MAX_ACCEL = TURN_MAX_SPEED*10;//1/10 sec to full speed
-  public static final double TURN_SIM_P = 12.5;
-  public static final double TURN_SIM_I = 0.0;
-  public static final double TURN_SIM_D = 0.5;
-  public static final double TURN_SIM_F = 0.015;
+  public static final PIDGains.ProfiledPID TURN_PID = new PIDGains.ProfiledPID(7.5, 0.0, 0.0, Math.PI*8, Math.PI*80);//TODO needs tuning
+  public static final PIDGains.SimpleFF TURN_FF = new PIDGains.SimpleFF(0.125, 0.0, 0.0);//TODO needs tuning and sysid
+  
+  public static final PIDGains.ProfiledPID TURN_PID_SIM = new PIDGains.ProfiledPID(12.5, 0.0, 0.5, Math.PI*8, Math.PI*80);
+  public static final PIDGains.SimpleFF TURN_FF_SIM = new PIDGains.SimpleFF(0.015, 0.0, 0.0);
   public static final double TURN_MIN_POS = 0; // Radians
   public static final double TURN_MAX_POS = 2 * Math.PI; // Radians
 
   // PathPlanner configuration
-  public static final double MASS = 74;
+  public static final double MASS = 60;
   public static final double MOI = 6;
   public static final double COF = 2.31421199;
   public static final RobotConfig PP_CONFIG =
@@ -158,7 +145,7 @@ public class DriveConstants {
     public static final double ANGULAR_VELOCITY_COEFFICIENT = 0.1;
 
     public static class presets{
-        public static final Rotation2d CLIMB = Rotation2d.fromDegrees(0);
+        public static final Rotation2d CLIMB = Rotation2d.fromDegrees(180);
         public static final Pose2d WEST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(30));
         public static final Pose2d EAST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(142));
         public static final Pose2d PROSSESOR = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(270));

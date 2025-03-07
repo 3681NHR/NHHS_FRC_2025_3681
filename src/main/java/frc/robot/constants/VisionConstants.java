@@ -26,26 +26,28 @@ public class VisionConstants {
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
   // Camera names, must match names configured on coprocessor
-  public static String CAMERA_0_NAME = "back";
-  public static String CAMERA_1_NAME = "front";
+  public static String[] CAMERA_NAMES = {
+    "back",
+    "front"
+  };
 
   // Robot to camera transforms
   public static Transform3d CAMERA_0_ROBOT_TO_CAM =
         new Transform3d(
-            Units.inchesToMeters(-6),//forward
-            Units.inchesToMeters(-6),//left 
-            Units.inchesToMeters(9.5), //up
+            -0.105,//forward
+            -0.1998,//left 
+            0.237, //up
         new Rotation3d(
             Units.degreesToRadians(0),
             Units.degreesToRadians(-20),//-pitch
-            Units.degreesToRadians(95)//yaw
+            Units.degreesToRadians(-85)//yaw
         )
   );
   public static Transform3d CAMERA_1_ROBOT_TO_CAM =
         new Transform3d(
-            Units.inchesToMeters(7), 
-            Units.inchesToMeters(-10), 
-            Units.inchesToMeters(13.5), 
+            0.2734,
+            -0.189, 
+            0.310, 
         new Rotation3d(
             Units.degreesToRadians(0),
             Units.degreesToRadians(-20),
@@ -60,8 +62,8 @@ public class VisionConstants {
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)
-  public static double LIN_STD_DEV_BASELINE = 0.01; // Meters
-  public static double ANG_STD_DEV_BASELINE = 0.25; // Radians
+  public static double LIN_STD_DEV_BASELINE = 0.1; // Meters
+  public static double ANG_STD_DEV_BASELINE = 0.1; // Radians
 
   // Standard deviation multipliers for each camera
   // (Adjust to trust some cameras more than others)
@@ -71,11 +73,8 @@ public class VisionConstants {
         1.0, // front
       };
 
-  public static final FilterStrategy POSE_FILTER = FilterStrategy.MEDIAN;
+  public static final FilterStrategy POSE_FILTER = FilterStrategy.MEAN;
+  //SP and rate lim have problems with time
+  //rate lim cant reset, will cause problems
 
-  public static final double ANGLE_P = 0.001;
-  public static final double ANGLE_D = 0.001;
-
-  public static final double ANGLE_SIM_P = 0.001;
-  public static final double ANGLE_SIM_D = 0.001;
 }
