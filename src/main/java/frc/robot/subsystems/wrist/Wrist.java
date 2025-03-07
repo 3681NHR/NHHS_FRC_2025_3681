@@ -11,12 +11,15 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.constants.WristConstants;
+import frc.utils.ArmFF;
+import frc.utils.ProfiledPID;
 
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.constants.WristConstants.*;
@@ -28,10 +31,12 @@ public class Wrist extends SubsystemBase {
     private WristIO io;
     private WristIOInputsAutoLogged inputs = new WristIOInputsAutoLogged();
 
-    @AutoLogOutput
     private double posSet;
-    @AutoLogOutput
+    @AutoLogOutput(key="Wrist/BrakeMode")
     private boolean brake;
+
+    private ProfiledPID pid = new ProfiledPID(RobotBase.isReal() ? POS_PID : POS_PID_SIM);
+    private ArmFF ff = new ArmFF(RobotBase.isReal() ? POS_FF : POS_FF_SIM);
 
     private Alert noLim = new Alert("wrist limits not enforced", AlertType.kWarning);
     private LoggedNetworkBoolean limits = new LoggedNetworkBoolean("overrides/wristLimits", true);
@@ -60,12 +65,22 @@ public class Wrist extends SubsystemBase {
             posSet = inputs.posRad;
         }
 
+        Logger.recordOutput("Wrist/CurrentCommand", getCurrentCommand() != null ? getCurrentCommand().getName() : "none");
+
         noLim.set(!limits.get());
         if(limits.get()){
             posSet = MathUtil.clamp(posSet, MIN_POS, MAX_POS);
         }
+        double pidOut = pid.calculate(inputs.posRad, posSet);
+        double ffOut = ff.calculate(inputs.posRad, pid.getSetpoint().velocity);
 
-        io.setPos(posSet);
+        Logger.recordOutput("Wrist/Control/PID goal", posSet);
+        Logger.recordOutput("Wrist/Control/PID setpoint pos", pid.getSetpoint().position);
+        Logger.recordOutput("Wrist/Control/PID setpoint vel", pid.getSetpoint().velocity);
+        Logger.recordOutput("Wrist/Control/PID applied", pidOut);
+        Logger.recordOutput("Wrist/Control/FF aplied", ffOut);
+
+        io.setVoltage(pidOut + ffOut);
     }
 
     public void setPosSet(double pos){

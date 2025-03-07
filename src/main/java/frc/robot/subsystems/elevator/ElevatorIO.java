@@ -6,9 +6,7 @@ public interface ElevatorIO {
     
     public default void updateInputs(ElevatorIOInputs inputs) {}
 
-    public default void setElevatorTargetLocation(double targetMeters) {}
-
-    public default void moveElevatorOpenLoop(double voltage) {}
+    public default void setVoltage(double voltage) {}
 
     public default void setElevatorNeutralMode(boolean brake) {}
 

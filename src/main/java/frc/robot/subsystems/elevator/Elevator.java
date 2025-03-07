@@ -3,6 +3,10 @@ package frc.robot.subsystems.elevator;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.constants.ElevatorConstants.MAX_POS;
 import static frc.robot.constants.ElevatorConstants.MIN_POS;
+import static frc.robot.constants.ElevatorConstants.POS_FF;
+import static frc.robot.constants.ElevatorConstants.POS_FF_SIM;
+import static frc.robot.constants.ElevatorConstants.POS_PID;
+import static frc.robot.constants.ElevatorConstants.POS_PID_SIM;
 import static frc.robot.constants.ElevatorConstants.POS_TOLERANCE;
 import static frc.robot.constants.ElevatorConstants.TIMEOUT;
 import static frc.robot.constants.ElevatorConstants.VRAMP;
@@ -20,26 +24,32 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
+import frc.utils.ElevatorFF;
+import frc.utils.ProfiledPID;
 
 public class Elevator extends SubsystemBase {
 
     private ElevatorIO io;
     private ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
-    @AutoLogOutput
     private double posSet = 0.0;
 
-    @AutoLogOutput
+    @AutoLogOutput(key="Elevator/IsHomed")
     private boolean homed = false;
-    @AutoLogOutput
+    @AutoLogOutput(key="Elevator/Openloop")
     private boolean openloop = false;
 
-    private Alert notHomed = new Alert("elevator is not homed", AlertType.kWarning);
-    private Alert noLim = new Alert("elevator limits not enforced", AlertType.kWarning);
+    private ProfiledPID pid = new ProfiledPID(RobotBase.isReal() ? POS_PID : POS_PID_SIM);
+    private ElevatorFF ff = new ElevatorFF(RobotBase.isReal() ? POS_FF : POS_FF_SIM);
+
+    private Alert notHomed = new Alert("Elevator is not homed!", AlertType.kError);
+    private Alert noLim = new Alert("Elevator limits not enforced", AlertType.kWarning);
 
     private LoggedNetworkBoolean limits = new LoggedNetworkBoolean("overrides/elevatorLimits", true);
 
@@ -68,10 +78,22 @@ public class Elevator extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Elevator", inputs);
 
+        if(DriverStation.isDisabled()){
+            posSet = inputs.elevatorPositionMeters;
+        }
 
-        Logger.recordOutput("Elevator/currentCommand", getCurrentCommand() != null ? getCurrentCommand().getName() : "none");
+        Logger.recordOutput("Elevator/CurrentCommand", getCurrentCommand() != null ? getCurrentCommand().getName() : "none");
 
         notHomed.set(!homed);
+
+        double pidOut = pid.calculate(inputs.elevatorPositionMeters, posSet);
+        double ffOut = ff.calculate(pid.getSetpoint().velocity);
+
+        Logger.recordOutput("Elevator/Control/PID goal", posSet);
+        Logger.recordOutput("Elevator/Control/PID setpoint pos", pid.getSetpoint().position);
+        Logger.recordOutput("Elevator/Control/PID setpoint vel", pid.getSetpoint().velocity);
+        Logger.recordOutput("Elevator/Control/PID applied", pidOut);
+        Logger.recordOutput("Elevator/Control/FF aplied", ffOut);
 
         if(!openloop){
             if(!homed && inputs.elevatorPositionMeters < 0){
@@ -81,11 +103,11 @@ public class Elevator extends SubsystemBase {
                 posSet = MathUtil.clamp(posSet, MIN_POS, MAX_POS);
             }
 
-            io.setElevatorTargetLocation(posSet);
+            volt = pidOut + ffOut;
         } else {
             posSet = inputs.elevatorPositionMeters;
-            io.moveElevatorOpenLoop(volt);
         }
+        io.setVoltage(volt);
 
         noLim.set(!homed || openloop || !limits.get());
     }
@@ -100,7 +122,7 @@ public class Elevator extends SubsystemBase {
     public void setVoltage(double voltage){
         openloop = true;
         volt = voltage;
-        io.moveElevatorOpenLoop(voltage);
+        io.setVoltage(voltage);
     }
 
     public void setTargetPos(double pos){

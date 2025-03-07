@@ -9,8 +9,6 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import frc.utils.ArmFF;
-import frc.utils.ProfiledPID;
 import frc.utils.SparkUtil;
 import frc.utils.ExtraMath.Derrivitive;
 
@@ -22,19 +20,13 @@ public class WristIOSpark implements WristIO{
 
     private double pos;
     private double vel;
-    private double posSet;
     private DutyCycleEncoder encoder = new DutyCycleEncoder(ENCODER_ID);
-
-    private ArmFF ff = new ArmFF(POS_FF);
-
-    private ProfiledPID pid = new ProfiledPID(POS_PID);
 
     private SparkMax motor = new SparkMax(MOTOR_ID, MotorType.kBrushless);
     private SparkMaxConfig config = new SparkMaxConfig();
 
     private Derrivitive velDeriv = new Derrivitive();
 
-    private boolean openloop = false;
     private double vout = 0.0;
 
     public WristIOSpark(){
@@ -59,11 +51,6 @@ public class WristIOSpark implements WristIO{
     }
 
     @Override
-    public void setPos(double pos){
-        posSet = pos;
-        openloop = false;
-    }
-    @Override
     public void setBrake(boolean brake){
         Logger.recordOutput("test", "e");
         config.idleMode(IdleMode.kBrake);
@@ -81,18 +68,7 @@ public class WristIOSpark implements WristIO{
         pos = MathUtil.inputModulus(((encoder.get()*POS_FACTOR) + POS_OFFSET), -Math.PI, Math.PI);
         vel = velDeriv.calculate(pos, 0.02);
 
-        double pidOut = pid.calculate(pos, posSet);
-        double ffOut = ff.calculate(pos, pid.getSetpoint().velocity);
-
-        Logger.recordOutput("Wrist/PID goal", posSet);
-        Logger.recordOutput("Wrist/PID set", pid.getSetpoint().position);
-        Logger.recordOutput("Wrist/PID out", pidOut);
-        Logger.recordOutput("Wrist/FF out", ffOut);
-        if(openloop){
-            motor.setVoltage(vout);
-        } else {
-            motor.setVoltage(pidOut + ffOut);
-        }
+        motor.setVoltage(vout);
 
         in.motorCurrentAmps = motor.getOutputCurrent();
         in.motoroutVolts = motor.getBusVoltage()*motor.getAppliedOutput();
@@ -103,7 +79,6 @@ public class WristIOSpark implements WristIO{
     }
 
     public void setVoltage(double v) {
-        openloop = true;
         vout = v;
     }
 }

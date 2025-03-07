@@ -6,7 +6,6 @@ import frc.robot.commands.AnglePresetDriveCommand;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.HomeElevator;
 import frc.robot.commands.IntakeCommand;
-import frc.robot.commands.MoveAffector;
 import frc.robot.commands.StationIntake;
 import frc.robot.constants.AffectorPosition;
 import frc.robot.constants.ClimberConstants;
@@ -19,6 +18,7 @@ import frc.robot.constants.VisionConstants;
 import frc.robot.constants.WristConstants;
 import frc.robot.subsystems.Led;
 import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.climber.ClimberIOSpark;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
 import frc.robot.subsystems.elevator.ElevatorIOSim;
@@ -74,14 +74,12 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -150,7 +148,6 @@ public class RobotContainer {
   private AffectorPosition target = AffectorPosition.STOW;
 
   public RobotContainer() {
-    climber = new Climber();
 
     Logger.recordOutput("zero", new Pose3d());
 
@@ -216,6 +213,7 @@ public class RobotContainer {
         wrist = new Wrist(new WristIOSpark());
         intake = new Intake(new IntakeIOSpark());
         buttons = new Buttons(new ButtonIODIO(4));
+        climber = new Climber(new ClimberIOSpark());
         break;
 
       case SIM:

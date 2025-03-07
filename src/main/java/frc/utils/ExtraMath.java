@@ -5,7 +5,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.lang.Math;
 import java.util.ArrayList;
-import java.util.stream.Stream;
 
 public final class ExtraMath {
     

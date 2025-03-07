@@ -1,7 +1,5 @@
 package frc.robot.commands;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.AffectorPosition;
 import frc.robot.constants.IntakeConstants;
@@ -15,10 +13,6 @@ public class StationIntake extends Command {
   private Wrist wrist;
   private Intake intake;
 
-  private double timeout = 0;
-  private double startTime = Double.NaN;
-  private boolean stopOnHold = true;
-
   public StationIntake(Elevator elevator, Wrist wrist, Intake intake) {
     this.elevator = elevator;
     this.wrist = wrist;
@@ -29,13 +23,10 @@ public class StationIntake extends Command {
 
   @Override
   public void initialize() {
-    stopOnHold = !intake.isHolding();
-    startTime = Logger.getTimestamp();
   }
 
   @Override
   public void execute() {
-    //timeout = startTime-Logger.getTimestamp();
 
     elevator.setTargetPos(AffectorPosition.STATION.elev);
     wrist.setPosSet(AffectorPosition.STATION.wrist);
@@ -50,6 +41,6 @@ public class StationIntake extends Command {
 
   @Override
   public boolean isFinished() {
-    return intake.isHolding();// || timeout >= 10;
+    return intake.isHolding();
   }
 }

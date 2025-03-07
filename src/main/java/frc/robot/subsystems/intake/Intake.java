@@ -23,6 +23,8 @@ public class Intake extends SubsystemBase {
         io.updateInputs(inputs);
         Logger.processInputs("Intake", inputs);
 
+        Logger.recordOutput("Intake/CurrentCommand", getCurrentCommand() != null ? getCurrentCommand().getName() : "none");
+
         if (DriverStation.isDisabled()) {
             stop();
         }
