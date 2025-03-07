@@ -185,6 +185,9 @@ public class ModuleIOSpark implements ModuleIO {
 
     driveVelocityRadPerSecond = driveEncoder.getVelocity();
     turnVelocityRadPerSecond = turnEncoder.getVelocity();
+
+    inputs.turnTemp = turnSpark.getMotorTemperature();
+    inputs.driveTemp = driveSpark.getMotorTemperature();
     
     // Update drive inputs
     sparkStickyFault = false;
