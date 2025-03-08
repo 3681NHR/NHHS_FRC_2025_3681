@@ -78,7 +78,7 @@ public class ElevatorIOSpark implements ElevatorIO {
         }
 
         fallbackAlert.set(encoderFallback);
-        divergenceAlert.set(MathUtil.isNear(motorEncoder.getPosition() * Builtinfactor, encoder.getDistance() + posOffset, ENCODER_DIVERGANCE_THRESH));
+        //divergenceAlert.set(MathUtil.isNear(motorEncoder.getPosition() * Builtinfactor, encoder.getDistance() + posOffset, ENCODER_DIVERGANCE_THRESH));
 
         motor1.setVoltage(voltsOut);
 
