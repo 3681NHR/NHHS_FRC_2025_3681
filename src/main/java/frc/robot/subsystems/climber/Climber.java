@@ -1,38 +1,27 @@
 package frc.robot.subsystems.climber;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import static frc.robot.constants.ClimberConstants.*;
+import org.littletonrobotics.junction.Logger;
 
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Climber extends SubsystemBase{
 
-    private SparkMax motor = new SparkMax(MOTOR_ID, MotorType.kBrushless);
+    private ClimberIO io;
 
-    private SparkMaxConfig config = new SparkMaxConfig();
+    private ClimberIOInputsAutoLogged inputs = new ClimberIOInputsAutoLogged();
 
     private double vout = 0.0;
 
-    public Climber(){
-         
-    config
-        .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(CURRENT_LIM)
-        .voltageCompensation(12.0)
-        .inverted(INVERT);
-    config
-        .signals
-        .appliedOutputPeriodMs(20)
-        .busVoltagePeriodMs(20)
-        .outputCurrentPeriodMs(20);
+    public Climber(ClimberIO io){
+         this.io = io;
     }
 
     @Override
     public void periodic(){
-        motor.setVoltage(vout);
+        io.updateInputs(inputs);
+        Logger.processInputs("Climber", inputs);
+
+        io.setVoltage(vout);
     }
     public void setVoltage(double vout){
         this.vout = vout;

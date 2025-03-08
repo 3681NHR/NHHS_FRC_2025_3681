@@ -9,12 +9,9 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.constants.Constants;
 import frc.robot.constants.VisionConstants;
-import frc.robot.constants.Constants.RobotMode;
 import frc.robot.subsystems.vision.CameraIO.TargetObservation;
 import frc.utils.ExtraMath.MovingAverageFilter;
 

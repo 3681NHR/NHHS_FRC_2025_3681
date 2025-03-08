@@ -29,7 +29,7 @@ public class WristConstants {
 
     public static final boolean MOTOR_INVERT = true;
 
-    public static final double MAX_POS = Units.degreesToRadians(90);
+    public static final double MAX_POS = Units.degreesToRadians(100);
     public static final double MIN_POS = Units.degreesToRadians(-70);
 
     public static final double POS_TOLERANCE = 0.125;

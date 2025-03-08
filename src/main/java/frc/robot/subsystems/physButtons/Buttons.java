@@ -13,7 +13,7 @@ public class Buttons extends SubsystemBase{
         this.ios = buttons;
         this.inputs = new ButtonIOInputsAutoLogged[buttons.length];
 
-        for(ButtonIOInputsAutoLogged i : inputs){
+        for(@SuppressWarnings("unused") ButtonIOInputsAutoLogged i : inputs){
             i = new ButtonIOInputsAutoLogged();
         }
     }

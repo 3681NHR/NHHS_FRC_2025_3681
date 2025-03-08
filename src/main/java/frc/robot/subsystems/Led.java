@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Percent;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 import edu.wpi.first.wpilibj.AddressableLED;
@@ -24,7 +25,7 @@ public class Led extends SubsystemBase {
 
     private LEDPattern elevPos;
 
-    private LoggedNetworkBoolean rainbow = new LoggedNetworkBoolean("LED color test override(TEST1)", false);
+    private LoggedNetworkBoolean rainbow = new LoggedNetworkBoolean("LED override", false);
 
     public Led() {
         led.setLength(buffer.getLength());
@@ -51,6 +52,8 @@ public class Led extends SubsystemBase {
         elevPos.applyTo(buffer);
 
         led.setData(buffer);
+
+        Logger.recordOutput("led", buffer.getLED(0).toHexString());
     }
 
     public void setIntaking(boolean in){
