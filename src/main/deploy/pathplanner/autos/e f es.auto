@@ -36,15 +36,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "station"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "f to east station"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "station"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "f to east station"
+                }
+              }
+            ]
           }
         }
       ]
