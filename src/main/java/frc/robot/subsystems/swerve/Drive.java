@@ -38,6 +38,7 @@ import frc.robot.constants.DriveConstants;
 import frc.robot.constants.Constants.RobotMode;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionEstimate;
+import frc.utils.ExtraMath;
 import frc.utils.LoggedField2d;
 import frc.utils.SparkOdometryThread;
 
@@ -175,6 +176,8 @@ public class Drive extends SubsystemBase {
     }
     odometryLock.unlock();
 
+    Logger.recordOutput("Drive/tilt readings", ExtraMath.getTip(gyroInputs.angle));
+    Logger.recordOutput("Drive/tilt recov", ExtraMath.getTip(gyroInputs.angle)[1] > TIP_RECOVERY_THRESHOLD);
 
     Logger.recordOutput("Drive/CurrentCommand", getCurrentCommand() != null ? getCurrentCommand().getName() : "none");
 

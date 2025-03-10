@@ -3,6 +3,7 @@ package frc.robot.subsystems.swerve;
 import org.ironmaple.simulation.drivesims.GyroSimulation;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import frc.utils.SparkUtil;
 
 public class GyroIOSim implements GyroIO{
@@ -25,5 +26,7 @@ public class GyroIOSim implements GyroIO{
 
     inputs.odometryYawPositions = gyro.getCachedGyroReadings();
     inputs.odometryYawTimestamps = SparkUtil.getSimulationOdometryTimeStamps();
+
+    inputs.angle = new Rotation3d(0, 0, inputs.yawPositionRad);
   }
 }

@@ -48,6 +48,8 @@ public class GyroIOPigeon2 implements GyroIO {
             .toArray(Rotation2d[]::new);
     yawTimestampQueue.clear();
     yawPositionQueue.clear();
+
+    inputs.angle = pigeon.getRotation3d();
   }
 
   public void reset(double heading){

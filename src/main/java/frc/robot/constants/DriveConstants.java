@@ -144,6 +144,8 @@ public class DriveConstants {
 
     public static final double ANGULAR_VELOCITY_COEFFICIENT = 0.1;
 
+    public static final double TIP_RECOVERY_THRESHOLD = Units.degreesToRadians(10);
+
     public static class presets{
         public static final Rotation2d CLIMB = Rotation2d.fromDegrees(180);
         public static final Pose2d WEST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(30));

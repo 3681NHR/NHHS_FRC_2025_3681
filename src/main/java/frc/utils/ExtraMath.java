@@ -3,6 +3,8 @@ package frc.utils;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+
 import java.lang.Math;
 import java.util.ArrayList;
 
@@ -15,6 +17,20 @@ public final class ExtraMath {
 
   public static double getMagnitude(double x, double y) {
     return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+  }
+
+  /**
+   * get tilt of robot
+   * @param angle 
+   * @return double[2], 0 is yaw angle(-pi to pi), 1 is tilt angle
+   */
+  public static double[] getTip(Rotation3d angle){
+    double[] out = new double[2];
+
+    out[0] = Math.atan2(-angle.getX(), -angle.getY());
+    out[1] = Math.hypot(angle.getX(), angle.getY());
+
+    return out;
   }
 
   /**
