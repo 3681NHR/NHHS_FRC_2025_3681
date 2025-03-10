@@ -5,27 +5,34 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "New New Path"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "station"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "m to h"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L4"
+                }
+              }
+            ]
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 0.2
+            "waitTime": 1.5
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "New Path"
+            "name": "score"
           }
         },
         {
@@ -37,7 +44,7 @@
         {
           "type": "named",
           "data": {
-            "name": "score"
+            "name": "stow"
           }
         }
       ]
