@@ -5,15 +5,28 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "east to f"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "east to f"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L4"
+                }
+              }
+            ]
           }
         },
         {
           "type": "wait",
           "data": {
-            "waitTime": 0.1
+            "waitTime": 1.5
           }
         },
         {
@@ -23,15 +36,22 @@
           }
         },
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "f to east station"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "station"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "station"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "f to east station"
+                }
+              }
+            ]
           }
         }
       ]

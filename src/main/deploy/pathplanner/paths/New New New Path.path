@@ -3,61 +3,49 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.4515,
-        "y": 3.0890000000000004
+        "x": 8.019774590163935,
+        "y": 7.471465163934425
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.9805573076064658,
-        "y": 2.68411208541557
+        "x": 7.17028699987125,
+        "y": 6.850504940360624
       },
       "isLocked": false,
-      "linkedName": "c"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 1.6915770609318976,
-        "y": 1.1541218637992825
+        "x": 5.226639344262295,
+        "y": 5.097899590163934
       },
       "prevControl": {
-        "x": 2.4902313546022903,
-        "y": 3.0838585815344284
+        "x": 6.674630275888079,
+        "y": 6.445421338929076
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "east 1"
+      "linkedName": null
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.21400198552280777,
-      "rotationDegrees": -29.999999999999996
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [
     {
       "name": "Constraints Zone",
       "minWaypointRelativePos": 0,
-      "maxWaypointRelativePos": 0.3444229291234203,
+      "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 4.6,
-        "maxAcceleration": 4.0,
+        "maxVelocity": 4.0,
+        "maxAcceleration": 2.0,
         "maxAngularVelocity": 597.8815,
-        "maxAngularAcceleration": 1541.0,
+        "maxAngularAcceleration": 2575.846,
         "nominalVoltage": 12.0,
         "unlimited": false
       }
     }
   ],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "station",
-      "waypointRelativePos": 0.1987952497461643,
-      "endWaypointRelativePos": null,
-      "command": null
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 4.0,
     "maxAcceleration": 5.0,
@@ -68,13 +56,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 143.77505574447966
+    "rotation": 148.46520809481174
   },
   "reversed": false,
-  "folder": "to east station",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -31.7594800848128
+    "rotation": 91.02303018866776
   },
   "useDefaultConstraints": true
 }
