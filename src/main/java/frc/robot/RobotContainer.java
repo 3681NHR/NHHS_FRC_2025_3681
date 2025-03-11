@@ -136,6 +136,7 @@ public class RobotContainer {
   private DoubleSupplier rightTrigger;
 
   private RumbleHandler rumbler = new RumbleHandler(driverController);
+  private RumbleHandler opRumbler = new RumbleHandler(operatorController);
 
   private PowerDistribution pdp = new PowerDistribution(1  , ModuleType.kRev);
   
@@ -373,6 +374,7 @@ NamedCommands.registerCommand("score", Commands.run(() -> intake.setVoltage(Inta
     //timer alert
     new Trigger(() -> TimerHandler.getTeleopRemaining()<Constants.ENDGAME_TIME).onTrue(new InstantCommand(() -> {
       rumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());
+      opRumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());
     }));
     //aim to station
     new Trigger(() -> driverController.getRawButton(B)).onTrue(new AnglePresetDriveCommand(
