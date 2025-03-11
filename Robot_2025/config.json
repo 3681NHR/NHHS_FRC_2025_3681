@@ -23,7 +23,27 @@
             "position": [-0.105, -0.168, 0.273],
             "rotations": [
                 { "axis": "y", "degrees": -20 },
-                { "axis": "z", "degrees": 80 }
+                { "axis": "z", "degrees": -110 }
+            ]
+        },
+        {
+            "name": "new front",
+            "fov": 85,
+            "resolution": [800, 600],
+            "position": [0.269, 0.268, 0.201],
+            "rotations": [
+                { "axis": "y", "degrees": -20 },
+                { "axis": "z", "degrees": 110 }
+            ]
+        },
+        {
+            "name": "new back",
+            "fov": 85,
+            "resolution": [800, 600],
+            "position": [-0.259, 0.263, 0.210],
+            "rotations": [
+                { "axis": "y", "degrees": -20 },
+                { "axis": "z", "degrees": 50 }
             ]
         }
     ],
