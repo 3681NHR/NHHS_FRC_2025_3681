@@ -18,6 +18,7 @@ import frc.robot.constants.VisionConstants;
 import frc.robot.constants.WristConstants;
 import frc.robot.subsystems.Led;
 import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOSpark;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.elevator.ElevatorIO;
@@ -236,6 +237,7 @@ public class RobotContainer {
         wrist = new Wrist(new WristIOSim());
         intake = new Intake(new IntakeIOSim(driveSim, elevator, wrist));
         buttons = new Buttons(new ButtonIOSim(() -> false));
+        climber = new Climber(new ClimberIO() {});
         }
         break;
 
@@ -257,6 +259,7 @@ public class RobotContainer {
         wrist = new Wrist(new WristIO() {});
         intake = new Intake(new IntakeIO() {});
         buttons = new Buttons(new ButtonIO() {});
+        climber = new Climber(new ClimberIO() {});
         break;
     }
 
@@ -527,31 +530,46 @@ NamedCommands.registerCommand("score", Commands.run(() -> intake.setVoltage(Inta
 
 
   public void updateAScopePoses(){
+    //actual pos
     Logger.recordOutput("componentPoses", new Pose3d[] {
-        elevator.getAScopePoseMiddleStage(),
-        elevator.getAScopePoseInnerStage(),
-        wrist.getAScopePoseWrist(elevator.getPosition()),
+        elevator.getAScopePoseMiddleStage(elevator.getPositionSet()),
+        elevator.getAScopePoseInnerStage(elevator.getPositionSet()),
+        wrist.getAScopePoseWrist(wrist.getPosSet(), elevator.getPosition()),
         intake.isHolding() ? new Pose3d(
             WristConstants.WRIST_POS.plus(new Translation3d(0, Math.cos(wrist.getPos())*IntakeConstants.pivotToCoral, elevator.getPosition() + Math.sin(wrist.getPos())*IntakeConstants.pivotToCoral)),
             new Rotation3d(0, -wrist.getPos()+Math.PI/2, 0).rotateBy(new Rotation3d(0, 0, Math.PI/2))
         ) : new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
     });
-}
-public void updateLEDs(){
+    //setpoints
+    Logger.recordOutput("componentSetPoses", new Pose3d[] {
+      elevator.getAScopePoseMiddleStage(elevator.getPositionSet()),
+      elevator.getAScopePoseInnerStage(elevator.getPositionSet()),
+      wrist.getAScopePoseWrist(wrist.getPosSet(), elevator.getPositionSet()),
+      new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
+    });
+    //targets, may not be applied
+    Logger.recordOutput("componentTargetPoses", new Pose3d[] {
+      elevator.getAScopePoseMiddleStage(target.elev),
+      elevator.getAScopePoseInnerStage(target.elev),
+      wrist.getAScopePoseWrist(target.wrist, target.elev),
+      new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
+    });
+  }
+  public void updateLEDs(){
     led.setColor(
         isReady() ? Color.kWhite
         : intake.isHolding() ? Color.kGreen : Color.kOrange
     );
     led.setHomed(elevator.isHomed());
     led.setIntaking(intake.isMoving());
-}
+  }
 
-public boolean isReady(){
-  return elevator.isHomed()//elevator homed
-   && elevator.inPosition() && wrist.inPosition()//in pos
-   && (target.isScoring() ? intake.isHolding() || !intake.getHoldLock() : true)//holding if in scoring pos
-   && (target == AffectorPosition.STATION ? intake.isIntaking() : true)//intaking if in station pos
-   && elevator.getPositionSet() == target.elev
-   && wrist.getPosSet() == target.wrist;
-}
+  public boolean isReady(){
+    return elevator.isHomed()//elevator homed
+     && elevator.inPosition() && wrist.inPosition()//in pos
+     && (target.isScoring() ? intake.isHolding() || !intake.getHoldLock() : true)//holding if in scoring pos
+     && (target == AffectorPosition.STATION ? intake.isIntaking() : true)//intaking if in station pos
+     && elevator.getPositionSet() == target.elev
+     && wrist.getPosSet() == target.wrist;
+  }
 }

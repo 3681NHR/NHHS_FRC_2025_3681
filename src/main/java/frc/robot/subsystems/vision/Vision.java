@@ -9,6 +9,8 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.VisionConstants;
@@ -194,6 +196,8 @@ public class Vision extends SubsystemBase {
     Logger.recordOutput(
         "Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[allTagPoses.size()]));
     Logger.recordOutput(
+      "Vision/Summary/tags", allTagPoses.size());
+    Logger.recordOutput(
         "Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[allRobotPoses.size()]));
     Logger.recordOutput(
         "Vision/Summary/RobotPosesAccepted",
@@ -224,12 +228,13 @@ public class Vision extends SubsystemBase {
 
     Logger.recordOutput("Vision/Summary/ProssesedPose", Stream.of(latestEstimateFinal).map(t -> t.pose).toArray(Pose2d[]::new));
 
-    Logger.recordOutput("Vision/Summary/RawPose", Stream.of(latestEstimateRaw).map(t -> t.pose).toArray(Pose2d[]::new));
-    Logger.recordOutput("Vision/Summary/SPFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.SINGLE_POLE_IIR)).toArray(Pose2d[]::new));
-    Logger.recordOutput("Vision/Summary/MeanFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.MEAN)).toArray(Pose2d[]::new));
-    Logger.recordOutput("Vision/Summary/MedianFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.MEDIAN)).toArray(Pose2d[]::new));
-    Logger.recordOutput("Vision/Summary/RateLimFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.RATE_LIM)).toArray(Pose2d[]::new));
-    
+    if(DriverStation.isTest() || RobotBase.isSimulation()){
+      Logger.recordOutput("Vision/Summary/RawPose", Stream.of(latestEstimateRaw).map(t -> t.pose).toArray(Pose2d[]::new));
+      Logger.recordOutput("Vision/Summary/SPFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.SINGLE_POLE_IIR)).toArray(Pose2d[]::new));
+      Logger.recordOutput("Vision/Summary/MeanFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.MEAN)).toArray(Pose2d[]::new));
+      Logger.recordOutput("Vision/Summary/MedianFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.MEDIAN)).toArray(Pose2d[]::new));
+      Logger.recordOutput("Vision/Summary/RateLimFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.RATE_LIM)).toArray(Pose2d[]::new));
+    }
 
     allTagPoses.clear();
     allRobotPoses.clear();

@@ -23,7 +23,7 @@
             "position": [-0.105, -0.168, 0.273],
             "rotations": [
                 { "axis": "y", "degrees": -20 },
-                { "axis": "z", "degrees": 110 }
+                { "axis": "z", "degrees": 80 }
             ]
         }
     ],

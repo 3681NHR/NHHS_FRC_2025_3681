@@ -168,12 +168,14 @@ public class Elevator extends SubsystemBase {
         openloop = true;
         setVoltage(v.in(Volts));
     }
-    public Pose3d getAScopePoseInnerStage(){
-        return new Pose3d(new Translation3d(0, 0, getPosition()), new Rotation3d());
+
+    public Pose3d getAScopePoseInnerStage(double pos){
+        return new Pose3d(new Translation3d(0, 0, pos), new Rotation3d());
     }
-    public Pose3d getAScopePoseMiddleStage(){
-        return new Pose3d(new Translation3d(0, 0, getPosition()*0.544561), new Rotation3d());
+    public Pose3d getAScopePoseMiddleStage(double pos){
+        return new Pose3d(new Translation3d(0, 0, pos*0.544561), new Rotation3d());
     }
+
     public void stop(){
         setTargetPos(getPosition());
     }
