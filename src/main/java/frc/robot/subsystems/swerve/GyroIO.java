@@ -4,6 +4,7 @@ import org.littletonrobotics.junction.AutoLog;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 
 public interface GyroIO {
     
@@ -16,6 +17,7 @@ public interface GyroIO {
     public double[] odometryYawTimestamps = new double[] {};
     public Rotation2d[] odometryYawPositions = new Rotation2d[] {};
     public Rotation3d angle = new Rotation3d();
+    public Translation3d accel = new Translation3d();
   }
 
   public default void updateInputs(GyroIOInputs inputs) {}

@@ -6,6 +6,7 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -50,6 +51,7 @@ public class GyroIOPigeon2 implements GyroIO {
     yawPositionQueue.clear();
 
     inputs.angle = pigeon.getRotation3d();
+    inputs.accel = new Translation3d(pigeon.getAccelerationX().getValueAsDouble(), pigeon.getAccelerationY().getValueAsDouble(), pigeon.getAccelerationZ().getValueAsDouble());
   }
 
   public void reset(double heading){
