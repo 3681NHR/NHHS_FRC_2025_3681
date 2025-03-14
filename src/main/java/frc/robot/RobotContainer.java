@@ -269,19 +269,19 @@ public class RobotContainer {
     NamedCommands.registerCommand("L2", Commands.runOnce(() -> {
         elevator.setTargetPos(AffectorPosition.L2.elev);
         wrist.setPosSet(AffectorPosition.L2.wrist);
-      }, elevator, wrist, intake));
+      }, elevator, wrist));
     NamedCommands.registerCommand("L3", Commands.runOnce(() -> {
       elevator.setTargetPos(AffectorPosition.L3.elev);
       wrist.setPosSet(AffectorPosition.L3.wrist);
-    }, elevator, wrist, intake));
+    }, elevator, wrist));
   NamedCommands.registerCommand("L4", Commands.runOnce(() -> {
     elevator.setTargetPos(AffectorPosition.L4.elev);
     wrist.setPosSet(AffectorPosition.L4.wrist);
-  }, elevator, wrist, intake));
+  }, elevator, wrist));
   NamedCommands.registerCommand("stow", Commands.runOnce(() -> {
     elevator.setTargetPos(AffectorPosition.STOW.elev);
     wrist.setPosSet(AffectorPosition.STOW.wrist);
-  }, elevator, wrist, intake));
+  }, elevator, wrist));
 
 NamedCommands.registerCommand("score", Commands.run(() -> intake.setVoltage(IntakeConstants.SPEED),intake).finallyDo(() -> intake.stop()).until(() -> !intake.isHolding()));
 
