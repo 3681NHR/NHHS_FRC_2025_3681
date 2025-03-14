@@ -283,7 +283,11 @@ public class RobotContainer {
     wrist.setPosSet(AffectorPosition.STOW.wrist);
   }, elevator, wrist));
 
-NamedCommands.registerCommand("score", Commands.run(() -> intake.setVoltage(IntakeConstants.SPEED),intake).finallyDo(() -> intake.stop()).until(() -> !intake.isHolding()));
+NamedCommands.registerCommand("score", Commands
+  .run(() -> intake.setVoltage(IntakeConstants.SPEED),intake)
+  .until(() -> !intake.isHolding())
+  .finallyDo(() -> intake.stop())
+);
 
 
     // Set up auto routines
