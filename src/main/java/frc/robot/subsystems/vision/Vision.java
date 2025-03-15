@@ -38,8 +38,8 @@ public class Vision extends SubsystemBase {
   private LinearFilter yFilterSP = LinearFilter.singlePoleIIR(0.2, 0.02);
   private LinearFilter tFilterSP = LinearFilter.singlePoleIIR(0.2, 0.02);
 
-  private MovingAverageFilter xFilterMean = new MovingAverageFilter(10);
-  private MovingAverageFilter yFilterMean = new MovingAverageFilter(10);
+  private MovingAverageFilter xFilterMean = new MovingAverageFilter(15);
+  private MovingAverageFilter yFilterMean = new MovingAverageFilter(15);
   private MovingAverageFilter tFilterMean = new MovingAverageFilter(10);
 
   private MedianFilter xFilterMedian = new MedianFilter(15);

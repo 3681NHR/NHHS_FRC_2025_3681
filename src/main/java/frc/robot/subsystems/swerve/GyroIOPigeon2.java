@@ -51,7 +51,6 @@ public class GyroIOPigeon2 implements GyroIO {
     yawPositionQueue.clear();
 
     inputs.angle = pigeon.getRotation3d();
-    inputs.accel = new Translation3d(pigeon.getAccelerationX().getValueAsDouble(), pigeon.getAccelerationY().getValueAsDouble(), pigeon.getAccelerationZ().getValueAsDouble());
   }
 
   public void reset(double heading){

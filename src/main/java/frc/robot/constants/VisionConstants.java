@@ -27,31 +27,43 @@ public class VisionConstants {
 
   // Camera names, must match names configured on coprocessor
   public static String[] CAMERA_NAMES = {
-    "back",
-    "front"
+    "bl",
+    "fl",
+    "br"
   };
 
   // Robot to camera transforms
-  public static Transform3d CAMERA_0_ROBOT_TO_CAM =
+  public static Transform3d BL_ROBOT_TO_CAM =
         new Transform3d(
-            -0.105,//forward
-            -0.1998,//left 
-            0.237, //up
+            -Units.inchesToMeters(10.5),//forward
+            Units.inchesToMeters(11),//left 
+            Units.inchesToMeters(12), //up
+        new Rotation3d(
+            Units.degreesToRadians(0),
+            Units.degreesToRadians(-20),//-pitch
+            Units.degreesToRadians(60)//yaw
+        )
+  );
+  public static Transform3d FL_ROBOT_TO_CAM =
+        new Transform3d(
+            Units.inchesToMeters(11),//forward
+            Units.inchesToMeters(10.5),//left 
+            Units.inchesToMeters(12), //up
+        new Rotation3d(
+            Units.degreesToRadians(0),
+            Units.degreesToRadians(-30),//-pitch
+            Units.degreesToRadians(110)//yaw
+        )
+  );
+  public static Transform3d BR_ROBOT_TO_CAM =
+        new Transform3d(
+            -Units.inchesToMeters(11),//forward
+            Units.inchesToMeters(11.5),//left 
+            Units.inchesToMeters(15), //up
         new Rotation3d(
             Units.degreesToRadians(0),
             Units.degreesToRadians(-20),//-pitch
             Units.degreesToRadians(-85)//yaw
-        )
-  );
-  public static Transform3d CAMERA_1_ROBOT_TO_CAM =
-        new Transform3d(
-            0.2734,
-            -0.189, 
-            0.310, 
-        new Rotation3d(
-            Units.degreesToRadians(0),
-            Units.degreesToRadians(-20),
-            Units.degreesToRadians(70)
         )
   );
   
@@ -62,15 +74,16 @@ public class VisionConstants {
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)
-  public static double LIN_STD_DEV_BASELINE = 0.03; // Meters
+  public static double LIN_STD_DEV_BASELINE = 0.1; // Meters
   public static double ANG_STD_DEV_BASELINE = 0.075; // Radians
 
   // Standard deviation multipliers for each camera
   // (Adjust to trust some cameras more than others)
   public static double[] CAM_STD_DEV_FACTORS =
       new double[] {
-        1.0, // back
-        1.0, // front
+        1.0, // bl
+        1.0, // fl
+        1.0, // br
       };
 
   public static final FilterStrategy POSE_FILTER = FilterStrategy.MEAN;
