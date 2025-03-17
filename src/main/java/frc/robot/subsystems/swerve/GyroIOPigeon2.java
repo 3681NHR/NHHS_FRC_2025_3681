@@ -6,12 +6,14 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.utils.SparkOdometryThread;
 
+import static edu.wpi.first.units.Units.Radian;
 import static frc.robot.constants.DriveConstants.*;
 
 import java.util.Queue;
@@ -50,7 +52,12 @@ public class GyroIOPigeon2 implements GyroIO {
     yawTimestampQueue.clear();
     yawPositionQueue.clear();
 
-    inputs.angle = pigeon.getRotation3d();
+    inputs.angle = new Rotation3d(
+      pigeon.getRoll().getValue().in(Radian),
+      pigeon.getPitch().getValue().in(Radian),
+      pigeon.getYaw().getValue().in(Radian)
+    );
+    
   }
 
   public void reset(double heading){

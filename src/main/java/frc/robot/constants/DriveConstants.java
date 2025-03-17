@@ -40,7 +40,7 @@ public class DriveConstants {
     public static final PIDGains.PID AUTO_ANGLE_PID = new PIDGains.PID(8, 0.0, 0.0);//TODO tune
     public static final PIDGains.PID AUTO_ANGLE_PID_SIM = new PIDGains.PID(5, 0.0, 0.0);
     
-    public static final PIDGains.PID TRANS_PID = new PIDGains.PID(8, 0.0, 0.0);//TODO tune
+    public static final PIDGains.PID TRANS_PID = new PIDGains.PID(5, 0.0, 0.0);//TODO tune
     public static final PIDGains.PID TRANS_PID_SIM = new PIDGains.PID(6, 0.0, 0.0);
     public static final double MAX_SPEED = 4.7;//TODO tune
 

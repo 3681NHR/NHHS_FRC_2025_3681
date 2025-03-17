@@ -412,11 +412,6 @@ NamedCommands.registerCommand("score", Commands
  
     //physical button
     new Trigger(() -> buttons.get(0)).onTrue(new DisabledInstantCommand(() -> {
-      if(DriverStation.isDisabled()){
-        //elevator.toggleBrake();
-        //wrist.toggleBrake();
-      }
-    })).debounce(1).onFalse(new DisabledInstantCommand(() -> {
       elevator.resetPos(ElevatorConstants.HOME_POS);
       elevator.setHomed(true);
     }));
