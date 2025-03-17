@@ -43,6 +43,7 @@ import frc.robot.subsystems.wrist.WristIOSim;
 import frc.robot.subsystems.wrist.WristIOSpark;
 import frc.utils.rumble.*;
 import frc.utils.TimerHandler;
+import frc.utils.VariableLimSLR;
 import frc.utils.Joystick.duelJoystickAxis;
 import frc.utils.BatteryVoltageSim;
 import frc.utils.DisabledInstantCommand;
@@ -64,9 +65,12 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -145,6 +149,12 @@ public class RobotContainer {
   private final Alert operatorDisconnected =
       new Alert("Operator controller disconnected (port 1).", AlertType.kWarning);
 
+  private VariableLimSLR lxLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
+  private VariableLimSLR lyLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
+  private VariableLimSLR rxLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
+  private VariableLimSLR ryLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
+
+  private LoggedNetworkNumber lim = new LoggedNetworkNumber("rate lim(sec 0 to max)", Double.MIN_NORMAL);
 
   @AutoLogOutput
   private AffectorPosition target = AffectorPosition.STOW;
@@ -191,10 +201,10 @@ public class RobotContainer {
     }
     //process driver controls(radial deadzone, curve, trigger slowdown, and inversion)
     driverSticks = new duelJoystickAxis(
-      () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getX()  , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0),
-      () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getY()  , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0),
-      () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getX(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0),
-      () -> ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getY(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0)
+      () -> lxLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getX() , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0)),
+      () -> lyLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND, lx.getAsDouble(), ly.getAsDouble()).getY() , -ExtraMath.remap(leftTrigger.getAsDouble() , 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0)),
+      () -> rxLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getX(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0)),
+      () -> ryLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, rx.getAsDouble(), ry.getAsDouble()).getY(), -ExtraMath.remap(rightTrigger.getAsDouble(), 0.0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0))
     );
 
     switch (Constants.MODE) {
@@ -463,6 +473,12 @@ NamedCommands.registerCommand("score", Commands
 
 
   public void Periodic(){
+    double rlim = 1.0/lim.get();//TODO: create equation/table
+    lxLim.setLim(rlim);
+    lyLim.setLim(rlim);
+    rxLim.setLim(rlim);
+    ryLim.setLim(rlim);
+
     // SmartDashboard.putBoolean("holding", !holdingSens.get());
     led.setHomed(elevator.isHomed());
     led.setIntaking(intake.isMoving());
