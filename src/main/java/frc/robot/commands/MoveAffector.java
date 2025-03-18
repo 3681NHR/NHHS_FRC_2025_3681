@@ -12,6 +12,8 @@ public class MoveAffector extends Command {
   private Elevator elevator;
   private Wrist wrist;
 
+  private boolean done = false;
+
   private Supplier<AffectorPosition> pos;
 
   public MoveAffector(Elevator elevator, Wrist wrist, Supplier<AffectorPosition> pos) {
@@ -25,22 +27,26 @@ public class MoveAffector extends Command {
 
   @Override
   public void initialize() {
+    wrist.setPosSet(AffectorPosition.STOW.wrist);
+    
+    elevator.setTargetPos(pos.get().elev);
+    done = false;
   }
 
   @Override
   public void execute() {
-    elevator.setTargetPos(pos.get().elev);
-    wrist.setPosSet(pos.get().wrist);
+    if(elevator.nearPos()){
+      wrist.setPosSet(pos.get().wrist);
+      done = true;
+    }
   }
 
   @Override
   public void end(boolean interrupted) {
-    //elevator.setTargetPos(AffectorPosition.STOW.elev);
-    //wrist.setPosSet(AffectorPosition.STOW.wrist);
   }
 
   @Override
   public boolean isFinished() {
-    return false;
+    return done || false;//TODO: end on signifacant operator input
   }
 }

@@ -6,6 +6,7 @@ import frc.robot.commands.AnglePresetDriveCommand;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.HomeElevator;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.MoveAffector;
 import frc.robot.commands.StationIntake;
 import frc.robot.constants.AffectorPosition;
 import frc.robot.constants.ClimberConstants;
@@ -77,6 +78,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -445,10 +447,13 @@ NamedCommands.registerCommand("score", Commands
 
     //go to affector target
     new Trigger(() -> driverController.getRawButton(LB)).or(() -> operatorController.getRawButton(LB))
-      .onTrue(new InstantCommand(() -> {
+      .onTrue(Commands.either(new InstantCommand(() -> {
         elevator.setTargetPos(target.elev);
         wrist.setPosSet(target.wrist);
-      }));
+      }),
+      new MoveAffector(elevator, wrist, () -> target),
+      () -> wrist.getPos() < Units.degreesToRadians(-5)
+      ));
 
     new Trigger(() -> driverController.getRawButton(X))
     .and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? Constants.positions.REEFS : Constants.positions.RED_REEFS, drive.getPose())) < .5)

@@ -1,16 +1,7 @@
 package frc.robot.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Volts;
-import static frc.robot.constants.ElevatorConstants.MAX_POS;
-import static frc.robot.constants.ElevatorConstants.MIN_POS;
-import static frc.robot.constants.ElevatorConstants.POS_FF;
-import static frc.robot.constants.ElevatorConstants.POS_FF_SIM;
-import static frc.robot.constants.ElevatorConstants.POS_PID;
-import static frc.robot.constants.ElevatorConstants.POS_PID_SIM;
-import static frc.robot.constants.ElevatorConstants.POS_TOLERANCE;
-import static frc.robot.constants.ElevatorConstants.TIMEOUT;
-import static frc.robot.constants.ElevatorConstants.VRAMP;
-import static frc.robot.constants.ElevatorConstants.VSTEP;
+import static frc.robot.constants.ElevatorConstants.*;
 
 import java.util.function.DoubleSupplier;
 
@@ -162,6 +153,9 @@ public class Elevator extends SubsystemBase {
     
     public boolean inPosition(){
         return Math.abs(inputs.elevatorPositionMeters - posSet) < POS_TOLERANCE;
+    }
+    public boolean nearPos(){
+        return Math.abs(inputs.elevatorPositionMeters - posSet) < NEAR_POS_TOLERANCE;
     }
 
     public void sysId(Voltage v){
