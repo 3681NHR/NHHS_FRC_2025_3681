@@ -41,7 +41,7 @@ public class VisionConstants {
         new Rotation3d(
             Units.degreesToRadians(0),
             Units.degreesToRadians(-20),//-pitch
-            Units.degreesToRadians(70)//yaw
+            Units.degreesToRadians(45)//yaw
         )
   );
   public static Transform3d FL_ROBOT_TO_CAM =
@@ -58,7 +58,7 @@ public class VisionConstants {
   public static Transform3d BR_ROBOT_TO_CAM =
         new Transform3d(
             -Units.inchesToMeters(4),//forward
-            Units.inchesToMeters(8.6),//left 
+            -Units.inchesToMeters(8.6),//left 
             Units.inchesToMeters(9), //up
         new Rotation3d(
             Units.degreesToRadians(0),

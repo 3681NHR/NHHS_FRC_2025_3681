@@ -156,7 +156,7 @@ public class RobotContainer {
   private VariableLimSLR rxLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
   private VariableLimSLR ryLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
 
-  private LoggedNetworkNumber lim = new LoggedNetworkNumber("rate lim(sec 0 to max)", Double.MIN_NORMAL);
+  private LoggedNetworkNumber lim = new LoggedNetworkNumber("rate lim(sec 0 to max)", 0.001);
 
   @AutoLogOutput
   private AffectorPosition target = AffectorPosition.STOW;
@@ -293,10 +293,7 @@ public class RobotContainer {
     elevator.setTargetPos(AffectorPosition.L4.elev);
     wrist.setPosSet(AffectorPosition.L4.wrist);
   }, elevator, wrist));
-  NamedCommands.registerCommand("stow", Commands.runOnce(() -> {
-    elevator.setTargetPos(AffectorPosition.STOW.elev);
-    wrist.setPosSet(AffectorPosition.STOW.wrist);
-  }, elevator, wrist));
+  NamedCommands.registerCommand("stow", new MoveAffector(elevator, wrist, () -> AffectorPosition.STOW));
 
 NamedCommands.registerCommand("score", Commands
   .run(() -> intake.setVoltage(IntakeConstants.SPEED),intake)
@@ -447,13 +444,7 @@ NamedCommands.registerCommand("score", Commands
 
     //go to affector target
     new Trigger(() -> driverController.getRawButton(LB)).or(() -> operatorController.getRawButton(LB))
-      .onTrue(Commands.either(new InstantCommand(() -> {
-        elevator.setTargetPos(target.elev);
-        wrist.setPosSet(target.wrist);
-      }),
-      new MoveAffector(elevator, wrist, () -> target),
-      () -> wrist.getPos() < Units.degreesToRadians(-5)
-      ));
+      .onTrue(new MoveAffector(elevator, wrist, () -> target));
 
     new Trigger(() -> driverController.getRawButton(X))
     .and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? Constants.positions.REEFS : Constants.positions.RED_REEFS, drive.getPose())) < .5)
@@ -473,7 +464,10 @@ NamedCommands.registerCommand("score", Commands
 
 
   public void Periodic(){
-    double rlim = 1.0/lim.get();//TODO: create equation/table
+    double rlim = Double.POSITIVE_INFINITY;
+    if(elevator.getPosition() > .75){
+      rlim = 1/0.2;
+    }
     lxLim.setLim(rlim);
     lyLim.setLim(rlim);
     rxLim.setLim(rlim);
