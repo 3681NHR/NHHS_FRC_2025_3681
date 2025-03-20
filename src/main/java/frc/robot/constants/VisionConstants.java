@@ -35,24 +35,24 @@ public class VisionConstants {
   // Robot to camera transforms
   public static Transform3d BL_ROBOT_TO_CAM =
         new Transform3d(
-            -Units.inchesToMeters(10.75),//forward
-            Units.inchesToMeters(10.5),//left 
-            Units.inchesToMeters(8.25), //up
+            -Units.inchesToMeters(9.5),//forward
+            Units.inchesToMeters(10),//left 
+            Units.inchesToMeters(9.5), //up
         new Rotation3d(
             Units.degreesToRadians(0),
             Units.degreesToRadians(-20),//-pitch
-            Units.degreesToRadians(45)//yaw
+            Units.degreesToRadians(50)//yaw
         )
   );
   public static Transform3d FL_ROBOT_TO_CAM =
         new Transform3d(
-            Units.inchesToMeters(10.75),//forward
-            Units.inchesToMeters(10.5),//left 
-            Units.inchesToMeters(8), //up
+            Units.inchesToMeters(9.5),//forward
+            Units.inchesToMeters(10),//left 
+            Units.inchesToMeters(9.5), //up
         new Rotation3d(
             Units.degreesToRadians(0),
-            Units.degreesToRadians(-30),//-pitch
-            Units.degreesToRadians(120)//yaw
+            Units.degreesToRadians(-20),//-pitch
+            Units.degreesToRadians(110)//yaw
         )
   );
   public static Transform3d BR_ROBOT_TO_CAM =
