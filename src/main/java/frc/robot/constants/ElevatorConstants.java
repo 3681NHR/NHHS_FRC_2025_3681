@@ -37,9 +37,9 @@ public final class ElevatorConstants {
     public static final boolean ENCODER_INVERT = false;
 
     public static final int CURRENT_LIM = 30;
-
-    public static final PIDGains.ProfiledPID POS_PID = new PIDGains.ProfiledPID(5, 0, 2, 2, 1.5*2);
-    public static final PIDGains.GravityFF POS_FF = new PIDGains.GravityFF(0.19349, 0.2, 4.3, 0.3535);
+    //5, 0, 2
+    public static final PIDGains.ProfiledPID POS_PID = new PIDGains.ProfiledPID(7, 0, 3, 3, 6);
+    public static final PIDGains.GravityFF POS_FF = new PIDGains.GravityFF(0.25, 0.5, 5.2, 0.6);
 
     public static final PIDGains.ProfiledPID POS_PID_SIM = new PIDGains.ProfiledPID(0, 0, 0, 1.75, 1.75*5);
     public static final PIDGains.GravityFF POS_FF_SIM = new PIDGains.GravityFF(0.19349, 0.35424, 4.5227, 0.3535);

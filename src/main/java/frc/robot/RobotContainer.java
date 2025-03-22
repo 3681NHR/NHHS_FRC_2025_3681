@@ -444,7 +444,7 @@ NamedCommands.registerCommand("score", Commands
 
     //go to affector target
     new Trigger(() -> driverController.getRawButton(LB)).or(() -> operatorController.getRawButton(LB))
-      .onTrue(new MoveAffector(elevator, wrist, () -> target));
+      .onTrue(new MoveAffector(elevator, wrist, () -> target).until(() -> operatorController.getLeftTriggerAxis() > .5 || operatorController.getRightTriggerAxis() > .5 || operatorController.getRightY() > .5));
 
     new Trigger(() -> driverController.getRawButton(X))
     .and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? Constants.positions.REEFS : Constants.positions.RED_REEFS, drive.getPose())) < .5)
