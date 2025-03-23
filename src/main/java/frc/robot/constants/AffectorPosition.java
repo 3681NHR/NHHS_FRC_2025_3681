@@ -4,7 +4,7 @@ import edu.wpi.first.math.util.Units;
 
 public enum AffectorPosition {
     STOW   (0.0, Units.degreesToRadians(90)),
-    L1     (0.135, -1.066),
+    L1     (0/*.135*/, 0),//-1.066),
     L2     (0.195, 0.942),
     L3     (0.662, 0.942),
     L4     (1.6, 0.165),
