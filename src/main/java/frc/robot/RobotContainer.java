@@ -437,7 +437,7 @@ NamedCommands.registerCommand("score", Commands
     }));
 
     //set affector target
-    new Trigger(() -> operatorController.getPOV() == 180).onTrue(new InstantCommand(() -> {target = AffectorPosition.L1;}));//target == AffectorPosition.STOW ? AffectorPosition.L1 : AffectorPosition.STOW;}));
+    new Trigger(() -> operatorController.getPOV() == 180).onTrue(new InstantCommand(() -> {target = target == AffectorPosition.STOW ? AffectorPosition.L1 : AffectorPosition.STOW;}));
     new Trigger(() -> operatorController.getPOV() == 90).onTrue(new InstantCommand(() -> {target = AffectorPosition.STATION;}));
     new Trigger(() -> operatorController.getPOV() == 270).onTrue(new InstantCommand(() -> {target = target == AffectorPosition.L2 ? AffectorPosition.L3 : AffectorPosition.L2;}));
     new Trigger(() -> operatorController.getPOV() == 0).onTrue(new InstantCommand(() -> {target = AffectorPosition.L4;}));
