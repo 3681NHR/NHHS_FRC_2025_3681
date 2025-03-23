@@ -32,7 +32,7 @@ public class MoveAffector extends Command {
 
     wrist.setPosSet(AffectorPosition.STOW.wrist);
   
-    //elevator.setTargetPos(pos.elev);
+    elevator.setTargetPos(pos.elev);
     done = false;
   }
 
