@@ -110,6 +110,11 @@ public class Wrist extends SubsystemBase {
         return Math.abs(inputs.posRad - posSet) < POS_TOLERANCE;
     }
 
+    public boolean nearPosition(){
+        return Math.abs(inputs.posRad - posSet) < POS_NEAR_TOLERANCE;
+    }
+    
+
     public Pose3d getAScopePoseWrist(double pos, double elevatorHeight){
         return new Pose3d(WristConstants.WRIST_POS.plus(new Translation3d(0, 0, elevatorHeight)), new Rotation3d(pos - (Math.PI/2.0), 0, 0));
     }

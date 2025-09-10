@@ -437,14 +437,14 @@ NamedCommands.registerCommand("score", Commands
     }));
 
     //set affector target
-    new Trigger(() -> operatorController.getPOV() == 180).onTrue(new InstantCommand(() -> {target = AffectorPosition.L1;}));
+    new Trigger(() -> operatorController.getPOV() == 180).onTrue(new InstantCommand(() -> {target = target == AffectorPosition.STOW ? AffectorPosition.L1 : AffectorPosition.STOW;}));
     new Trigger(() -> operatorController.getPOV() == 90).onTrue(new InstantCommand(() -> {target = AffectorPosition.STATION;}));
     new Trigger(() -> operatorController.getPOV() == 270).onTrue(new InstantCommand(() -> {target = target == AffectorPosition.L2 ? AffectorPosition.L3 : AffectorPosition.L2;}));
     new Trigger(() -> operatorController.getPOV() == 0).onTrue(new InstantCommand(() -> {target = AffectorPosition.L4;}));
 
     //go to affector target
     new Trigger(() -> driverController.getRawButton(LB)).or(() -> operatorController.getRawButton(LB))
-      .onTrue(new MoveAffector(elevator, wrist, () -> target));
+      .onTrue(new MoveAffector(elevator, wrist, () -> target).until(() -> operatorController.getLeftTriggerAxis() > .5 || operatorController.getRightTriggerAxis() > .5 || operatorController.getRightY() > .5));
 
     new Trigger(() -> driverController.getRawButton(X))
     .and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? Constants.positions.REEFS : Constants.positions.RED_REEFS, drive.getPose())) < .5)
