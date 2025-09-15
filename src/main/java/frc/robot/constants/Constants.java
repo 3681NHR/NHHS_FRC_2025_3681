@@ -7,6 +7,7 @@ package frc.robot.constants;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -35,6 +36,16 @@ public final class Constants {
   
   public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
   public static final double LOOP_TIME  = 0.13; //s, 20ms + 110ms sprk max velocity lag
+
+  public static class Affector{
+
+    public static final AffectorPosition STOW_POSITION = new AffectorPosition(0.0, Units.degreesToRadians(90));
+    public static final AffectorPosition L1_POSITION = new AffectorPosition(0.08, -1.066);
+    public static final AffectorPosition L2_POSITION = new AffectorPosition(0.195, 0.942);
+    public static final AffectorPosition L3_POSITION = new AffectorPosition(0.662, 0.942);
+    public static final AffectorPosition L4_POSITION = new AffectorPosition(1.6, 0.165);
+    public static final AffectorPosition STATION_POSITION  = new AffectorPosition(0.532, -0.873);
+  }
 
   public static class OperatorConstants
   {
