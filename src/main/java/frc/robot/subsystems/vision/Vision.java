@@ -1,29 +1,16 @@
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.filter.LinearFilter;
-import edu.wpi.first.math.filter.MedianFilter;
-import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.vision.CameraIO.TargetObservation;
-import frc.utils.ExtraMath.MovingAverageFilter;
-
 import static frc.robot.constants.VisionConstants.*;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
-
 import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
@@ -33,22 +20,6 @@ public class Vision extends SubsystemBase {
 
   private VisionEstimate[] latestEstimateRaw;
   private VisionEstimate[] latestEstimateFinal = latestEstimateRaw;
-
-  private LinearFilter xFilterSP = LinearFilter.singlePoleIIR(0.2, 0.02);
-  private LinearFilter yFilterSP = LinearFilter.singlePoleIIR(0.2, 0.02);
-  private LinearFilter tFilterSP = LinearFilter.singlePoleIIR(0.2, 0.02);
-
-  private MovingAverageFilter xFilterMean = new MovingAverageFilter(15);
-  private MovingAverageFilter yFilterMean = new MovingAverageFilter(15);
-  private MovingAverageFilter tFilterMean = new MovingAverageFilter(10);
-
-  private MedianFilter xFilterMedian = new MedianFilter(15);
-  private MedianFilter yFilterMedian = new MedianFilter(15);
-  private MedianFilter tFilterMedian = new MedianFilter(15);
-
-  private SlewRateLimiter xFilterRate = new SlewRateLimiter(10);
-  private SlewRateLimiter yFilterRate = new SlewRateLimiter(10);
-  private SlewRateLimiter tFilterRate = new SlewRateLimiter(20);
 
   public Vision(CameraIO... io) {
     this.io = io;
@@ -114,10 +85,10 @@ public class Vision extends SubsystemBase {
                     > MAX_Z_ERROR // Must have realistic Z coordinate
 
                 // Must be within the field boundaries
-                || observation.pose().getX() < 0.0
-                || observation.pose().getX() > APRILTAG_LAYOUT.getFieldLength()
-                || observation.pose().getY() < 0.0
-                || observation.pose().getY() > APRILTAG_LAYOUT.getFieldWidth();
+                || observation.pose().getX() < -1.0
+                || observation.pose().getX() > APRILTAG_LAYOUT.getFieldLength()+1
+                || observation.pose().getY() < -1.0
+                || observation.pose().getY() > APRILTAG_LAYOUT.getFieldWidth()+1;
 
         // Add pose to log
         robotPoses.add(observation.pose());
@@ -212,29 +183,7 @@ public class Vision extends SubsystemBase {
     Logger.recordOutput("Vision/Summary/stdDevs", stdDevs);
 
     latestEstimateRaw = allEstimates.stream().toArray(VisionEstimate[]::new);
-
-    latestEstimateFinal = new VisionEstimate[latestEstimateRaw.length];
-
-    if(latestEstimateRaw.length <= 0){
-      clearFilters();
-    }
-    for (int i=0; i<latestEstimateRaw.length; i++) {
-      latestEstimateFinal[i] = new VisionEstimate(
-        FilterPose(latestEstimateRaw[i].pose, VisionConstants.POSE_FILTER),
-        latestEstimateRaw[i].timestampSeconds,
-        latestEstimateRaw[i].visionMeasurementStdDevs
-      );
-    }
-
-    Logger.recordOutput("Vision/Summary/ProssesedPose", Stream.of(latestEstimateFinal).map(t -> t.pose).toArray(Pose2d[]::new));
-
-    if(DriverStation.isTest() || RobotBase.isSimulation()){
-      Logger.recordOutput("Vision/Summary/RawPose", Stream.of(latestEstimateRaw).map(t -> t.pose).toArray(Pose2d[]::new));
-      Logger.recordOutput("Vision/Summary/SPFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.SINGLE_POLE_IIR)).toArray(Pose2d[]::new));
-      Logger.recordOutput("Vision/Summary/MeanFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.MEAN)).toArray(Pose2d[]::new));
-      Logger.recordOutput("Vision/Summary/MedianFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.MEDIAN)).toArray(Pose2d[]::new));
-      Logger.recordOutput("Vision/Summary/RateLimFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.RATE_LIM)).toArray(Pose2d[]::new));
-    }
+    latestEstimateFinal = latestEstimateRaw;
 
     allTagPoses.clear();
     allRobotPoses.clear();
@@ -268,62 +217,4 @@ public class Vision extends SubsystemBase {
     return yaw;
   }
 
-  private Pose2d FilterPose(Pose2d p, FilterStrategy strat){
-    switch (strat) {      
-      case RATE_LIM:
-      return new Pose2d(
-        new Translation2d(
-          xFilterRate.calculate(p.getTranslation().getX()),
-          yFilterRate.calculate(p.getTranslation().getY())
-        ),
-        new Rotation2d(tFilterRate.calculate(p.getRotation().getRadians()))
-      );
-
-      case SINGLE_POLE_IIR:
-        return new Pose2d(
-        new Translation2d(
-          xFilterSP.calculate(p.getTranslation().getX()),
-          yFilterSP.calculate(p.getTranslation().getY())
-        ),
-        new Rotation2d(tFilterSP.calculate(p.getRotation().getRadians()))
-      );
-
-      case MEAN:
-      return new Pose2d(
-        new Translation2d(
-          xFilterMean.calculate(p.getTranslation().getX()),
-          yFilterMean.calculate(p.getTranslation().getY())
-        ),
-        new Rotation2d(tFilterMean.calculate(p.getRotation().getRadians()))
-      );
-
-      case MEDIAN:
-      return new Pose2d(
-        new Translation2d(
-          xFilterMedian.calculate(p.getTranslation().getX()),
-          yFilterMedian.calculate(p.getTranslation().getY())
-        ),
-        new Rotation2d(tFilterMedian.calculate(p.getRotation().getRadians()))
-      );
-    
-      default:
-        return p;
-    }
-    
-  }
-
-  private void clearFilters(){
-    xFilterMean.reset();
-    yFilterMean.reset();
-    tFilterMean.reset();
-
-    xFilterMedian.reset();
-    yFilterMedian.reset();
-    tFilterMedian.reset();
-
-    xFilterSP.reset();
-    yFilterSP.reset();
-    tFilterSP.reset();
-
-  }
 }
