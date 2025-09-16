@@ -1,4 +1,4 @@
-package frc.robot.subsystems.wrist;
+package frc.robot.subsystems.affector.wrist;
 
 import static frc.robot.constants.WristConstants.*;
 
@@ -45,8 +45,8 @@ public class WristIOSim implements WristIO {
         arm.setInputVoltage(vout);
         arm.update(0.02);
 
-        in.posRad = pos;
-        in.velRadPerSec = vel;
+        in.pos = pos;
+        in.vel = vel;
 
         in.motorCurrentAmps = arm.getCurrentDrawAmps();
         in.motoroutVolts = vout;

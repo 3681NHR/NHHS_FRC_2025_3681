@@ -4,12 +4,12 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.AffectorPosition;
-import frc.robot.subsystems.elevator.Elevator;
-import frc.robot.subsystems.wrist.Wrist;
+import frc.robot.subsystems.affector.Affector;
+import frc.robot.subsystems.affector.wrist.Wrist;
 
 public class MoveAffector extends Command {
 
-  private Elevator elevator;
+  private Affector elevator;
   private Wrist wrist;
 
   private boolean done = false;
@@ -17,7 +17,7 @@ public class MoveAffector extends Command {
   private AffectorPosition pos;
   private Supplier<AffectorPosition> posSup;
 
-  public MoveAffector(Elevator elevator, Wrist wrist, Supplier<AffectorPosition> pos) {
+  public MoveAffector(Affector elevator, Wrist wrist, Supplier<AffectorPosition> pos) {
     this.elevator = elevator;
     this.wrist = wrist;
     this.posSup = pos;

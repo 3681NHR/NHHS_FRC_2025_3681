@@ -4,7 +4,6 @@ package frc.robot;
 
 import frc.robot.commands.AnglePresetDriveCommand;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.HomeElevator;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.MoveAffector;
 import frc.robot.commands.StationIntake;
@@ -18,13 +17,17 @@ import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.constants.WristConstants;
 import frc.robot.subsystems.Led;
+import frc.robot.subsystems.affector.Affector;
+import frc.robot.subsystems.affector.Affector.WantedState;
+import frc.robot.subsystems.affector.elevator.ElevatorIO;
+import frc.robot.subsystems.affector.elevator.ElevatorIOSim;
+import frc.robot.subsystems.affector.elevator.ElevatorIOSpark;
+import frc.robot.subsystems.affector.wrist.WristIO;
+import frc.robot.subsystems.affector.wrist.WristIOSim;
+import frc.robot.subsystems.affector.wrist.WristIOSpark;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOSpark;
-import frc.robot.subsystems.elevator.Elevator;
-import frc.robot.subsystems.elevator.ElevatorIO;
-import frc.robot.subsystems.elevator.ElevatorIOSim;
-import frc.robot.subsystems.elevator.ElevatorIOSpark;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
@@ -38,10 +41,6 @@ import frc.robot.subsystems.vision.CameraIO;
 import frc.robot.subsystems.vision.CameraIOPhoton;
 import frc.robot.subsystems.vision.CameraIOPhotonSim;
 import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.wrist.Wrist;
-import frc.robot.subsystems.wrist.WristIO;
-import frc.robot.subsystems.wrist.WristIOSim;
-import frc.robot.subsystems.wrist.WristIOSpark;
 import frc.utils.rumble.*;
 import frc.utils.TimerHandler;
 import frc.utils.VariableLimSLR;
@@ -102,8 +101,7 @@ public class RobotContainer {
   
   private Drive drive;
   private Vision vision;
-  private Elevator elevator;
-  private Wrist wrist;
+  private Affector affector;
   private Intake intake;
   private Buttons buttons;
   private Climber climber;
@@ -159,7 +157,7 @@ public class RobotContainer {
   private LoggedNetworkNumber lim = new LoggedNetworkNumber("rate lim(sec 0 to max)", 0.001);
 
   @AutoLogOutput
-  private AffectorPosition target = AffectorPosition.STOW;
+  private AffectorPosition target = Constants.Affector.STOW_POSITION;
 
   public RobotContainer() {
 
@@ -224,8 +222,7 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3),
                 vision);
-        elevator = new Elevator(new ElevatorIOSpark());
-        wrist = new Wrist(new WristIOSpark());
+        affector = new Affector(new ElevatorIOSpark(), new WristIOSpark());
         intake = new Intake(new IntakeIOSpark());
         buttons = new Buttons(new ButtonIODIO(4));
         climber = new Climber(new ClimberIOSpark());
@@ -247,10 +244,9 @@ public class RobotContainer {
                   new ModuleIOSim(driveSim.getModules()[2]),
                   new ModuleIOSim(driveSim.getModules()[3]),
                   vision);
-        elevator = new Elevator(new ElevatorIOSim());
-        elevator.setHomed(true);
-        wrist = new Wrist(new WristIOSim());
-        intake = new Intake(new IntakeIOSim(driveSim, elevator, wrist));
+        affector = new Affector(new ElevatorIOSim(), new WristIOSim());
+        affector.setElevHomed(true);
+        intake = new Intake(new IntakeIOSim(driveSim, affector));
         buttons = new Buttons(new ButtonIOSim(() -> false));
         climber = new Climber(new ClimberIO() {});
         }
@@ -271,8 +267,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 vision);
-        elevator = new Elevator(new ElevatorIO() {});
-        wrist = new Wrist(new WristIO() {});
+        affector = new Affector(new ElevatorIO() {}, new WristIO() {});
         intake = new Intake(new IntakeIO() {});
         buttons = new Buttons(new ButtonIO() {});
         climber = new Climber(new ClimberIO() {});
@@ -280,25 +275,25 @@ public class RobotContainer {
     }
 
     
-    NamedCommands.registerCommand("station", new StationIntake(elevator, wrist, intake));
+    NamedCommands.registerCommand("station", new StationIntake(affector, intake));
     NamedCommands.registerCommand("L2", Commands.runOnce(() -> {
-        elevator.setTargetPos(AffectorPosition.L2.elev);
-        wrist.setPosSet(AffectorPosition.L2.wrist);
-      }, elevator, wrist));
+      affector.setWantedState(WantedState.POSITION, Constants.Affector.L2_POSITION);
+      }, affector));
     NamedCommands.registerCommand("L3", Commands.runOnce(() -> {
-      elevator.setTargetPos(AffectorPosition.L3.elev);
-      wrist.setPosSet(AffectorPosition.L3.wrist);
-    }, elevator, wrist));
+      affector.setWantedState(WantedState.POSITION, Constants.Affector.L3_POSITION);
+    }, affector));
   NamedCommands.registerCommand("L4", Commands.runOnce(() -> {
-    elevator.setTargetPos(AffectorPosition.L4.elev);
-    wrist.setPosSet(AffectorPosition.L4.wrist);
-  }, elevator, wrist));
-  NamedCommands.registerCommand("stow", new MoveAffector(elevator, wrist, () -> AffectorPosition.STOW));
+    affector.setWantedState(WantedState.POSITION, Constants.Affector.L4_POSITION);
+  }, affector));
+  NamedCommands.registerCommand("stow", Commands.runOnce(() -> {
+    affector.setWantedState(WantedState.POSITION, Constants.Affector.STOW_POSITION);
+  }, affector));
 
 NamedCommands.registerCommand("score", Commands
   .run(() -> intake.setVoltage(IntakeConstants.SPEED),intake)
   .until(() -> !intake.isHolding())
   .finallyDo(() -> intake.stop())
+  .withTimeout(2)
 );
 
 
@@ -323,21 +318,21 @@ NamedCommands.registerCommand("score", Commands
       autoChooser.addOption(
           "Angle SysId (Dynamic Forward/Reverse)", drive.angleSysIdDynamic(SysIdRoutine.Direction.kForward).andThen(drive.angleSysIdDynamic(SysIdRoutine.Direction.kReverse)));
       autoChooser.addOption(
-        "Elevator SysId (Quasistatic Forward)", elevator.sysIdQuasistatic(SysIdRoutine.Direction.kForward).withName("sysid"));
+        "Elevator SysId (Quasistatic Forward)", affector.elevSysIdQuasistatic(SysIdRoutine.Direction.kForward).withName("sysid eqf"));
       autoChooser.addOption(
-        "Elevator SysId (Quasistatic Reverse)", elevator.sysIdQuasistatic(SysIdRoutine.Direction.kReverse).withName("sysid"));
+        "Elevator SysId (Quasistatic Reverse)", affector.elevSysIdQuasistatic(SysIdRoutine.Direction.kReverse).withName("sysid eqr"));
       autoChooser.addOption(
-        "Elevator SysId (Dynamic Forward)", elevator.sysIdDynamic(SysIdRoutine.Direction.kForward).withName("sysid"));
+        "Elevator SysId (Dynamic Forward)", affector.elevSysIdDynamic(SysIdRoutine.Direction.kForward).withName("sysid edf"));
       autoChooser.addOption(
-        "Elevator SysId (Dynamic Reverse)", elevator.sysIdDynamic(SysIdRoutine.Direction.kReverse).withName("sysid"));
+        "Elevator SysId (Dynamic Reverse)", affector.elevSysIdDynamic(SysIdRoutine.Direction.kReverse).withName("sysid edr"));
       autoChooser.addOption(
-        "Wrist SysId (Quasistatic Forward)", wrist.sysIdQuasistatic(SysIdRoutine.Direction.kForward).withName("sysid"));
+        "Wrist SysId (Quasistatic Forward)", affector.wristSysIdQuasistatic(SysIdRoutine.Direction.kForward).withName("sysid wqf"));
       autoChooser.addOption(
-        "Wrist SysId (Quasistatic Reverse)", wrist.sysIdQuasistatic(SysIdRoutine.Direction.kReverse).withName("sysid"));
+        "Wrist SysId (Quasistatic Reverse)", affector.wristSysIdQuasistatic(SysIdRoutine.Direction.kReverse).withName("sysid wqr"));
       autoChooser.addOption(
-        "Wrist SysId (Dynamic Forward)", wrist.sysIdDynamic(SysIdRoutine.Direction.kForward).withName("sysid"));
+        "Wrist SysId (Dynamic Forward)", affector.wristSysIdDynamic(SysIdRoutine.Direction.kForward).withName("sysid wdf"));
       autoChooser.addOption(
-        "Wrist SysId (Dynamic Reverse)", wrist.sysIdDynamic(SysIdRoutine.Direction.kReverse).withName("sysid"));
+        "Wrist SysId (Dynamic Reverse)", affector.wristSysIdDynamic(SysIdRoutine.Direction.kReverse).withName("sysid wdr"));
       } 
 
     configureBindings();
@@ -356,7 +351,7 @@ NamedCommands.registerCommand("score", Commands
 
     drive.setDefaultCommand(driveCommand);
     wrist.setDefaultCommand(wrist.man(() -> ExtraMath.processInput(operatorController.getRightY(), -0.02 * WristConstants.POS_PID.maxSpeed(), 1.0, 0.05)));
-    elevator.setDefaultCommand(elevator.man(() -> (operatorController.getRightTriggerAxis()-operatorController.getLeftTriggerAxis())*OperatorConstants.ELEVATOR_MAN_SENS));
+    affector.setDefaultCommand(affector.man(() -> (operatorController.getRightTriggerAxis()-operatorController.getLeftTriggerAxis())*OperatorConstants.ELEVATOR_MAN_SENS));
   }
 
   private void configureBindings() {
@@ -421,12 +416,14 @@ NamedCommands.registerCommand("score", Commands
  
     //physical button
     new Trigger(() -> buttons.get(0)).onTrue(new DisabledInstantCommand(() -> {
-      elevator.resetPos(ElevatorConstants.HOME_POS);
-      elevator.setHomed(true);
+      affector.resetElevPos(ElevatorConstants.HOME_POS);
+      affector.setElevHomed(true);
     }));
 
     //home
-    new Trigger(() -> operatorController.getRawButton(A)).onTrue(new HomeElevator(elevator));
+    new Trigger(() -> operatorController.getRawButton(A)).onTrue(new InstantCommand(() -> {
+      affector.setWantedState(WantedState.HOME);
+    }));
         
     //intake controls
     new Trigger(() -> driverController.getRawButton(RB)).or(() -> operatorController.getRawButton(RB)).whileTrue(new IntakeCommand(intake));
@@ -437,14 +434,15 @@ NamedCommands.registerCommand("score", Commands
     }));
 
     //set affector target
-    new Trigger(() -> operatorController.getPOV() == 180).onTrue(new InstantCommand(() -> {target = target == AffectorPosition.STOW ? AffectorPosition.L1 : AffectorPosition.STOW;}));
-    new Trigger(() -> operatorController.getPOV() == 90).onTrue(new InstantCommand(() -> {target = AffectorPosition.STATION;}));
-    new Trigger(() -> operatorController.getPOV() == 270).onTrue(new InstantCommand(() -> {target = target == AffectorPosition.L2 ? AffectorPosition.L3 : AffectorPosition.L2;}));
-    new Trigger(() -> operatorController.getPOV() == 0).onTrue(new InstantCommand(() -> {target = AffectorPosition.L4;}));
+    new Trigger(() -> operatorController.getPOV() == 180).onTrue(new InstantCommand(() -> {target = target == Constants.Affector.STOW_POSITION ? Constants.Affector.L1_POSITION : Constants.Affector.STOW_POSITION;}));
+    new Trigger(() -> operatorController.getPOV() == 90).onTrue(new InstantCommand(() -> {target = Constants.Affector.STATION_POSITION;}));
+    new Trigger(() -> operatorController.getPOV() == 270).onTrue(new InstantCommand(() -> {target = target == Constants.Affector.L2_POSITION ? Constants.Affector.L3_POSITION : Constants.Affector.L2_POSITION;}));
+    new Trigger(() -> operatorController.getPOV() == 0).onTrue(new InstantCommand(() -> {target = Constants.Affector.L4_POSITION;}));
 
     //go to affector target
-    new Trigger(() -> driverController.getRawButton(LB)).or(() -> operatorController.getRawButton(LB))
-      .onTrue(new MoveAffector(elevator, wrist, () -> target).until(() -> operatorController.getLeftTriggerAxis() > .5 || operatorController.getRightTriggerAxis() > .5 || operatorController.getRightY() > .5));
+    new Trigger(() -> driverController.getRawButton(LB)).or(() -> operatorController.getRawButton(LB)).onTrue(new InstantCommand(() -> {
+      affector.setWantedState(WantedState.POSITION, target);
+    }));
 
     new Trigger(() -> driverController.getRawButton(X))
     .and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? Constants.positions.REEFS : Constants.positions.RED_REEFS, drive.getPose())) < .5)
@@ -465,7 +463,7 @@ NamedCommands.registerCommand("score", Commands
 
   public void Periodic(){
     double rlim = Double.POSITIVE_INFINITY;
-    if(elevator.getPosition() > .75){
+    if(affector.getPosition().elev > .75){
       rlim = 1/0.2;
     }
     lxLim.setLim(rlim);
@@ -474,7 +472,7 @@ NamedCommands.registerCommand("score", Commands
     ryLim.setLim(rlim);
 
     // SmartDashboard.putBoolean("holding", !holdingSens.get());
-    led.setHomed(elevator.isHomed());
+    led.setHomed(affector.isElevHomed());
     led.setIntaking(intake.isMoving());
     
     led.setColor(isReady() ? Color.kWhite : intake.isHolding() ? Color.kGreen : Color.kOrange);
@@ -543,34 +541,34 @@ NamedCommands.registerCommand("score", Commands
   public boolean getDirectAngle(){return directAngle;}
 
   public void enable(){
-    elevator.setBrake(true);
-    wrist.setBrake(true);
+    affector.setElevBrake(true);
+    affector.setWristBrake(true);
   }
 
 
   public void updateAScopePoses(){
     //actual pos
     Logger.recordOutput("componentPoses", new Pose3d[] {
-        elevator.getAScopePoseMiddleStage(elevator.getPositionSet()),
-        elevator.getAScopePoseInnerStage(elevator.getPositionSet()),
-        wrist.getAScopePoseWrist(wrist.getPosSet(), elevator.getPosition()),
+        affector.calculatePoseElevMiddleStage(affector.getPositionSet().elev),
+        affector.calculatePoseElevInnerStage(affector.getPositionSet().elev),
+        affector.calculatePoseWrist(affector.getPosition().wrist, affector.getPosition().elev),
         intake.isHolding() ? new Pose3d(
-            WristConstants.WRIST_POS.plus(new Translation3d(0, Math.cos(wrist.getPos())*IntakeConstants.pivotToCoral, elevator.getPosition() + Math.sin(wrist.getPos())*IntakeConstants.pivotToCoral)),
-            new Rotation3d(0, -wrist.getPos()+Math.PI/2, 0).rotateBy(new Rotation3d(0, 0, Math.PI/2))
+            WristConstants.WRIST_POS.plus(new Translation3d(0, Math.cos(affector.getPosition().wrist)*IntakeConstants.pivotToCoral, affector.getPosition().elev + Math.sin(affector.getPosition().wrist)*IntakeConstants.pivotToCoral)),
+            new Rotation3d(0, -affector.getPosition().wrist+Math.PI/2, 0).rotateBy(new Rotation3d(0, 0, Math.PI/2))
         ) : new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
     });
     //setpoints
     Logger.recordOutput("componentSetPoses", new Pose3d[] {
-      elevator.getAScopePoseMiddleStage(elevator.getPositionSet()),
-      elevator.getAScopePoseInnerStage(elevator.getPositionSet()),
-      wrist.getAScopePoseWrist(wrist.getPosSet(), elevator.getPositionSet()),
+      affector.calculatePoseElevMiddleStage(affector.getPositionSet().elev),
+      affector.calculatePoseElevInnerStage(affector.getPositionSet().elev),
+      affector.calculatePoseWrist(affector.getPositionSet().wrist, affector.getPositionSet().elev),
       new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
     });
     //targets, may not be applied
     Logger.recordOutput("componentTargetPoses", new Pose3d[] {
-      elevator.getAScopePoseMiddleStage(target.elev),
-      elevator.getAScopePoseInnerStage(target.elev),
-      wrist.getAScopePoseWrist(target.wrist, target.elev),
+      affector.calculatePoseElevMiddleStage(target.elev),
+      affector.calculatePoseElevInnerStage(target.elev),
+      affector.calculatePoseWrist(target.wrist, target.elev),
       new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
     });
   }
@@ -579,16 +577,19 @@ NamedCommands.registerCommand("score", Commands
         isReady() ? Color.kWhite
         : intake.isHolding() ? Color.kGreen : Color.kOrange
     );
-    led.setHomed(elevator.isHomed());
+    led.setHomed(affector.isElevHomed());
     led.setIntaking(intake.isMoving());
   }
 
   public boolean isReady(){
-    return elevator.isHomed()//elevator homed
-     && elevator.inPosition() && wrist.inPosition()//in pos
-     && (target.isScoring() ? intake.isHolding() || !intake.getHoldLock() : true)//holding if in scoring pos
-     && (target == AffectorPosition.STATION ? intake.isIntaking() : true)//intaking if in station pos
-     && elevator.getPositionSet() == target.elev
-     && wrist.getPosSet() == target.wrist;
+    return affector.isElevHomed()//elevator homed
+     && affector.atSetpoint()//in pos
+     && (isAffectorPosScoring(target) ? intake.isHolding() || !intake.getHoldLock() : true)//holding if in scoring pos or bypass(hold lock override assumes sensor is non functional)
+     && (target == Constants.Affector.STATION_POSITION ? intake.isIntaking() : true)//intaking if in station pos
+     && affector.getPositionSet() == target; // target is not buffered
+  }
+
+  private boolean isAffectorPosScoring(AffectorPosition p){
+    return p == Constants.Affector.L1_POSITION || p == Constants.Affector.L2_POSITION || p == Constants.Affector.L3_POSITION || p == Constants.Affector.L4_POSITION;
   }
 }

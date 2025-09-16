@@ -1,4 +1,4 @@
-package frc.robot.subsystems.elevator;
+package frc.robot.subsystems.affector.elevator;
 
 import static frc.robot.constants.ElevatorConstants.*;
 
@@ -38,8 +38,8 @@ public class ElevatorIOSim implements ElevatorIO{
         
         sim.setInputVoltage(voltsOut);
 
-        inputs.elevatorPositionMeters = pos;
-        inputs.elevatorVelocityMetersPerSec = vel;
+        inputs.pos = pos;
+        inputs.vel = vel;
 
         inputs.motor1Voltage = voltsOut/2;
         inputs.motor1TempC = -1;
@@ -55,11 +55,11 @@ public class ElevatorIOSim implements ElevatorIO{
         voltsOut = voltage;
     }
     
-    public void setElevatorNeutralMode(boolean brake) {
+    public void setBrake(boolean brake) {
         //not used with sim
     }
     
-    public void resetElevatorPosition(double posMeters) {
+    public void resetPos(double posMeters) {
         //not used
     }
 

@@ -5,12 +5,12 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.affector.Affector;
+import frc.robot.subsystems.affector.wrist.Wrist;
 import frc.robot.subsystems.climber.Climber;
-import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.swerve.Drive;
 import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.wrist.Wrist;
 
 public class Superstructure extends SubsystemBase{
     public enum WantedSuperState {
@@ -45,7 +45,7 @@ public class Superstructure extends SubsystemBase{
 
     Intake intake;
     Climber climber;
-    Elevator elevator;
+    Affector elevator;
     Drive drive;
     Vision vision;
     Wrist wrist;

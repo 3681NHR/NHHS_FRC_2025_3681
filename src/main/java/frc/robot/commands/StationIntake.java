@@ -2,23 +2,22 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.AffectorPosition;
+import frc.robot.constants.Constants;
 import frc.robot.constants.IntakeConstants;
-import frc.robot.subsystems.elevator.Elevator;
+import frc.robot.subsystems.affector.Affector;
+import frc.robot.subsystems.affector.Affector.WantedState;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.wrist.Wrist;
 
 public class StationIntake extends Command {
 
-  private Elevator elevator;
-  private Wrist wrist;
+  private Affector affector;
   private Intake intake;
 
-  public StationIntake(Elevator elevator, Wrist wrist, Intake intake) {
-    this.elevator = elevator;
-    this.wrist = wrist;
+  public StationIntake(Affector affector, Intake intake) {
+    this.affector = affector;
     this.intake = intake;
 
-    addRequirements(elevator, wrist, intake);
+    addRequirements(affector, intake);
   }
 
   @Override
@@ -28,8 +27,7 @@ public class StationIntake extends Command {
   @Override
   public void execute() {
 
-    elevator.setTargetPos(AffectorPosition.STATION.elev);
-    wrist.setPosSet(AffectorPosition.STATION.wrist);
+    affector.setWantedState(WantedState.POSITION, Constants.Affector.STATION_POSITION);
 
     intake.setVoltage(IntakeConstants.SPEED);
   }

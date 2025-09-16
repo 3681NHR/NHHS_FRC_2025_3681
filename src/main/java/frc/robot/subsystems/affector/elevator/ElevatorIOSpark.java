@@ -1,12 +1,9 @@
-package frc.robot.subsystems.elevator;
+package frc.robot.subsystems.affector.elevator;
 
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.Alert.AlertType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -15,31 +12,20 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import static frc.robot.constants.ElevatorConstants.*;
 import static frc.utils.SparkUtil.*;
 
-import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
-
 public class ElevatorIOSpark implements ElevatorIO {
 
     private SparkMax motor1 = new SparkMax(MOTOR_1_ID, MotorType.kBrushless);
     private SparkMaxConfig motor1Config = new SparkMaxConfig();
     private SparkMax motor2 = new SparkMax(MOTOR_2_ID, MotorType.kBrushless);
     private SparkMaxConfig motor2Config = new SparkMaxConfig();
-    private Encoder encoder = new Encoder(ENCODER_ID_A, ENCODER_ID_B);
     private RelativeEncoder motorEncoder = motor1.getEncoder();
 
-    private double posOffset = 0.0;
     private double pos = 0.0;
     private double vel = 0.0;
 
-    private double Builtinfactor = BUILTIN_POS_FACTOR * (BUILTIN_ENCODER_INVERT ? -1 : 1);
+    private double builtinfactor = BUILTIN_POS_FACTOR * (BUILTIN_ENCODER_INVERT ? -1 : 1);
 
     private double voltsOut = 0.0;
-
-    private boolean encoderFallback = true;
-
-    private Alert divergenceAlert = new Alert("main encoder and builtin encoder values are divergent!", AlertType.kError);
-    private Alert fallbackAlert = new Alert("using builtin encoder as fallback", AlertType.kWarning);
-
-    private LoggedNetworkBoolean fallback = new LoggedNetworkBoolean("overrides/elevator encoder fallback", true);
 
     public ElevatorIOSpark(){
         
@@ -58,31 +44,15 @@ public class ElevatorIOSpark implements ElevatorIO {
 
     configure();
 
-    encoder.reset();
-    encoder.setDistancePerPulse(POS_FACTOR);
-    encoder.setReverseDirection(ENCODER_INVERT);
-    encoder.setSamplesToAverage(5);
     motorEncoder.setPosition(0);
     
     }
 
     public void updateInputs(ElevatorIOInputs inputs) {
-        encoderFallback = fallback.get();
-        if(encoderFallback){
-            vel = (motorEncoder.getVelocity() * Builtinfactor/60.0);
-            pos = motorEncoder.getPosition() * Builtinfactor;
-        } else {
-            pos = encoder.getDistance() + posOffset;
-            vel = encoder.getRate();
-        }
-
-        fallbackAlert.set(encoderFallback);
-        //divergenceAlert.set(MathUtil.isNear(motorEncoder.getPosition() * Builtinfactor, encoder.getDistance() + posOffset, ENCODER_DIVERGANCE_THRESH));
-
         motor1.setVoltage(voltsOut);
 
-        inputs.elevatorPositionMeters = pos;
-        inputs.elevatorVelocityMetersPerSec = vel;
+        inputs.pos = pos;
+        inputs.vel = vel;
 
         inputs.motor1CurrentAmps = motor1.getOutputCurrent();
         inputs.motor1Voltage = motor1.getBusVoltage()*motor1.getAppliedOutput();
@@ -98,7 +68,7 @@ public class ElevatorIOSpark implements ElevatorIO {
         motor1.setVoltage(voltage);
     }
     
-    public void setElevatorNeutralMode(boolean brake) {
+    public void setBrake(boolean brake) {
         
         if(brake){
             motor1Config.idleMode(IdleMode.kBrake);
@@ -110,10 +80,8 @@ public class ElevatorIOSpark implements ElevatorIO {
         configure();
     }
     
-    public void resetElevatorPosition(double posMeters) {
-        encoder.reset();
-        posOffset = posMeters;
-        motorEncoder.setPosition(posMeters/Builtinfactor);
+    public void resetPos(double posMeters) {
+        motorEncoder.setPosition(posMeters/builtinfactor);
     }
 
     private void configure(){

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.wrist;
+package frc.robot.subsystems.affector.wrist;
 
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -74,8 +74,8 @@ public class WristIOSpark implements WristIO{
         in.motoroutVolts = motor.getBusVoltage()*motor.getAppliedOutput();
         in.motorTemp = motor.getMotorTemperature();
 
-        in.posRad = pos;
-        in.velRadPerSec = vel;
+        in.pos = pos;
+        in.vel = vel;
     }
 
     public void setVoltage(double v) {

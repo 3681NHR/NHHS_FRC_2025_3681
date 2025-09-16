@@ -15,8 +15,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.WristConstants;
-import frc.robot.subsystems.elevator.Elevator;
-import frc.robot.subsystems.wrist.Wrist;
+import frc.robot.subsystems.affector.Affector;
+import frc.robot.subsystems.affector.wrist.Wrist;
 
 public class IntakeIOSim implements IntakeIO {
     
@@ -24,14 +24,14 @@ public class IntakeIOSim implements IntakeIO {
     @AutoLogOutput
     private double coralLocation = 0;
     private SwerveDriveSimulation driveSim;
-    private Elevator elevator;
+    private Affector elevator;
     private Wrist wrist;
 
     private double voltage = 0.0;
     
     private double vel = 0.0;
 
-    public IntakeIOSim(SwerveDriveSimulation driveSim, Elevator elevator, Wrist wrist) {
+    public IntakeIOSim(SwerveDriveSimulation driveSim, Affector elevator, Wrist wrist) {
         this.driveSim = driveSim;
         this.elevator = elevator;
         this.wrist = wrist;
