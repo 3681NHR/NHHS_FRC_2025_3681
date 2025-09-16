@@ -183,9 +183,6 @@ public class Elevator extends SubsystemBase {
         }
     }
 
-    public void setHomed(boolean homed){
-        this.homed = homed;
-    }
     public boolean isHomed(){
         return homed;
     }
