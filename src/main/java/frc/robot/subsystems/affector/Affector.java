@@ -235,14 +235,15 @@ public class Affector extends SubsystemBase {
            
             if(!elevHomed && elevInputs.pos < 0){
                     elevIO.resetPos(0);
-                }
-                if(elevHomed && elevLimitOverride.get()){
-                    elevPosSet = MathUtil.clamp(elevPosSet, ElevatorConstants.MIN_POS, ElevatorConstants.MAX_POS);
-                }
-                if(wristLimitOverride.get()){
-                    wristPosSet = MathUtil.clamp(wristPosSet, WristConstants.MIN_POS, WristConstants.MAX_POS);
-                }
-                elevVout = elevPIDOut + elevFFOut;
+            }
+            if(elevHomed && elevLimitOverride.get()){
+                elevPosSet = MathUtil.clamp(elevPosSet, ElevatorConstants.MIN_POS, ElevatorConstants.MAX_POS);
+            }
+            if(wristLimitOverride.get()){
+                wristPosSet = MathUtil.clamp(wristPosSet, WristConstants.MIN_POS, WristConstants.MAX_POS);
+            }
+            elevVout = elevPIDOut + elevFFOut;
+            wristVout = wristPIDOut + wristFFOut;
             break;
         }
     }

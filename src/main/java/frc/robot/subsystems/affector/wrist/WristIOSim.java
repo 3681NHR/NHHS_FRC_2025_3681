@@ -2,6 +2,8 @@ package frc.robot.subsystems.affector.wrist;
 
 import static frc.robot.constants.WristConstants.*;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -43,7 +45,18 @@ public class WristIOSim implements WristIO {
         // arm.setInputVoltage(vout);
         // arm.update(0.02);
 
-        pos += vout * 0.02;
+        double f = (MathUtil.clamp(vout, -12, 12)*12);
+        f -= (vel*50);
+        double a = f/(3);//f/m
+        a -= Math.cos(pos)*(9.81*Units.inchesToMeters(12)); // gravity
+        vel += a * 0.02;
+        pos += vel * 0.02;
+        pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
+        if(pos == MIN_POS || pos == MAX_POS){
+            vel = 0;
+        }
+        Logger.recordOutput("sim/wrist/f", f);
+        Logger.recordOutput("sim/wrist/a", a);
 
         in.pos = pos;
         in.vel = vel;
