@@ -14,6 +14,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -21,13 +22,15 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.constants.AffectorPosition;
+import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.ElevatorConstants;
 import frc.robot.constants.WristConstants;
 import frc.robot.subsystems.affector.elevator.ElevatorIO;
 import frc.robot.subsystems.affector.wrist.WristIO;
-import frc.robot.subsystems.elevator.ElevatorIOInputsAutoLogged;
-import frc.robot.subsystems.wrist.WristIOInputsAutoLogged;
+import frc.robot.subsystems.affector.elevator.ElevatorIOInputsAutoLogged;
+import frc.robot.subsystems.affector.wrist.WristIOInputsAutoLogged;
 import frc.utils.ElevatorFF;
+import frc.utils.ExtraMath;
 import frc.utils.ProfiledPID;
 
 public class Affector extends SubsystemBase {
@@ -45,8 +48,8 @@ public class Affector extends SubsystemBase {
         POSITION
     }
 
-    private WantedState wantedState = WantedState.OFF;
-    private CurrentState currentState = CurrentState.OFF;
+    private WantedState  wantedState   =  WantedState.POSITION;
+    private CurrentState currentState  = CurrentState.POSITION;
     private CurrentState previousState = CurrentState.OFF;
 
     private ElevatorIO elevIO;
@@ -94,10 +97,13 @@ public class Affector extends SubsystemBase {
     private double wristFFOut = 0.0;
 
     private double homingZeroTimeStamp = Double.NaN;
+
+    private XboxController operatorController;
     
-    public Affector(ElevatorIO elevio, WristIO wristio){
+    public Affector(ElevatorIO elevio, WristIO wristio, XboxController controller){
         this.elevIO = elevio;
         this.wristIO = wristio;
+        this.operatorController = controller;
 
         elevSysID = new SysIdRoutine(new Config(
             ElevatorConstants.VRAMP,
@@ -223,7 +229,11 @@ public class Affector extends SubsystemBase {
             case SYSID:
             break;
             case POSITION:
-                if(!elevHomed && elevInputs.pos < 0){
+
+            wristPosSet += ExtraMath.processInput(operatorController.getRightY(), -0.02 * WristConstants.POS_PID.maxSpeed(), 1.0, 0.05);
+            elevPosSet += (operatorController.getRightTriggerAxis()-operatorController.getLeftTriggerAxis())*OperatorConstants.ELEVATOR_MAN_SENS;
+           
+            if(!elevHomed && elevInputs.pos < 0){
                     elevIO.resetPos(0);
                 }
                 if(elevHomed && elevLimitOverride.get()){

@@ -154,8 +154,6 @@ public class RobotContainer {
   private VariableLimSLR rxLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
   private VariableLimSLR ryLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
 
-  private LoggedNetworkNumber lim = new LoggedNetworkNumber("rate lim(sec 0 to max)", 0.001);
-
   @AutoLogOutput
   private AffectorPosition target = Constants.Affector.STOW_POSITION;
 
@@ -222,7 +220,7 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3),
                 vision);
-        affector = new Affector(new ElevatorIOSpark(), new WristIOSpark());
+        affector = new Affector(new ElevatorIOSpark(), new WristIOSpark(), operatorController);
         intake = new Intake(new IntakeIOSpark());
         buttons = new Buttons(new ButtonIODIO(4));
         climber = new Climber(new ClimberIOSpark());
@@ -244,7 +242,7 @@ public class RobotContainer {
                   new ModuleIOSim(driveSim.getModules()[2]),
                   new ModuleIOSim(driveSim.getModules()[3]),
                   vision);
-        affector = new Affector(new ElevatorIOSim(), new WristIOSim());
+        affector = new Affector(new ElevatorIOSim(), new WristIOSim(), operatorController);
         affector.setElevHomed(true);
         intake = new Intake(new IntakeIOSim(driveSim, affector));
         buttons = new Buttons(new ButtonIOSim(() -> false));
@@ -267,7 +265,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 vision);
-        affector = new Affector(new ElevatorIO() {}, new WristIO() {});
+        affector = new Affector(new ElevatorIO() {}, new WristIO() {}, operatorController);
         intake = new Intake(new IntakeIO() {});
         buttons = new Buttons(new ButtonIO() {});
         climber = new Climber(new ClimberIO() {});
@@ -350,8 +348,7 @@ NamedCommands.registerCommand("score", Commands
     );
 
     drive.setDefaultCommand(driveCommand);
-    wrist.setDefaultCommand(wrist.man(() -> ExtraMath.processInput(operatorController.getRightY(), -0.02 * WristConstants.POS_PID.maxSpeed(), 1.0, 0.05)));
-    affector.setDefaultCommand(affector.man(() -> (operatorController.getRightTriggerAxis()-operatorController.getLeftTriggerAxis())*OperatorConstants.ELEVATOR_MAN_SENS));
+    
   }
 
   private void configureBindings() {

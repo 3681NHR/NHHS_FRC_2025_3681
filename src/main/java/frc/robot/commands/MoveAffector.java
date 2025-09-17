@@ -4,24 +4,24 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.AffectorPosition;
+import frc.robot.constants.Constants;
+import frc.robot.constants.ElevatorConstants;
 import frc.robot.subsystems.affector.Affector;
-import frc.robot.subsystems.affector.wrist.Wrist;
+import frc.robot.subsystems.affector.Affector.WantedState;
 
 public class MoveAffector extends Command {
 
   private Affector elevator;
-  private Wrist wrist;
 
   private boolean done = false;
 
   private AffectorPosition pos;
   private Supplier<AffectorPosition> posSup;
 
-  public MoveAffector(Affector elevator, Wrist wrist, Supplier<AffectorPosition> pos) {
+  public MoveAffector(Affector elevator, Supplier<AffectorPosition> pos) {
     this.elevator = elevator;
-    this.wrist = wrist;
     this.posSup = pos;
-    addRequirements(elevator, wrist);
+    addRequirements(elevator);
   }
   @Override
   public String getName(){return "move affector";}
@@ -30,17 +30,16 @@ public class MoveAffector extends Command {
   public void initialize() {
     pos = posSup.get();
 
-    wrist.setPosSet(AffectorPosition.STOW.wrist);
-  
-    elevator.setTargetPos(pos.elev);
+    elevator.setWantedState(WantedState.POSITION, new AffectorPosition(pos.elev, Constants.Affector.STOW_POSITION.wrist));
+
     done = false;
   }
 
   @Override
   public void execute() {
-    if(elevator.nearPos()){
-      wrist.setPosSet(pos.wrist);
-      done = elevator.inPosition() && wrist.inPosition();
+    if(Math.abs(elevator.getPosition().elev - elevator.getPositionSet().elev) < ElevatorConstants.NEAR_POS_TOLERANCE){
+      elevator.setWantedState(WantedState.POSITION, pos);
+      done = elevator.atSetpoint();
     }
   }
 
@@ -52,6 +51,6 @@ public class MoveAffector extends Command {
 
   @Override
   public boolean isFinished() {
-    return done || false;//TODO: end on signifacant operator input
+    return done;//TODO: end on signifacant operator input
   }
 }

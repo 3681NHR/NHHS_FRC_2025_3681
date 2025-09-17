@@ -6,7 +6,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.affector.Affector;
-import frc.robot.subsystems.affector.wrist.Wrist;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.swerve.Drive;
@@ -45,10 +44,9 @@ public class Superstructure extends SubsystemBase{
 
     Intake intake;
     Climber climber;
-    Affector elevator;
+    Affector affector;
     Drive drive;
     Vision vision;
-    Wrist wrist;
 
     public Superstructure(){
         

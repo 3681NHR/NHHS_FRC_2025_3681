@@ -16,7 +16,6 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.WristConstants;
 import frc.robot.subsystems.affector.Affector;
-import frc.robot.subsystems.affector.wrist.Wrist;
 
 public class IntakeIOSim implements IntakeIO {
     
@@ -24,17 +23,15 @@ public class IntakeIOSim implements IntakeIO {
     @AutoLogOutput
     private double coralLocation = 0;
     private SwerveDriveSimulation driveSim;
-    private Affector elevator;
-    private Wrist wrist;
+    private Affector affector;
 
     private double voltage = 0.0;
     
     private double vel = 0.0;
 
-    public IntakeIOSim(SwerveDriveSimulation driveSim, Affector elevator, Wrist wrist) {
+    public IntakeIOSim(SwerveDriveSimulation driveSim, Affector elevator) {
         this.driveSim = driveSim;
-        this.elevator = elevator;
-        this.wrist = wrist;
+        this.affector = elevator;
     }
     
     @Override
@@ -52,7 +49,7 @@ public class IntakeIOSim implements IntakeIO {
         if(holding){
             coralLocation += vel * Units.inchesToMeters(1.5) * 0.02;
         }
-        if(!holding && wrist.getPos() < 0 && voltage > 1){
+        if(!holding && affector.getPosition().wrist < 0 && voltage > 1){
             holding = true;
             coralLocation = 0;
         }
@@ -60,12 +57,12 @@ public class IntakeIOSim implements IntakeIO {
             holding = false;
             SimulatedArena.getInstance().addGamePieceProjectile(new ReefscapeCoralOnFly(
                 driveSim.getSimulatedDriveTrainPose().getTranslation(),
-                IntakeConstants.WRIST_POS.toTranslation2d().plus(new Translation2d(Math.cos(wrist.getPos())*pivotToCoral, 0)),
+                IntakeConstants.WRIST_POS.toTranslation2d().plus(new Translation2d(Math.cos(affector.getPosition().wrist)*pivotToCoral, 0)),
                 driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
                 driveSim.getSimulatedDriveTrainPose().getRotation().rotateBy(Rotation2d.kCCW_90deg),
-                Meters.of(elevator.getPosition() + WristConstants.WRIST_POS.getZ() + Math.sin(wrist.getPos())*pivotToCoral),
+                Meters.of(affector.getPosition().elev + WristConstants.WRIST_POS.getZ() + Math.sin(affector.getPosition().wrist)*pivotToCoral),
                 MetersPerSecond.of(vel * Units.inchesToMeters(1.5)),
-                Radians.of(wrist.getPos()-Units.degreesToRadians(90))
+                Radians.of(affector.getPosition().wrist-Units.degreesToRadians(90))
             ));
         }
     }
