@@ -273,7 +273,7 @@ public class RobotContainer {
     }
 
     
-    NamedCommands.registerCommand("station", new StationIntake(affector, intake));
+    NamedCommands.registerCommand("station", new StationIntake(affector, intake).withTimeout(5));
     NamedCommands.registerCommand("L2", Commands.runOnce(() -> {
       affector.setWantedState(WantedState.POSITION, Constants.Affector.L2_POSITION);
       }, affector));
@@ -526,6 +526,11 @@ NamedCommands.registerCommand("score", Commands
   }
 
   public Command getAutonomousCommand() {
+
+    if(Constants.MODE == Constants.RobotMode.SIM){
+      // intake.setHolding(true);
+    }
+
     Command auto = autoChooser.get();
     return auto;
   }
@@ -546,8 +551,8 @@ NamedCommands.registerCommand("score", Commands
   public void updateAScopePoses(){
     //actual pos
     Logger.recordOutput("componentPoses", new Pose3d[] {
-        affector.calculatePoseElevMiddleStage(affector.getPositionSet().elev),
-        affector.calculatePoseElevInnerStage(affector.getPositionSet().elev),
+        affector.calculatePoseElevMiddleStage(affector.getPosition().elev),
+        affector.calculatePoseElevInnerStage(affector.getPosition().elev),
         affector.calculatePoseWrist(affector.getPosition().wrist, affector.getPosition().elev),
         intake.isHolding() ? new Pose3d(
             WristConstants.WRIST_POS.plus(new Translation3d(0, Math.cos(affector.getPosition().wrist)*IntakeConstants.pivotToCoral, affector.getPosition().elev + Math.sin(affector.getPosition().wrist)*IntakeConstants.pivotToCoral)),

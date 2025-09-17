@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.6915770609318976,
-        "y": 1.1541218637992825
+        "x": 1.665073450191601,
+        "y": 0.8984526324916522
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4530350899790934,
-        "y": 2.14282521184151
+        "x": 2.3312620926112926,
+        "y": 2.102660658004454
       },
       "isLocked": false,
       "linkedName": "east 1"
@@ -20,8 +20,8 @@
         "y": 2.8921618852459017
       },
       "prevControl": {
-        "x": 2.999402753618243,
-        "y": 1.9535364722503075
+        "x": 2.933776465305966,
+        "y": 2.1981812634295386
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,11 +32,11 @@
   "constraintZones": [
     {
       "name": "Constraints Zone",
-      "minWaypointRelativePos": 0.8001338807254059,
+      "minWaypointRelativePos": 0.6188332186980899,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 4.6,
-        "maxAcceleration": 4.0,
+        "maxAcceleration": 2.0,
         "maxAngularVelocity": 597.8815,
         "maxAngularAcceleration": 1541.0,
         "nominalVoltage": 12.0,
@@ -48,7 +48,7 @@
   "eventMarkers": [
     {
       "name": "L4",
-      "waypointRelativePos": 0.8481487177769631,
+      "waypointRelativePos": 0.6520257994186045,
       "endWaypointRelativePos": null,
       "command": null
     }
@@ -66,7 +66,7 @@
     "rotation": -31.7594800848128
   },
   "reversed": false,
-  "folder": "east station to reef",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": 143.77505574447966

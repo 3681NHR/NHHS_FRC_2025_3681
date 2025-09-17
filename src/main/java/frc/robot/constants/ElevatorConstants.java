@@ -41,8 +41,8 @@ public final class ElevatorConstants {
     public static final PIDGains.ProfiledPID POS_PID = new PIDGains.ProfiledPID(10, 0, 3, 2.5, 5);
     public static final PIDGains.GravityFF POS_FF = new PIDGains.GravityFF(0.3, 0.6, 5.0, 0.6);
 
-    public static final PIDGains.ProfiledPID POS_PID_SIM = new PIDGains.ProfiledPID(0, 0, 0, 1.75, 1.75*5);
-    public static final PIDGains.GravityFF POS_FF_SIM = new PIDGains.GravityFF(0.19349, 0.35424, 4.5227, 0.3535);
+    public static final PIDGains.ProfiledPID POS_PID_SIM = new PIDGains.ProfiledPID(10, 0, 3, 2.5, 5);
+    public static final PIDGains.GravityFF POS_FF_SIM = new PIDGains.GravityFF(0, 0, 4, 0.6);
 
     public static final double POS_TOLERANCE = 0.05;
     public static final double NEAR_POS_TOLERANCE = 0.25;

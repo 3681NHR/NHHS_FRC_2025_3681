@@ -2,6 +2,7 @@ package frc.robot.subsystems.affector.elevator;
 
 import static frc.robot.constants.ElevatorConstants.*;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
@@ -14,29 +15,38 @@ public class ElevatorIOSim implements ElevatorIO{
     
     private double voltsOut = 0.0;
 
-    private ElevatorSim sim = new ElevatorSim(
-        LinearSystemId.identifyPositionSystem(POS_FF.kV(), POS_FF.kA()),
-        DCMotor.getNEO(2),
-        MIN_POS,
-        MAX_POS,
-        true,
-        0,
-        0, 0
-    );
+    // private ElevatorSim sim = new ElevatorSim(
+    //     LinearSystemId.identifyPositionSystem(POS_FF.kV(), POS_FF.kA()),
+    //     DCMotor.getNEO(2),
+    //     MIN_POS,
+    //     MAX_POS,
+    //     true,
+    //     0,
+    //     0, 0
+    // );
 
     public ElevatorIOSim(){
-        BatteryVoltageSim.getInstance().addCurrentSource(()-> sim.getCurrentDrawAmps());
+        // BatteryVoltageSim.getInstance().addCurrentSource(()-> sim.getCurrentDrawAmps());
     }
     
     
     public void updateInputs(ElevatorIOInputs inputs) {
 
-        sim.update(0.02);
+        // sim.update(0.02);
 
-        pos = sim.getPositionMeters();
-        vel = sim.getVelocityMetersPerSecond();
+        // pos = sim.getPositionMeters();
+        // vel = sim.getVelocityMetersPerSecond();
         
-        sim.setInputVoltage(voltsOut);
+        // sim.setInputVoltage(voltsOut);
+        double f = (MathUtil.clamp(voltsOut, -12, 12)*24);
+        f -= (vel*100);
+        double a = f/(4);//f/m
+        vel += a * 0.02;
+        pos += vel * 0.02;
+        pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
+        if(pos == MIN_POS || pos == MAX_POS){
+            vel = 0;
+        }
 
         inputs.pos = pos;
         inputs.vel = vel;
