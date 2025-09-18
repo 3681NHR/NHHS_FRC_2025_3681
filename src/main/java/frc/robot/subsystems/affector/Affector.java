@@ -29,6 +29,7 @@ import frc.robot.subsystems.affector.elevator.ElevatorIO;
 import frc.robot.subsystems.affector.wrist.WristIO;
 import frc.robot.subsystems.affector.elevator.ElevatorIOInputsAutoLogged;
 import frc.robot.subsystems.affector.wrist.WristIOInputsAutoLogged;
+import frc.utils.ArmFF;
 import frc.utils.ElevatorFF;
 import frc.utils.ExtraMath;
 import frc.utils.ProfiledPID;
@@ -67,7 +68,7 @@ public class Affector extends SubsystemBase {
     private ElevatorFF elevFF = new ElevatorFF(RobotBase.isReal() ? ElevatorConstants.POS_FF : ElevatorConstants.POS_FF_SIM);
 
     private ProfiledPID wristPID = new ProfiledPID(RobotBase.isReal() ? WristConstants.POS_PID : WristConstants.POS_PID_SIM);
-    private ElevatorFF wristFF = new ElevatorFF(RobotBase.isReal() ? WristConstants.POS_FF : WristConstants.POS_FF_SIM);
+    private ArmFF wristFF = new ArmFF(RobotBase.isReal() ? WristConstants.POS_FF : WristConstants.POS_FF_SIM);
 
     private Alert elevNotHomed = new Alert("Elevator is not homed!", AlertType.kError);
     private Alert elevNoLim = new Alert("Elevator limits not enforced", AlertType.kWarning);
@@ -138,20 +139,13 @@ public class Affector extends SubsystemBase {
 
         stateTransitions();
         applyStates();
-
-
-        if(DriverStation.isDisabled()){
-            wantedState = WantedState.OFF;
-            // stop();
-        }
-
         
         
         elevPIDOut = elevPID.calculate(elevInputs.pos, elevPosSet);
         elevFFOut = elevFF.calculate(elevPID.getSetpoint().velocity);
 
         wristPIDOut = wristPID.calculate(wristInputs.pos, wristPosSet);
-        wristFFOut = wristFF.calculate(wristPID.getSetpoint().velocity);
+        wristFFOut = wristFF.calculate(wristInputs.pos, wristPID.getSetpoint().velocity);
         
         Logger.recordOutput("Affector//previousState", previousState.toString());
         Logger.recordOutput("Affector//currentState", currentState.toString());

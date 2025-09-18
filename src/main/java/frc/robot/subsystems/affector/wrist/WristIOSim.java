@@ -45,10 +45,10 @@ public class WristIOSim implements WristIO {
         // arm.setInputVoltage(vout);
         // arm.update(0.02);
 
-        double f = (MathUtil.clamp(vout, -12, 12)*12);
-        f -= (vel*50);
-        double a = f/(3);//f/m
-        a -= Math.cos(pos)*(9.81*Units.inchesToMeters(12)); // gravity
+        double f = (MathUtil.clamp(vout, -12, 12)*40);
+        f -= (vel*40);
+        double a = f/(3.5);//f/m
+        a -= Math.cos(pos)*(9.81*Units.inchesToMeters(14)); // gravity
         vel += a * 0.02;
         pos += vel * 0.02;
         pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
@@ -57,6 +57,7 @@ public class WristIOSim implements WristIO {
         }
         Logger.recordOutput("sim/wrist/f", f);
         Logger.recordOutput("sim/wrist/a", a);
+        Logger.recordOutput("sim/wrist/g", Math.cos(pos)*(9.81*Units.inchesToMeters(5.72)));
 
         in.pos = pos;
         in.vel = vel;
