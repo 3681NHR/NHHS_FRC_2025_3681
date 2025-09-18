@@ -4,13 +4,14 @@ import static frc.robot.constants.WristConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.util.Units;
+import frc.robot.constants.Constants;
 
 public class WristIOSim implements WristIO {
 
     private double vout = 0.0;
 
     
-    private double pos;
+    private double pos = Constants.Affector.STOW_POSITION.wrist;
     private double vel;
 
     public WristIOSim(){

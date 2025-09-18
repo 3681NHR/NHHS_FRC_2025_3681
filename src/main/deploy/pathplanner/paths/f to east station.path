@@ -50,7 +50,12 @@
       "name": "station",
       "waypointRelativePos": 0.24643087559228338,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "station"
+        }
+      }
     }
   ],
   "globalConstraints": {

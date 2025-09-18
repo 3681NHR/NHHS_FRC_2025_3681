@@ -21,7 +21,7 @@
       },
       "prevControl": {
         "x": 2.611742875482416,
-        "y": 1.7558321964126922
+        "y": 1.7558321964126924
       },
       "nextControl": null,
       "isLocked": false,
@@ -50,7 +50,12 @@
       "name": "station",
       "waypointRelativePos": 0.11843045782096144,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "station"
+        }
+      }
     }
   ],
   "globalConstraints": {

@@ -142,7 +142,7 @@ public class DriveConstants {
     public static final Velocity<VoltageUnit> TURN_SYSID_VRAMP = Volts.of(.5).per(Second);
     public static final Time TURN_SYSID_TIMEOUT = Seconds.of(10);
 
-    public static final double ANGULAR_VELOCITY_COEFFICIENT = 0.1;
+    public static final double ANGULAR_VELOCITY_COEFFICIENT = 0.02;
 
     public static final double TIP_RECOVERY_THRESHOLD = Units.degreesToRadians(10);
 

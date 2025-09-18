@@ -37,6 +37,7 @@ import frc.robot.subsystems.physButtons.ButtonIODIO;
 import frc.robot.subsystems.physButtons.ButtonIOSim;
 import frc.robot.subsystems.physButtons.Buttons;
 import frc.robot.subsystems.swerve.*;
+import frc.robot.subsystems.swerve.Drive.WantedDriveState;
 import frc.robot.subsystems.vision.CameraIO;
 import frc.robot.subsystems.vision.CameraIOPhoton;
 import frc.robot.subsystems.vision.CameraIOPhotonSim;
@@ -119,21 +120,10 @@ public class RobotContainer {
   private boolean fod = Constants.drive.STARTING_FOD;
   private boolean directAngle = Constants.drive.STARTING_DIRECT_ANGLE;
 
-  private int reefIndex = 0;
-  private int farIndex = 0;
-  private Rotation2d reefAngle = Constants.OperatorConstants.REEF_ROTS[0];
   private Rotation2d stationAngle = new Rotation2d();
-  private Rotation2d farAngle = new Rotation2d();
-
-  private DoubleSupplier lx;
-  private DoubleSupplier ly;
-  private DoubleSupplier rx;
-  private DoubleSupplier ry;
 
   private duelJoystickAxis driverSticks;
 
-  private DoubleSupplier leftTrigger;
-  private DoubleSupplier rightTrigger;
 
   private RumbleHandler rumbler = new RumbleHandler(driverController);
   private RumbleHandler opRumbler = new RumbleHandler(operatorController);
@@ -149,9 +139,6 @@ public class RobotContainer {
   private VariableLimSLR lyLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
   private VariableLimSLR rxLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
   private VariableLimSLR ryLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
-
-  @AutoLogOutput
-  private AffectorPosition target = Constants.Affector.STOW_POSITION;
 
   public RobotContainer() {
 
@@ -175,13 +162,6 @@ public class RobotContainer {
       SimulatedArena.getInstance().addDriveTrainSimulation(driveSim);
     }
 
-      lx = () -> driverController.getRawAxis(LEFT_STICK_X);
-      ly = () -> driverController.getRawAxis(LEFT_STICK_Y);
-      rx = () -> driverController.getRawAxis(RIGHT_STICK_X);
-      ry = () -> driverController.getRawAxis(RIGHT_STICK_Y);
-
-      leftTrigger = () -> driverController.getRawAxis(LEFT_TRIGGER);
-      rightTrigger = () -> driverController.getRawAxis(RIGHT_TRIGGER);
 
     //process driver controls(radial deadzone, curve, trigger slowdown, and inversion)
     driverSticks = new duelJoystickAxis(
@@ -205,7 +185,8 @@ public class RobotContainer {
                 new ModuleIOSpark(1),
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3),
-                vision);
+                vision,
+                driverSticks);
         affector = new Affector(new ElevatorIOSpark(), new WristIOSpark(), operatorController);
         intake = new Intake(new IntakeIOSpark());
         buttons = new Buttons(new ButtonIODIO(4));
@@ -227,7 +208,9 @@ public class RobotContainer {
                   new ModuleIOSim(driveSim.getModules()[1]),
                   new ModuleIOSim(driveSim.getModules()[2]),
                   new ModuleIOSim(driveSim.getModules()[3]),
-                  vision);
+                  vision,
+                  driverSticks
+                  );
         affector = new Affector(new ElevatorIOSim(), new WristIOSim(), operatorController);
         affector.setElevHomed(true);
         intake = new Intake(new IntakeIOSim(driveSim, affector));
@@ -250,7 +233,9 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {},
-                vision);
+                vision,
+                driverSticks
+                );
         affector = new Affector(new ElevatorIO() {}, new WristIO() {}, operatorController);
         intake = new Intake(new IntakeIO() {});
         buttons = new Buttons(new ButtonIO() {});
@@ -323,18 +308,6 @@ NamedCommands.registerCommand("score", Commands
 
     LoggedPowerDistribution.getInstance(pdp.getModule(), ModuleType.kRev);
     
-    // left stick controls translation
-    // right stick controls the angular velocity of the robot
-    // sim command used raw axis for simulating joysticks
-    Command driveCommand = DriveCommands.driveCommand(
-      driverSticks,  
-      () -> this.getDirectAngle(),
-      () -> this.getFOD(),
-      drive
-    );
-
-    drive.setDefaultCommand(driveCommand);
-    
   }
 
   private void configureBindings() {
@@ -361,11 +334,7 @@ NamedCommands.registerCommand("score", Commands
     new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON)).onTrue(new InstantCommand(() -> {
     this.fod = !this.fod;
     }));
-    //DA toggle
-    new Trigger(() -> driverController.getRawButton(RIGHT_STICK_BUTTON)).onTrue(new InstantCommand(() -> {
-      // this.directAngle = !this.directAngle; //FIXME: right stick stops working due to drive getting stuck in drive to angle command
-    }));
-    //timer alert
+
     // new Trigger(() -> TimerHandler.getTeleopRemaining()<Constants.ENDGAME_TIME).onTrue(new InstantCommand(() -> {
     //   rumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());
     //   opRumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());
@@ -391,24 +360,12 @@ NamedCommands.registerCommand("score", Commands
     }));
         
     //intake controls
-    new Trigger(() -> driverController.getRawButton(RB)).or(() -> operatorController.getRawButton(RB)).whileTrue(new IntakeCommand(intake));
+    // new Trigger(() -> driverController.getRawButton(RB)).or(() -> operatorController.getRawButton(RB)).whileTrue(new IntakeCommand(intake));
     new Trigger(() -> operatorController.getRawButton(Y)).onTrue(new InstantCommand(() -> {
       intake.setWantedState(WantedIntakeState.OUTTAKE);;
     })).onFalse(new InstantCommand(() -> {
       intake.setWantedState(WantedIntakeState.STOP);; 
     }));
-
-    //set affector target
-    // new Trigger(() -> operatorController.getPOV() == 180 || driverController.getPOV() == 180).onTrue(new InstantCommand(() -> {target = target == Constants.Affector.STOW_POSITION ? Constants.Affector.L1_POSITION : Constants.Affector.STOW_POSITION;}));
-    // new Trigger(() -> operatorController.getPOV() == 90  || driverController.getPOV() == 90 ).onTrue(new InstantCommand(() -> {target = Constants.Affector.STATION_POSITION;}));
-    // new Trigger(() -> operatorController.getPOV() == 270 || driverController.getPOV() == 270).onTrue(new InstantCommand(() -> {target = target == Constants.Affector.L2_POSITION ? Constants.Affector.L3_POSITION : Constants.Affector.L2_POSITION;}));
-    // new Trigger(() -> operatorController.getPOV() == 0   || driverController.getPOV() == 0  ).onTrue(new InstantCommand(() -> {target = Constants.Affector.L4_POSITION;}));
-
-    //go to affector target
-    // new Trigger(() -> driverController.getRawButton(LB)).or(() -> operatorController.getRawButton(LB)).onTrue(new InstantCommand(() -> {
-    //   affector.setWantedState(WantedAffectorState.POSITION, target);
-    // }));
-
 
     new Trigger(() -> driverController.getRawButton(A)).onTrue(new InstantCommand(() -> {
       affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L1_POSITION);
@@ -426,6 +383,7 @@ NamedCommands.registerCommand("score", Commands
       affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STATION_POSITION);
     }));
     new Trigger(() -> driverController.getRawAxis(LEFT_TRIGGER) > 0.5).whileTrue(new IntakeCommand(intake));
+    new Trigger(() -> driverController.getRawAxis(RIGHT_TRIGGER) > 0.5).whileTrue(new IntakeCommand(intake));
 
     // new Trigger(() -> driverController.getRawButton(X))
     // .and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? Constants.positions.REEFS : Constants.positions.RED_REEFS, drive.getPose())) < .5)
@@ -453,6 +411,8 @@ NamedCommands.registerCommand("score", Commands
     lyLim.setLim(rlim);
     rxLim.setLim(rlim);
     ryLim.setLim(rlim);
+
+    drive.setFOD(fod);
 
     // SmartDashboard.putBoolean("holding", !holdingSens.get());
     led.setHomed(affector.isElevHomed());
@@ -525,6 +485,8 @@ NamedCommands.registerCommand("score", Commands
     affector.setWristBrake(true);
 
     affector.setWantedState(WantedAffectorState.POSITION);
+
+    drive.setWantedState(WantedDriveState.TELEOP_DRIVE);
   }
 
 
@@ -547,12 +509,12 @@ NamedCommands.registerCommand("score", Commands
       new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
     });
     //targets, may not be applied
-    Logger.recordOutput("AScope/componentTargetPoses", new Pose3d[] {
-      affector.calculatePoseElevMiddleStage(target.elev),
-      affector.calculatePoseElevInnerStage(target.elev),
-      affector.calculatePoseWrist(target.wrist, target.elev),
-      new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
-    });
+    // Logger.recordOutput("AScope/componentTargetPoses", new Pose3d[] {
+    //   affector.calculatePoseElevMiddleStage(target.elev),
+    //   affector.calculatePoseElevInnerStage(target.elev),
+    //   affector.calculatePoseWrist(target.wrist, target.elev),
+    //   new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
+    // });
   }
   public void updateLEDs(){
     led.setColor(
@@ -566,9 +528,9 @@ NamedCommands.registerCommand("score", Commands
   public boolean isReady(){
     return affector.isElevHomed()//elevator homed
      && affector.atSetpoint()//in pos
-     && (isAffectorPosScoring(target) ? intake.isHolding() || !intake.getHoldLock() : true)//holding if in scoring pos or bypass(hold lock override assumes sensor is non functional)
-     && (target == Constants.Affector.STATION_POSITION ? intake.isIntaking() : true)//intaking if in station pos
-     && affector.getPositionSet() == target; // target is not buffered
+     && (isAffectorPosScoring(affector.getPositionSet()) ? intake.isHolding() || !intake.getHoldLock() : true)//holding if in scoring pos or bypass(hold lock override assumes sensor is non functional)
+     && (affector.getPositionSet() == Constants.Affector.STATION_POSITION ? intake.isIntaking() : true);//intaking if in station pos
+    //  && affector.getPositionSet() == target; // target is not buffered
   }
 
   private boolean isAffectorPosScoring(AffectorPosition p){

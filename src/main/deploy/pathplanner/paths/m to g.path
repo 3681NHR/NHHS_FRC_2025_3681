@@ -50,7 +50,12 @@
       "name": "L4",
       "waypointRelativePos": 0.14097904446117088,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "L4"
+        }
+      }
     }
   ],
   "globalConstraints": {

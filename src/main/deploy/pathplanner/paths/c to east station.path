@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.441652087030456,
-        "y": 3.044566416257603
+        "x": 3.456857662778714,
+        "y": 3.125200992052648
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.3202563574781037,
-        "y": 2.7420189195988125
+        "x": 3.3354619332263615,
+        "y": 2.8226534953938573
       },
       "isLocked": false,
       "linkedName": "c"
@@ -55,7 +55,12 @@
       "name": "station",
       "waypointRelativePos": 0.1987952497461643,
       "endWaypointRelativePos": null,
-      "command": null
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "station"
+        }
+      }
     }
   ],
   "globalConstraints": {

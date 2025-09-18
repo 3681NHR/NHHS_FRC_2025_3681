@@ -5,22 +5,9 @@
     "data": {
       "commands": [
         {
-          "type": "parallel",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "east to f"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "L4"
-                }
-              }
-            ]
+            "pathName": "east to f"
           }
         },
         {
@@ -42,22 +29,9 @@
           }
         },
         {
-          "type": "parallel",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "station"
-                }
-              },
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "f to east station"
-                }
-              }
-            ]
+            "pathName": "f to east station"
           }
         }
       ]
