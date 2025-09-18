@@ -124,22 +124,22 @@ public class Vision extends SubsystemBase {
       // Log camera data
       if (tagPoses.size() > 0) {
         Logger.recordOutput(
-            "Vision/Camera: " + io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName() + "/TagPoses",
+            "Vision/Camera: " + (io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName()) + "/TagPoses",
             tagPoses.toArray(new Pose3d[0]));
       }
       if (robotPoses.size() > 0) {
         Logger.recordOutput(
-            "Vision/Camera: " + io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName() + "/AllRobotPoses",
+            "Vision/Camera: " + (io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName()) + "/AllRobotPoses",
             robotPoses.toArray(new Pose3d[0]));
       }
       if (robotPosesAccepted.size() > 0) {
         Logger.recordOutput(
-            "Vision/Camera: " + io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName() + "/RobotPosesAccepted",
+            "Vision/Camera: " + (io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName()) + "/RobotPosesAccepted",
             robotPosesAccepted.toArray(new Pose3d[0]));
       }
       if (robotPosesRejected.size() > 0) {
         Logger.recordOutput(
-            "Vision/Camera: " + io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName() + "/RobotPosesRejected",
+            "Vision/Camera: " + (io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName()) + "/RobotPosesRejected",
             robotPosesRejected.toArray(new Pose3d[0]));
       }
       double[][] stdDevs = new double[estimates.size()][3];
@@ -147,7 +147,7 @@ public class Vision extends SubsystemBase {
         stdDevs[i] = estimates.get(i).visionMeasurementStdDevs.getData();
       }
       Logger.recordOutput(
-        "Vision/Camera: " + io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName() + "/stdDevs",
+        "Vision/Camera: " + (io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName()) + "/stdDevs",
         stdDevs);
 
       allTagPoses.addAll(tagPoses);

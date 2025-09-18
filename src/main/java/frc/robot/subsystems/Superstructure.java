@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.affector.Affector;
 import frc.robot.subsystems.climber.Climber;

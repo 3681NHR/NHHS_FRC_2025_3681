@@ -1,9 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.constants.AffectorPosition;
 import frc.robot.constants.Constants;
-import frc.robot.constants.IntakeConstants;
 import frc.robot.subsystems.affector.Affector;
 import frc.robot.subsystems.affector.Affector.WantedAffectorState;
 import frc.robot.subsystems.intake.Intake;

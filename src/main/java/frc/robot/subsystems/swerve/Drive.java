@@ -254,9 +254,9 @@ public class Drive extends SubsystemBase {
 
     YAGSLWidget.desiredChassisSpeedsObj = discreteSpeeds;
     // Log unoptimized setpoints
-    Logger.recordOutput("SwerveStates/Setpoints", setpointStates);
-    Logger.recordOutput("SwerveChassisSpeeds/Setpoints", discreteSpeeds);
-    Logger.recordOutput("SwerveChassisSpeeds/SetpointAngularVel", discreteSpeeds.omegaRadiansPerSecond);
+    Logger.recordOutput("Drive/SwerveStates/Setpoints", setpointStates);
+    Logger.recordOutput("Drive/SwerveChassisSpeeds/Setpoints", discreteSpeeds);
+    Logger.recordOutput("Drive/SwerveChassisSpeeds/SetpointAngularVel", discreteSpeeds.omegaRadiansPerSecond);
     
     // Send setpoints to modules
     for (int i = 0; i < 4; i++) {
@@ -265,7 +265,7 @@ public class Drive extends SubsystemBase {
     
     YAGSLWidget.desiredStatesObj = setpointStates;
     // Log optimized setpoints (runSetpoint mutates each state)
-    Logger.recordOutput("SwerveStates/SetpointsOptimized", setpointStates);
+    Logger.recordOutput("Drive/SwerveStates/SetpointsOptimized", setpointStates);
   }
 
   /** Runs the drive in a straight line with the specified drive output. */
