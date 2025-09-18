@@ -55,9 +55,6 @@ public class WristIOSim implements WristIO {
         if(pos == MIN_POS || pos == MAX_POS){
             vel = 0;
         }
-        Logger.recordOutput("sim/wrist/f", f);
-        Logger.recordOutput("sim/wrist/a", a);
-        Logger.recordOutput("sim/wrist/g", Math.cos(pos)*(9.81*Units.inchesToMeters(5.72)));
 
         in.pos = pos;
         in.vel = vel;

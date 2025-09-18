@@ -77,10 +77,10 @@ public class Intake extends SubsystemBase {
     public void applyStates(){
         switch (currentState) {
             case INTAKING:
-            io.setVoltage(-IntakeConstants.SPEED);
+            io.setVoltage(IntakeConstants.SPEED);
             break;
             case OUTAKING:
-            io.setVoltage(IntakeConstants.SPEED);
+            io.setVoltage(-IntakeConstants.SPEED);
             break;
             case STOPPED:
                 io.setVoltage(0);

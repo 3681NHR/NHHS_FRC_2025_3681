@@ -36,7 +36,7 @@ public class IntakeIOSim implements IntakeIO {
     
     @Override
     public void updateInputs(IntakeIOInputs inputs) {
-        vel = voltage * Units.rotationsPerMinuteToRadiansPerSecond(2348.9/5.0);
+        vel = voltage * Units.rotationsPerMinuteToRadiansPerSecond(2348.9/12.0);
 
         // Update input values
         inputs.motorVoltage = voltage;
