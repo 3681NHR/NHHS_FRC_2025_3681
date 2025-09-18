@@ -5,7 +5,7 @@ import frc.robot.constants.AffectorPosition;
 import frc.robot.constants.Constants;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.subsystems.affector.Affector;
-import frc.robot.subsystems.affector.Affector.WantedState;
+import frc.robot.subsystems.affector.Affector.WantedAffectorState;
 import frc.robot.subsystems.intake.Intake;
 
 public class StationIntake extends Command {
@@ -27,7 +27,7 @@ public class StationIntake extends Command {
   @Override
   public void execute() {
 
-    affector.setWantedState(WantedState.POSITION, Constants.Affector.STATION_POSITION);
+    affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STATION_POSITION);
 
     intake.setVoltage(IntakeConstants.SPEED);
   }

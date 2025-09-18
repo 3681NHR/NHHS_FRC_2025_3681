@@ -36,22 +36,22 @@ import frc.utils.ProfiledPID;
 
 public class Affector extends SubsystemBase {
 
-    public enum WantedState{
+    public enum WantedAffectorState{
         HOME,
         OFF,
         SYSID,
         POSITION
     }
-    private enum CurrentState{
+    private enum CurrentAffectorState{
         HOME,
         OFF,
         SYSID,
         POSITION
     }
 
-    private WantedState  wantedState   =  WantedState.POSITION;
-    private CurrentState currentState  = CurrentState.POSITION;
-    private CurrentState previousState = CurrentState.OFF;
+    private WantedAffectorState  wantedState   =  WantedAffectorState.POSITION;
+    private CurrentAffectorState currentState  = CurrentAffectorState.POSITION;
+    private CurrentAffectorState previousState = CurrentAffectorState.OFF;
 
     private ElevatorIO elevIO;
     private ElevatorIOInputsAutoLogged elevInputs = new ElevatorIOInputsAutoLogged();
@@ -168,41 +168,41 @@ public class Affector extends SubsystemBase {
         wristIO.setVoltage(wristVout);
         
         elevNotHomed.set(!elevHomed);
-        elevNoLim.set(!elevHomed || currentState == CurrentState.HOME || currentState == CurrentState.SYSID || !elevLimitOverride.get());
+        elevNoLim.set(!elevHomed || currentState == CurrentAffectorState.HOME || currentState == CurrentAffectorState.SYSID || !elevLimitOverride.get());
 
-        wristNoLim.set(currentState == CurrentState.HOME || currentState == CurrentState.SYSID || !wristLimitOverride.get());
+        wristNoLim.set(currentState == CurrentAffectorState.HOME || currentState == CurrentAffectorState.SYSID || !wristLimitOverride.get());
     }
 
     private void stateTransitions(){
         switch (wantedState) {
             case HOME:
-                currentState = CurrentState.HOME;
+                currentState = CurrentAffectorState.HOME;
             break;
             case OFF:
-                currentState = CurrentState.OFF;
+                currentState = CurrentAffectorState.OFF;
             break;
             case SYSID:
-                currentState = CurrentState.SYSID;
+                currentState = CurrentAffectorState.SYSID;
             break;
             case POSITION:
-                currentState = CurrentState.POSITION;
+                currentState = CurrentAffectorState.POSITION;
             break;
         }
     }
     private void applyStates(){
-        if(currentState == CurrentState.POSITION && previousState != CurrentState.POSITION){
+        if(currentState == CurrentAffectorState.POSITION && previousState != CurrentAffectorState.POSITION){
             elevPID.reset(elevInputs.pos, elevInputs.vel);
             wristPID.reset(wristInputs.pos, wristInputs.vel);
         }
         switch (currentState) {
             case HOME:
-                if(previousState != CurrentState.HOME){
+                if(previousState != CurrentAffectorState.HOME){
                     elevHomed = false;
                 }
                 if(elevHomed){
                     elevVout = 0;
                     elevIO.resetPos(ElevatorConstants.HOME_POS);
-                    setWantedState(WantedState.POSITION, new AffectorPosition(ElevatorConstants.HOME_POS, 0.0));
+                    setWantedState(WantedAffectorState.POSITION, new AffectorPosition(ElevatorConstants.HOME_POS, 0.0));
                 } else {
                     elevVout = ElevatorConstants.HOME_VOLTAGE;
                     if (Math.abs(getVelocity().elev) < ElevatorConstants.HOME_MIN_VEL) {
@@ -247,12 +247,12 @@ public class Affector extends SubsystemBase {
     }
 
     public void setElevVoltage(double voltage){
-        if(currentState == CurrentState.HOME || currentState == CurrentState.SYSID){
+        if(currentState == CurrentAffectorState.HOME || currentState == CurrentAffectorState.SYSID){
             elevVout = voltage;
         }
     }
     public void setWristVoltage(double voltage){
-        if(currentState == CurrentState.SYSID){
+        if(currentState == CurrentAffectorState.SYSID){
             wristVout = voltage;
         }
     }
@@ -300,13 +300,13 @@ public class Affector extends SubsystemBase {
     }
 
     public void stop(){
-        setWantedState(WantedState.POSITION, getPosition());
+        setWantedState(WantedAffectorState.POSITION, getPosition());
     }
 
-    public void setWantedState(WantedState w){
+    public void setWantedState(WantedAffectorState w){
         wantedState = w;
     }
-    public void setWantedState(WantedState w, AffectorPosition pos){
+    public void setWantedState(WantedAffectorState w, AffectorPosition pos){
         wantedState = w;
         elevPosSet = pos.elev;
         wristPosSet = pos.wrist;
@@ -321,23 +321,23 @@ public class Affector extends SubsystemBase {
 
     /** Returns a command to run a quasistatic test in the specified direction. */
     public Command elevSysIdQuasistatic(SysIdRoutine.Direction direction) {
-        setWantedState(WantedState.SYSID);
+        setWantedState(WantedAffectorState.SYSID);
         return elevSysID.quasistatic(direction);
     }
 
     /** Returns a command to run a dynamic test in the specified direction. */
     public Command elevSysIdDynamic(SysIdRoutine.Direction direction) {
-        setWantedState(WantedState.SYSID);
+        setWantedState(WantedAffectorState.SYSID);
         return elevSysID.dynamic(direction);
     }
     public Command wristSysIdQuasistatic(SysIdRoutine.Direction direction) {
-        setWantedState(WantedState.SYSID);
+        setWantedState(WantedAffectorState.SYSID);
         return wristSysID.quasistatic(direction);
     }
 
     /** Returns a command to run a dynamic test in the specified direction. */
     public Command wristSysIdDynamic(SysIdRoutine.Direction direction) {
-        setWantedState(WantedState.SYSID);
+        setWantedState(WantedAffectorState.SYSID);
         return wristSysID.dynamic(direction);
     }
 

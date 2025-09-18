@@ -18,7 +18,7 @@ import frc.robot.constants.VisionConstants;
 import frc.robot.constants.WristConstants;
 import frc.robot.subsystems.Led;
 import frc.robot.subsystems.affector.Affector;
-import frc.robot.subsystems.affector.Affector.WantedState;
+import frc.robot.subsystems.affector.Affector.WantedAffectorState;
 import frc.robot.subsystems.affector.elevator.ElevatorIO;
 import frc.robot.subsystems.affector.elevator.ElevatorIOSim;
 import frc.robot.subsystems.affector.elevator.ElevatorIOSpark;
@@ -32,6 +32,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSpark;
+import frc.robot.subsystems.intake.Intake.WantedIntakeState;
 import frc.robot.subsystems.physButtons.ButtonIO;
 import frc.robot.subsystems.physButtons.ButtonIODIO;
 import frc.robot.subsystems.physButtons.ButtonIOSim;
@@ -275,22 +276,22 @@ public class RobotContainer {
     
     NamedCommands.registerCommand("station", new StationIntake(affector, intake).withTimeout(5));
     NamedCommands.registerCommand("L2", Commands.runOnce(() -> {
-      affector.setWantedState(WantedState.POSITION, Constants.Affector.L2_POSITION);
+      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L2_POSITION);
       }, affector));
     NamedCommands.registerCommand("L3", Commands.runOnce(() -> {
-      affector.setWantedState(WantedState.POSITION, Constants.Affector.L3_POSITION);
+      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L3_POSITION);
     }, affector));
   NamedCommands.registerCommand("L4", Commands.runOnce(() -> {
-    affector.setWantedState(WantedState.POSITION, Constants.Affector.L4_POSITION);
+    affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L4_POSITION);
   }, affector));
   NamedCommands.registerCommand("stow", Commands.runOnce(() -> {
-    affector.setWantedState(WantedState.POSITION, Constants.Affector.STOW_POSITION);
+    affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
   }, affector));
 
 NamedCommands.registerCommand("score", Commands
-  .run(() -> intake.setVoltage(IntakeConstants.SPEED),intake)
+  .run(() -> intake.setWantedState(WantedIntakeState.INTAKE), intake)
   .until(() -> !intake.isHolding())
-  .finallyDo(() -> intake.stop())
+  .finallyDo(() -> intake.setWantedState(WantedIntakeState.STOP))
   .withTimeout(2)
 );
 
@@ -419,15 +420,15 @@ NamedCommands.registerCommand("score", Commands
 
     //home
     new Trigger(() -> operatorController.getRawButton(A)).onTrue(new InstantCommand(() -> {
-      affector.setWantedState(WantedState.HOME);
+      affector.setWantedState(WantedAffectorState.HOME);
     }));
         
     //intake controls
     new Trigger(() -> driverController.getRawButton(RB)).or(() -> operatorController.getRawButton(RB)).whileTrue(new IntakeCommand(intake));
     new Trigger(() -> operatorController.getRawButton(Y)).onTrue(new InstantCommand(() -> {
-      intake.setVoltage(-IntakeConstants.SPEED);
+      intake.setWantedState(WantedIntakeState.OUTTAKE);;
     })).onFalse(new InstantCommand(() -> {
-      intake.stop(); 
+      intake.setWantedState(WantedIntakeState.STOP);; 
     }));
 
     //set affector target
@@ -438,7 +439,7 @@ NamedCommands.registerCommand("score", Commands
 
     //go to affector target
     new Trigger(() -> driverController.getRawButton(LB)).or(() -> operatorController.getRawButton(LB)).onTrue(new InstantCommand(() -> {
-      affector.setWantedState(WantedState.POSITION, target);
+      affector.setWantedState(WantedAffectorState.POSITION, target);
     }));
 
     new Trigger(() -> driverController.getRawButton(X))

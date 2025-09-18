@@ -7,7 +7,7 @@ import frc.robot.constants.AffectorPosition;
 import frc.robot.constants.Constants;
 import frc.robot.constants.ElevatorConstants;
 import frc.robot.subsystems.affector.Affector;
-import frc.robot.subsystems.affector.Affector.WantedState;
+import frc.robot.subsystems.affector.Affector.WantedAffectorState;
 
 public class MoveAffector extends Command {
 
@@ -30,7 +30,7 @@ public class MoveAffector extends Command {
   public void initialize() {
     pos = posSup.get();
 
-    elevator.setWantedState(WantedState.POSITION, new AffectorPosition(pos.elev, Constants.Affector.STOW_POSITION.wrist));
+    elevator.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(pos.elev, Constants.Affector.STOW_POSITION.wrist));
 
     done = false;
   }
@@ -38,7 +38,7 @@ public class MoveAffector extends Command {
   @Override
   public void execute() {
     if(Math.abs(elevator.getPosition().elev - elevator.getPositionSet().elev) < ElevatorConstants.NEAR_POS_TOLERANCE){
-      elevator.setWantedState(WantedState.POSITION, pos);
+      elevator.setWantedState(WantedAffectorState.POSITION, pos);
       done = elevator.atSetpoint();
     }
   }
