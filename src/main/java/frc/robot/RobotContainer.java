@@ -384,6 +384,10 @@ NamedCommands.registerCommand("score", Commands
     }));
     new Trigger(() -> driverController.getRawAxis(LEFT_TRIGGER) > 0.5).whileTrue(new IntakeCommand(intake));
     new Trigger(() -> driverController.getRawAxis(RIGHT_TRIGGER) > 0.5).whileTrue(new IntakeCommand(intake));
+    
+    new Trigger(() -> driverController.getPOV() == 0).onTrue(new InstantCommand(() -> {
+      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
+    }));
 
     // new Trigger(() -> driverController.getRawButton(X))
     // .and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? Constants.positions.REEFS : Constants.positions.RED_REEFS, drive.getPose())) < .5)

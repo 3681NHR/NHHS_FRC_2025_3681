@@ -13,6 +13,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -134,6 +135,10 @@ public class Affector extends SubsystemBase {
         wristIO.updateInputs(wristInputs);
         Logger.processInputs("Affector/Wrist", wristInputs);
 
+        if(DriverStation.isDisabled()){
+            setWantedState(WantedAffectorState.POSITION, getPosition());
+        }
+
         previousState = currentState;
 
         stateTransitions();
@@ -226,9 +231,9 @@ public class Affector extends SubsystemBase {
             wristPosSet += ExtraMath.processInput(operatorController.getRightY(), -0.02 * WristConstants.POS_PID.maxSpeed(), 1.0, 0.05);
             elevPosSet += (operatorController.getRightTriggerAxis()-operatorController.getLeftTriggerAxis())*OperatorConstants.ELEVATOR_MAN_SENS;
            
-            if(!elevHomed && elevInputs.pos < 0){
-                    elevIO.resetPos(0);
-            }
+            // if(!elevHomed && elevInputs.pos < 0){
+            //         elevIO.resetPos(0);
+            // }
             if(elevHomed && elevLimitOverride.get()){
                 elevPosSet = MathUtil.clamp(elevPosSet, ElevatorConstants.MIN_POS, ElevatorConstants.MAX_POS);
             }

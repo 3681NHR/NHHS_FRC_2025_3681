@@ -35,19 +35,19 @@ public class VisionConstants {
   // Robot to camera transforms
   public static Transform3d BL_ROBOT_TO_CAM =
         new Transform3d(
-            -Units.inchesToMeters(9.5),//forward
-            Units.inchesToMeters(10),//left 
+            -Units.inchesToMeters(9.75),//forward
+            Units.inchesToMeters(9.5),//left 
             Units.inchesToMeters(9.5), //up
         new Rotation3d(
             Units.degreesToRadians(0),
             Units.degreesToRadians(-20),//-pitch
-            Units.degreesToRadians(50)//yaw
+            Units.degreesToRadians(55)//yaw
         )
   );
   public static Transform3d FL_ROBOT_TO_CAM =
         new Transform3d(
-            Units.inchesToMeters(9.5),//forward
-            Units.inchesToMeters(10),//left 
+            Units.inchesToMeters(9.25),//forward
+            Units.inchesToMeters(10.5),//left 
             Units.inchesToMeters(9.5), //up
         new Rotation3d(
             Units.degreesToRadians(0),
@@ -57,9 +57,9 @@ public class VisionConstants {
   );
   public static Transform3d BR_ROBOT_TO_CAM =
         new Transform3d(
-            -Units.inchesToMeters(4),//forward
-            -Units.inchesToMeters(8.6),//left 
-            Units.inchesToMeters(9), //up
+            -Units.inchesToMeters(6),//forward
+            -Units.inchesToMeters(11.5),//left 
+            Units.inchesToMeters(10), //up
         new Rotation3d(
             Units.degreesToRadians(0),
             Units.degreesToRadians(-20),//-pitch
@@ -69,13 +69,13 @@ public class VisionConstants {
   
 
   // Basic filtering thresholds
-  public static double MAX_AMBIGUITY = 0.3;
+  public static double MAX_AMBIGUITY = 0.5;
   public static double MAX_Z_ERROR = 0.75;
 
   // Standard deviation baselines, for 1 meter distance and 1 tag
   // (Adjusted automatically based on distance and # of tags)
-  public static double LIN_STD_DEV_BASELINE = 0.1; // Meters
-  public static double ANG_STD_DEV_BASELINE = 0.075; // Radians
+  public static double LIN_STD_DEV_BASELINE = 0.2; // Meters
+  public static double ANG_STD_DEV_BASELINE = 0.1; // Radians
 
   // Standard deviation multipliers for each camera
   // (Adjust to trust some cameras more than others)
