@@ -29,6 +29,8 @@ public class Intake extends SubsystemBase {
 
     private final IntakeIO io;
     private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
+
+    private boolean wasHolding=false;
     
     private LoggedNetworkBoolean holdLock = new LoggedNetworkBoolean("overrides/holdLock", true);
     
@@ -38,6 +40,8 @@ public class Intake extends SubsystemBase {
     
     @Override
     public void periodic() {
+        wasHolding = inputs.holding;
+        
         io.updateInputs(inputs);
         Logger.processInputs("Intake", inputs);
 
@@ -92,6 +96,9 @@ public class Intake extends SubsystemBase {
 
     public boolean isHolding() {
         return inputs.holding;
+    }
+    public boolean wasHolding() {
+        return wasHolding;
     }
     public void setBrakeMode(boolean enable) {
         io.setNeutralMode(enable);

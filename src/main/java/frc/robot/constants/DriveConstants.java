@@ -33,9 +33,15 @@ import frc.utils.PIDGains;
 
 public class DriveConstants {
     public static final PIDGains.PID ANGLE_PID = new PIDGains.PID(0.5, 0.0, 0.025);
-    public static final PIDGains.PID ANGLE_PID_SIM = new PIDGains.PID(0.5, 0.0, 0.025);
+    public static final PIDGains.PID ANGLE_PID_SIM = new PIDGains.PID(4, 0.0, 0.1);
+
     public static final double ANGLE_MAX_VELOCITY = 11.2;
     public static boolean USE_VISION = true;
+
+    public static final double MAX_SPEED_PP = 3;
+    public static final double MAX_ACCEL_PP = 3;
+    public static final double MAX_ANGLE_SPEED_PP = 11.2;
+    public static final double MAX_ANGLE_ACCEL_PP = MAX_ANGLE_SPEED_PP*2;
 
     public static final PIDGains.PID AUTO_ANGLE_PID = new PIDGains.PID(8, 0.0, 0.0);//TODO tune
     public static final PIDGains.PID AUTO_ANGLE_PID_SIM = new PIDGains.PID(5, 0.0, 0.0);
@@ -45,8 +51,8 @@ public class DriveConstants {
     public static final double MAX_SPEED = 4.7;//TODO tune
 
     public static final double ODOMETRY_FREQ = 100.0; // Hz
-    public static final double WIDTH = Units.inchesToMeters(22);
-    public static final double LENGTH = Units.inchesToMeters(25);
+    public static final double WIDTH = Units.inchesToMeters(22); // size between wheels
+    public static final double LENGTH = Units.inchesToMeters(25);// size between wheels
     public static final double RADIUS = Math.hypot(WIDTH / 2.0, LENGTH / 2.0);
   public static final Translation2d[] MODULE_POSITIONS =
       new Translation2d[] {
@@ -148,8 +154,7 @@ public class DriveConstants {
 
     public static class presets{
         public static final Rotation2d CLIMB = Rotation2d.fromDegrees(180);
-        public static final Pose2d WEST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(30));
-        public static final Pose2d EAST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(142));
-        public static final Pose2d PROSSESOR = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(270));
+        public static final Pose2d WEST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(36.9));
+        public static final Pose2d EAST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(142.9));
     }
 }

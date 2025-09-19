@@ -16,6 +16,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,6 +26,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -33,16 +35,22 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.Constants.RobotMode;
+import frc.robot.subsystems.swerve.gyro.GyroIO;
+import frc.robot.subsystems.swerve.gyro.GyroIOInputsAutoLogged;
+import frc.robot.subsystems.swerve.module.Module;
+import frc.robot.subsystems.swerve.module.ModuleIO;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionEstimate;
 import frc.utils.ExtraMath;
 import frc.utils.LoggedField2d;
 import frc.utils.PID;
+import frc.utils.ProfiledPID;
 import frc.utils.SparkOdometryThread;
 import frc.utils.Joystick.duelJoystickAxis;
 
@@ -76,6 +84,7 @@ public class Drive extends SubsystemBase {
     private CurrentDriveState previousState = CurrentDriveState.IDLE;
 
     private double rotationLockHeading = 0;
+    private Translation2d driveToPointTarget;
     private boolean FODEnabled = true;
 
     private PID angleController =
@@ -121,6 +130,8 @@ public class Drive extends SubsystemBase {
         modules[1] = new Module(frModuleIO, 1);
         modules[2] = new Module(blModuleIO, 2);
         modules[3] = new Module(brModuleIO, 3);
+
+        angleController.enableContinuousInput(-Math.PI, Math.PI);
 
         // Usage reporting for swerve template
         HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
@@ -308,21 +319,25 @@ public class Drive extends SubsystemBase {
             case SYS_ID:
             break;
             case TELEOP_DRIVE:
-            if(FODEnabled){
-                runVelocity(getSpeedsFromController());
-            } else {
-                runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(getSpeedsFromController(), getRotation()));
-            }
+                if(FODEnabled){
+                    runVelocity(getSpeedsFromController());
+                } else {
+                    runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(getSpeedsFromController(), getRotation()));
+                }
             break;
             case CHOREO_PATH:
             break;
             case ROTATION_LOCK:
-                ChassisSpeeds speeds = getSpeedsFromController();
-                runVelocity(new ChassisSpeeds(
-                    speeds.vxMetersPerSecond,
-                    speeds.vyMetersPerSecond,
-                    angleController.calculate(getRotation().getRadians(), rotationLockHeading)
-                ));
+                ChassisSpeeds speeds = getTranslationalSpeedsFromController(MathUtil.clamp(angleController.calculate(getRotation().getRadians(), rotationLockHeading), -ANGLE_MAX_VELOCITY, ANGLE_MAX_VELOCITY));
+                
+                Logger.recordOutput("Drive/Rotation lock/Target angle", rotationLockHeading);
+                Logger.recordOutput("Drive/Rotation lock/Angle PID out", speeds.omegaRadiansPerSecond);
+
+                runVelocity(speeds);
+
+                if(angleController.atSetpoint()){
+                    setWantedState(WantedDriveState.TELEOP_DRIVE);
+                }
             break;
             case DRIVE_TO_POINT:
             break;
@@ -361,6 +376,39 @@ public class Drive extends SubsystemBase {
         double skew = speed.omegaRadiansPerSecond * ANGULAR_VELOCITY_COEFFICIENT;
 
         return ChassisSpeeds.fromFieldRelativeSpeeds(speed, getRotation().plus(new Rotation2d(skew)));
+    }
+    
+    private ChassisSpeeds getTranslationalSpeedsFromController(double angularVelocity){
+        
+        ChassisSpeeds speed = new ChassisSpeeds();
+        if(DriverStation.getAlliance().isPresent()){
+            if(DriverStation.getAlliance().get() == Alliance.Red){
+                speed =  new ChassisSpeeds(
+                    -driverSticks.ly.getAsDouble() * getMaxLinearSpeedMetersPerSec(),
+                    -driverSticks.lx.getAsDouble() * getMaxLinearSpeedMetersPerSec(),
+                    angularVelocity
+                );
+            } else {
+                speed =  new ChassisSpeeds(
+                    driverSticks.ly.getAsDouble() * getMaxLinearSpeedMetersPerSec(),
+                    driverSticks.lx.getAsDouble() * getMaxLinearSpeedMetersPerSec(),
+                    angularVelocity
+                );
+            }
+        }
+        double skew = speed.omegaRadiansPerSecond * ANGULAR_VELOCITY_COEFFICIENT;
+
+        return ChassisSpeeds.fromFieldRelativeSpeeds(speed, getRotation().plus(new Rotation2d(skew)));
+    }
+
+    public void setTargetRotation(double headingRad){
+        setWantedState(WantedDriveState.ROTATION_LOCK);
+        this.rotationLockHeading = headingRad;
+    }
+
+    public void setTargetPose(Pose2d p){
+        setWantedState(WantedDriveState.DRIVE_TO_POINT);
+        CommandScheduler.getInstance().schedule(driveToPose(p).andThen(() -> setWantedState(WantedDriveState.TELEOP_DRIVE)));
     }
 
     /**
@@ -519,10 +567,21 @@ public class Drive extends SubsystemBase {
     public double getAngulerVelocity(){
         return gyroInputs.yawVelocityRadPerSec;
     }
+    public double getSpeed(){
+        return Math.hypot(getChassisSpeeds().vxMetersPerSecond, getChassisSpeeds().vyMetersPerSecond);
+    }
+    public Rotation2d getVelocityDir(){
+        return new Rotation2d(Math.atan2(getChassisSpeeds().vyMetersPerSecond, getChassisSpeeds().vxMetersPerSecond));
+    }
 
     public Command driveToPose(Pose2d p){
-        List<Waypoint> points = PathPlannerPath.waypointsFromPoses(getPose(), p);
-        PathConstraints constraints = new PathConstraints(DriveConstants.MAX_SPEED, DriveConstants.MAX_SPEED*2, DriveConstants.ANGLE_MAX_VELOCITY, DriveConstants.ANGLE_MAX_VELOCITY*5);
-        return AutoBuilder.followPath(new PathPlannerPath(points, constraints, new IdealStartingState(0, getPose().getRotation()), new GoalEndState(0, p.getRotation())));
+        Pose2d end   = new Pose2d(p.getTranslation(), Rotation2d.kZero);
+        Pose2d start = new Pose2d(getPose().getTranslation(), getVelocityDir());
+
+        List<Waypoint> points = PathPlannerPath.waypointsFromPoses(start, end);
+        PathConstraints constraints = new PathConstraints(DriveConstants.MAX_SPEED_PP, DriveConstants.MAX_ACCEL_PP, DriveConstants.MAX_ANGLE_SPEED_PP, DriveConstants.MAX_ANGLE_ACCEL_PP);
+        PathPlannerPath path = new PathPlannerPath(points, constraints, new IdealStartingState(MetersPerSecond.of(getSpeed()), getPose().getRotation()), new GoalEndState(0, p.getRotation()));
+        path.preventFlipping = true;
+        return AutoBuilder.followPath(path);
     }
 }

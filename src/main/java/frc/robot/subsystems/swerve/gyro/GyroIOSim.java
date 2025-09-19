@@ -1,4 +1,4 @@
-package frc.robot.subsystems.swerve;
+package frc.robot.subsystems.swerve.gyro;
 
 import org.ironmaple.simulation.drivesims.GyroSimulation;
 

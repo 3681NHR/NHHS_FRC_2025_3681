@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.constants.AffectorPosition;
+import frc.robot.constants.Constants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.ElevatorConstants;
 import frc.robot.constants.WristConstants;
@@ -206,7 +207,7 @@ public class Affector extends SubsystemBase {
                 if(elevHomed){
                     elevVout = 0;
                     elevIO.resetPos(ElevatorConstants.HOME_POS);
-                    setWantedState(WantedAffectorState.POSITION, new AffectorPosition(ElevatorConstants.HOME_POS, 0.0));
+                    setWantedState(WantedAffectorState.POSITION, new AffectorPosition(ElevatorConstants.HOME_POS, Constants.Affector.STOW_POSITION.wrist));
                 } else {
                     elevVout = ElevatorConstants.HOME_VOLTAGE;
                     if (Math.abs(getVelocity().elev) < ElevatorConstants.HOME_MIN_VEL) {

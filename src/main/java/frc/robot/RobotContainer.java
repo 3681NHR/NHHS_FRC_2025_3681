@@ -38,6 +38,12 @@ import frc.robot.subsystems.physButtons.ButtonIOSim;
 import frc.robot.subsystems.physButtons.Buttons;
 import frc.robot.subsystems.swerve.*;
 import frc.robot.subsystems.swerve.Drive.WantedDriveState;
+import frc.robot.subsystems.swerve.gyro.GyroIO;
+import frc.robot.subsystems.swerve.gyro.GyroIOPigeon2;
+import frc.robot.subsystems.swerve.gyro.GyroIOSim;
+import frc.robot.subsystems.swerve.module.ModuleIO;
+import frc.robot.subsystems.swerve.module.ModuleIOSim;
+import frc.robot.subsystems.swerve.module.ModuleIOSpark;
 import frc.robot.subsystems.vision.CameraIO;
 import frc.robot.subsystems.vision.CameraIOPhoton;
 import frc.robot.subsystems.vision.CameraIOPhotonSim;
@@ -167,7 +173,7 @@ public class RobotContainer {
     driverSticks = new duelJoystickAxis(
       () -> lxLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND,  driverController.getRawAxis(LEFT_STICK_X), driverController.getRawAxis(LEFT_STICK_Y)).getX() ,  -1.0, Constants.OperatorConstants.TRANSLATION_CURVE, 0.0)),
       () -> lyLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND,  driverController.getRawAxis(LEFT_STICK_X), driverController.getRawAxis(LEFT_STICK_Y)).getY() ,  -1.0, Constants.OperatorConstants.TRANSLATION_CURVE, 0.0)),
-      () -> rxLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, driverController.getRawAxis(RIGHT_STICK_X), driverController.getRawAxis(RIGHT_STICK_Y)).getX(), -1.0, Constants.OperatorConstants.ROTATION_CURVE   , 0.0)),
+      () -> rxLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, driverController.getRawAxis(RIGHT_STICK_X), driverController.getRawAxis(RIGHT_STICK_Y)).getX(), -0.75, Constants.OperatorConstants.ROTATION_CURVE   , 0.0)),
       () -> ryLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, driverController.getRawAxis(RIGHT_STICK_X), driverController.getRawAxis(RIGHT_STICK_Y)).getY(), -1.0, Constants.OperatorConstants.ROTATION_CURVE   , 0.0))
     );
 
@@ -335,18 +341,16 @@ NamedCommands.registerCommand("score", Commands
     this.fod = !this.fod;
     }));
 
-    // new Trigger(() -> TimerHandler.getTeleopRemaining()<Constants.ENDGAME_TIME).onTrue(new InstantCommand(() -> {
-    //   rumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());
-    //   opRumbler.overrideQue(RumblePreset.DOUBLE_TAP.load());
-    // }));
+    new Trigger(() -> intake.isHolding() && !intake.wasHolding()).onTrue(new InstantCommand(() -> {
+      rumbler.overrideQue(RumblePreset.RING.load());
+    //   opRumbler.overrideQue(RumblePreset.TAP.load());
+    }));
     //aim to station
-    new Trigger(() -> driverController.getRawButton(LB)).onTrue(new AnglePresetDriveCommand(
-      driverSticks,
-      drive,
-      () -> stationAngle
-    ));
+    new Trigger(() -> driverController.getRawButton(LB)).onTrue(new InstantCommand(() -> {
+        drive.setTargetRotation(stationAngle.rotateBy(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? Rotation2d.k180deg : new Rotation2d()).getRadians());
+    }));
     //aim for reef
-    // new Trigger(() -> driverController.getRawButton(Y)).onTrue(new AnglePresetDriveCommand(driverSticks, drive, () -> reefAngle));
+    new Trigger(() -> driverController.getPOV() == 90).onTrue(drive.driveToPose(new Pose2d(3.23, 4.0, Rotation2d.kZero)));
  
     //physical button
     new Trigger(() -> buttons.get(0)).onTrue(new DisabledInstantCommand(() -> {
@@ -470,7 +474,7 @@ NamedCommands.registerCommand("score", Commands
   public Command getAutonomousCommand() {
 
     if(Constants.MODE == Constants.RobotMode.SIM){
-      // intake.setHolding(true);
+    //   intake.setHolding(true);
     }
 
     Command auto = autoChooser.get();
