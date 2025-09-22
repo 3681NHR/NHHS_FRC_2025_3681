@@ -38,10 +38,10 @@ public class DriveConstants {
     public static final double ANGLE_MAX_VELOCITY = 11.2;
     public static boolean USE_VISION = true;
 
-    public static final double MAX_SPEED_PP = 3;
-    public static final double MAX_ACCEL_PP = 3;
-    public static final double MAX_ANGLE_SPEED_PP = 11.2;
-    public static final double MAX_ANGLE_ACCEL_PP = MAX_ANGLE_SPEED_PP*2;
+    public static final double MAX_SPEED_PP = 5;
+    public static final double MAX_ACCEL_PP = 1;
+    public static final double MAX_ANGLE_SPEED_PP = 10;
+    public static final double MAX_ANGLE_ACCEL_PP = MAX_ANGLE_SPEED_PP*3;
     
     public static final double AUTO_ALIGN_ANGLE_MAX_OFFSET = 0.1;//degrees
     public static final double AUTO_ALIGN_POS_MAX_OFFSET   = 0.02;//meters

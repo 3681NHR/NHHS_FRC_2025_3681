@@ -541,6 +541,11 @@ public class Drive extends SubsystemBase {
     private ChassisSpeeds getChassisSpeeds() {
         return kinematics.toChassisSpeeds(getModuleStates());
     }
+    /** Returns the measured chassis speeds of the robot. */
+    @AutoLogOutput(key = "SwerveChassisSpeeds/Measured Field Relitive")
+    private ChassisSpeeds getFieldChassisSpeeds() {
+        return ChassisSpeeds.fromRobotRelativeSpeeds(kinematics.toChassisSpeeds(getModuleStates()), getRotation());
+    }
 
 
     /** Returns the current odometry pose. */
@@ -576,8 +581,9 @@ public class Drive extends SubsystemBase {
     public double getAngulerVelocity(){
         return gyroInputs.yawVelocityRadPerSec;
     }
+    @AutoLogOutput(key="Drive/speed")
     public double getSpeed(){
-        return Math.hypot(getChassisSpeeds().vxMetersPerSecond, getChassisSpeeds().vyMetersPerSecond);
+        return new Translation2d(getChassisSpeeds().vxMetersPerSecond, getChassisSpeeds().vyMetersPerSecond).getNorm();
     }
     public Rotation2d getVelocityDir(){
         return new Rotation2d(Math.atan2(getChassisSpeeds().vyMetersPerSecond, getChassisSpeeds().vxMetersPerSecond));
@@ -585,7 +591,7 @@ public class Drive extends SubsystemBase {
 
     private Command driveToPose(Pose2d p){
         Pose2d end   = new Pose2d(p.getTranslation(), p.getRotation().rotateBy(Rotation2d.k180deg));
-        Pose2d start = new Pose2d(getPose().getTranslation(), getPathVelocityHeading(getChassisSpeeds(), end));
+        Pose2d start = new Pose2d(getPose().getTranslation(), getPathVelocityHeading(getFieldChassisSpeeds(), p));
 
         List<Waypoint> points = PathPlannerPath.waypointsFromPoses(start, end);
         
@@ -594,7 +600,7 @@ public class Drive extends SubsystemBase {
         }
         
         PathConstraints constraints = new PathConstraints(DriveConstants.MAX_SPEED_PP, DriveConstants.MAX_ACCEL_PP, DriveConstants.MAX_ANGLE_SPEED_PP, DriveConstants.MAX_ANGLE_ACCEL_PP);
-        PathPlannerPath path = new PathPlannerPath(points, constraints, new IdealStartingState(MetersPerSecond.of(getSpeed()), getPose().getRotation()), new GoalEndState(0, p.getRotation()));
+        PathPlannerPath path = new PathPlannerPath(points, constraints, new IdealStartingState(getSpeed(), getPose().getRotation()), new GoalEndState(0, p.getRotation()));
         path.preventFlipping = true;
 
 
@@ -637,6 +643,6 @@ public class Drive extends SubsystemBase {
         Logger.recordOutput("Drive/Align/Calc/y"  , cs.vyMetersPerSecond);
         Logger.recordOutput("Drive/Align/Calc/dir", rotation);
 
-        return rotation.rotateBy(Rotation2d.k180deg);
+        return rotation;
     }
 }
