@@ -1,14 +1,41 @@
 package frc.robot.subsystems;
 
-import org.littletonrobotics.junction.Logger;
+import java.lang.annotation.ElementType;
+import java.util.ArrayList;
+import java.util.Arrays;
 
+import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
+
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.AffectorPosition;
+import frc.robot.constants.Constants;
+import frc.robot.constants.DriveConstants;
+import frc.robot.constants.ElevatorConstants;
+import frc.robot.constants.IntakeConstants;
+import frc.robot.constants.WristConstants;
 import frc.robot.subsystems.affector.Affector;
+import frc.robot.subsystems.affector.Affector.WantedAffectorState;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.Intake.WantedIntakeState;
 import frc.robot.subsystems.swerve.Drive;
 import frc.robot.subsystems.vision.Vision;
+import frc.utils.AprilTagRegion;
+import frc.utils.VariableLimSLR;
 
 public class Superstructure extends SubsystemBase{
     public enum WantedSuperState {
@@ -20,7 +47,7 @@ public class Superstructure extends SubsystemBase{
         L3,
         L2,
         L1,
-        MANUAL
+        CLIMB
     }
     public enum CurrentSuperState {
         HOME,
@@ -34,30 +61,191 @@ public class Superstructure extends SubsystemBase{
         L3,
         L2,
         L1,
-        MANUAL
+        CLIMB
     }
+    // X = side to side, Y = away from tag
+    public enum BranchSide{ //? you could consider bringing the tag offsets back and modifying dynamics
+        LEFT  (new Translation2d(Units.inchesToMeters(-17), Units.inchesToMeters(17))),
+        RIGHT (new Translation2d(Units.inchesToMeters(-3.5)  , Units.inchesToMeters(17))),
+        MIDDLE(new Translation2d());
 
-    private WantedSuperState wantedState    =  WantedSuperState.DEFAULT_STATE;
-    private CurrentSuperState currentState  = CurrentSuperState.STOPPED;
-    private CurrentSuperState previousState = CurrentSuperState.STOPPED;
+        public Translation2d tagOffset;
+        private BranchSide(Translation2d offsets) {
+            tagOffset = offsets;
+        }
+
+        public BranchSide mirror(){
+            switch (this) {
+                case LEFT: return RIGHT;
+                case MIDDLE: return MIDDLE;
+                default: return LEFT;
+            }
+        }
+    }
+    public enum StationSide{ //? you could consider bringing the tag offsets back and modifying dynamics
+        LEFT  (DriverStation.getAlliance().get() == Alliance.Red ? DriveConstants.presets.WEST_STATION.getRotation() : DriveConstants.presets.EAST_STATION.getRotation()),
+        RIGHT (DriverStation.getAlliance().get() == Alliance.Red ? DriveConstants.presets.EAST_STATION.getRotation() : DriveConstants.presets.WEST_STATION.getRotation()),
+        AUTO  (new Rotation2d());
+
+        public Rotation2d angle;
+        private StationSide(Rotation2d angle) {
+            this.angle = angle;
+        }
+
+    }
+    
+    public WantedSuperState wantedState    =  WantedSuperState.DEFAULT_STATE;
+    public CurrentSuperState currentState  = CurrentSuperState.STOPPED;
+    public CurrentSuperState previousState = CurrentSuperState.STOPPED;
+
+    private boolean fL4 = false;
+    private boolean tL4 = false;
+    private boolean fL1 = false;
+    private boolean tL1 = false;
+
+    private AffectorPosition bufferedPos = new AffectorPosition(0, 0);
 
     Intake intake;
     Climber climber;
     Affector affector;
     Drive drive;
     Vision vision;
+    Led led;
+    
+    @AutoLogOutput(key="Superstructure/is scoring")
+    private boolean scoring = false;
+    
+    private VariableLimSLR lxLim;
+    private VariableLimSLR lyLim;
+    private VariableLimSLR rxLim;
+    private VariableLimSLR ryLim;
+    
+    private boolean fod = Constants.drive.STARTING_FOD;
 
-    public Superstructure(){
-        
+    private Rotation2d stationAngle = new Rotation2d();
+
+    private LoggedNetworkBoolean useVisionOdometry = new LoggedNetworkBoolean("overrides/useVisionOdometry", DriveConstants.USE_VISION);
+    
+    public static ArrayList<Pose2d> blueReefTagPoses = new ArrayList<>();
+    public static ArrayList<Pose2d> redReefTagPoses = new ArrayList<>();
+    public static ArrayList<Pose2d> allReefTagPoses = new ArrayList<>();
+
+    static{
+        var field = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+
+        Arrays.stream(AprilTagRegion.kReef.blue()).forEach((i) -> {
+            field.getTagPose(i).ifPresent((p) -> {
+                blueReefTagPoses.add(new Pose2d(
+                    p.getMeasureX(),
+                    p.getMeasureY(),
+                    p.getRotation().toRotation2d()
+                ));
+            });
+        });
+
+        Arrays.stream(AprilTagRegion.kReef.red()).forEach((i) -> {
+            field.getTagPose(i).ifPresent((p) -> {
+                redReefTagPoses.add(new Pose2d(
+                    p.getMeasureX(),
+                    p.getMeasureY(),
+                    p.getRotation().toRotation2d()
+                ));
+            });
+        });
+
+        Arrays.stream(AprilTagRegion.kReef.both()).forEach((i) -> {
+            field.getTagPose(i).ifPresent((p) -> {
+                allReefTagPoses.add(new Pose2d(
+                    p.getMeasureX(),
+                    p.getMeasureY(),
+                    p.getRotation().toRotation2d()
+                ));
+            });
+        });
+    }
+
+    public Superstructure(
+            Drive drive, 
+            Intake intake, 
+            Climber climber, 
+            Affector affector, 
+            Vision vision, 
+            Led led,
+            VariableLimSLR lxLim,
+            VariableLimSLR lyLim,
+            VariableLimSLR rxLim,
+            VariableLimSLR ryLim
+        ){
+        this.drive = drive;
+        this.intake = intake;
+        this.climber = climber;
+        this.affector = affector;
+        this.vision = vision;
+        this.led = led;
+        this.lxLim = lxLim;
+        this.lyLim = lyLim;
+        this.rxLim = rxLim;
+        this.ryLim = ryLim;
+
+    
     }
 
     @Override
     public void periodic() {
         previousState = currentState;
+
         
+        double rlim = Double.POSITIVE_INFINITY;
+        if(affector.getPosition().elev > .75){
+          rlim = 1/0.2;
+        }
+        lxLim.setLim(rlim);
+        lyLim.setLim(rlim);
+        rxLim.setLim(rlim);
+        ryLim.setLim(rlim);
+
+        drive.setFOD(fod);
+
+        // SmartDashboard.putBoolean("holding", !holdingSens.get());
+        led.setHomed(affector.isElevHomed());
+        led.setIntaking(intake.isMoving());
+
+        led.setColor(isReady() ? Color.kWhite : intake.isHolding() ? Color.kGreen : Color.kOrange);
+
+        Logger.recordOutput("Drive/fieldOrientedDrive", getFOD());
+
+        DriveConstants.USE_VISION = useVisionOdometry.get();
+
+        if(DriverStation.getAlliance().isPresent()){
+            if(DriverStation.getAlliance().get() == Alliance.Red){
+                if(drive.getPose().getTranslation().getY() > 4){
+                    stationAngle = DriveConstants.presets.EAST_STATION.getRotation();
+                } else {
+                    stationAngle = DriveConstants.presets.WEST_STATION.getRotation();
+                }
+            } else {
+                if(drive.getPose().getTranslation().getY() > 4){
+                    stationAngle = DriveConstants.presets.WEST_STATION.getRotation();
+                } else {
+                    stationAngle = DriveConstants.presets.EAST_STATION.getRotation();
+                }
+            }
+        }
+
+
+        updateAScopePoses();
+
         Logger.recordOutput("Superstructure/previousState", previousState);
         Logger.recordOutput("Superstructure/currentState", currentState);
         Logger.recordOutput("Superstructure/wantedState", wantedState);
+
+        Logger.recordOutput("Superstructure/flags/from L4", fL4);
+        Logger.recordOutput("Superstructure/flags/from L1", fL1);
+        Logger.recordOutput("Superstructure/flags/to L4", tL4);
+        Logger.recordOutput("Superstructure/flags/to L1", tL1);
+
+        Logger.recordOutput("Superstructure/bufferedPos/elev" , bufferedPos.elev);
+        Logger.recordOutput("Superstructure/bufferedPos/wrist", bufferedPos.wrist);
         
         stateTransition();
         applyStates();
@@ -103,8 +291,8 @@ public class Superstructure extends SubsystemBase{
             case L1:
                 currentState = CurrentSuperState.L1;
             break;
-            case MANUAL:
-                currentState = CurrentSuperState.MANUAL;
+            case CLIMB:
+                currentState = CurrentSuperState.CLIMB;
             break;
             default:
                 currentState = CurrentSuperState.STOPPED;
@@ -114,6 +302,320 @@ public class Superstructure extends SubsystemBase{
 
     //apply current state
     private void applyStates(){
+        if(scoring){
+            if(currentState == CurrentSuperState.L1 || currentState == CurrentSuperState.INTAKE_CORAL){
+                intake.setWantedState(WantedIntakeState.OUTTAKE);
+            } else {
+                intake.setWantedState(WantedIntakeState.INTAKE);
+            }
+            if(!intake.isHolding()){
+                scoring = false;
+                intake.setWantedState(WantedIntakeState.STOP);
+            }
+        }
 
+        if(fL4){
+            if(affector.getPosition().wrist < Units.degreesToRadians(45)){
+                affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
+            } else {
+                if(Math.abs(affector.getPosition().elev - bufferedPos.elev) < ElevatorConstants.NEAR_POS_TOLERANCE){
+                    affector.setWantedState(WantedAffectorState.POSITION, bufferedPos);
+                    fL4 = false;
+                } else {
+                    affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(bufferedPos.elev, Constants.Affector.STOW_POSITION.wrist));
+                }
+            }
+        }
+        if(tL4){
+            if(affector.getPosition().wrist < Units.degreesToRadians(75)){
+                affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
+            } else {
+                if(Math.abs(affector.getPosition().elev - bufferedPos.elev) < ElevatorConstants.NEAR_POS_TOLERANCE){
+                    affector.setWantedState(WantedAffectorState.POSITION, bufferedPos);
+                    tL4 = false;
+                } else {
+                    affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(bufferedPos.elev, Constants.Affector.STOW_POSITION.wrist));
+                }
+            }
+            
+        }
+        if(fL1){
+            if(affector.getPosition().wrist < Units.degreesToRadians(75)){
+                affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
+            } else {
+                if(Math.abs(affector.getPosition().elev - bufferedPos.elev) < ElevatorConstants.NEAR_POS_TOLERANCE){
+                    affector.setWantedState(WantedAffectorState.POSITION, bufferedPos);
+                    fL1 = false;
+                } else {
+                    affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(bufferedPos.elev, Constants.Affector.STOW_POSITION.wrist));
+                }
+            }
+            
+        }
+        if(tL1){
+            if(affector.getPosition(). wrist > Units.degreesToRadians(-20)){
+                if(affector.getPosition().wrist < Units.degreesToRadians(75)){
+                    affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
+                } else {
+                    if(Math.abs(affector.getPosition().elev - bufferedPos.elev) < ElevatorConstants.NEAR_POS_TOLERANCE){
+                        affector.setWantedState(WantedAffectorState.POSITION, bufferedPos);
+                        tL1 = false;
+                    } else {
+                        affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(bufferedPos.elev, Constants.Affector.STOW_POSITION.wrist));
+                    }
+                }
+            } else {
+                affector.setWantedState(WantedAffectorState.POSITION, bufferedPos);
+                tL1 = false;
+            }
+            
+        }
+        
+        if(previousState != currentState && previousState == CurrentSuperState.L1){
+            fL1 = true;
+        }
+        if(previousState != currentState && previousState == CurrentSuperState.L4){
+            fL4 = true;
+        }
+
+        switch(currentState){
+            case HOME:
+                if(previousState != CurrentSuperState.HOME){
+                    affector.setWantedState(Affector.WantedAffectorState.HOME);
+                }
+                if(affector.isElevHomed()){
+                    setWantedState(WantedSuperState.DEFAULT_STATE);
+                }
+            break;
+            case STOPPED:
+            break;
+            case NO_PIECE_TELEOP:
+                if(currentState != previousState){
+                    affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
+                }
+            break;
+            case HOLDING_CORAL_TELEOP:
+                if(currentState != previousState){
+                affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.HOLD_POSITION);
+                }
+            break;
+            case NO_PIECE_AUTO:
+                if(currentState != previousState){
+                    affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
+                }
+            break;
+            case HOLDING_CORAL_AUTO:
+                if(currentState != previousState){
+                affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.HOLD_POSITION);
+                }
+            break;
+            case INTAKE_CORAL:
+                if(intake.isHolding()){
+                    setWantedState(WantedSuperState.DEFAULT_STATE);
+                    intake.setWantedState(Intake.WantedIntakeState.STOP);
+                }
+                if(fL1 || fL4){
+                    bufferedPos = Constants.Affector.STATION_POSITION;
+                }
+            break;
+            case L4:
+                if(!intake.isHolding()){
+                    if(previousState != currentState){
+                        setWantedState(WantedSuperState.DEFAULT_STATE);
+                    } else {
+                        if(affector.getPosition().wrist < Units.degreesToRadians(45)){
+                            affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
+                        } else {
+                            affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
+                        }
+                    } 
+                }
+                if(fL1 || fL4){
+                    bufferedPos = Constants.Affector.L4_POSITION;
+                }
+            break;
+            case L3:
+                if(!intake.isHolding()){
+                    setWantedState(WantedSuperState.DEFAULT_STATE);
+                }
+                if(fL1 || fL4){
+                    bufferedPos = Constants.Affector.L3_POSITION;
+                }
+            break;
+            case L2:
+                if(!intake.isHolding()){
+                    setWantedState(WantedSuperState.DEFAULT_STATE);
+                }
+                if(fL1 || fL4){
+                    bufferedPos = Constants.Affector.L2_POSITION;
+                }
+            break;
+            case L1:
+                if(!intake.isHolding()){
+                    if(previousState != currentState){
+                        setWantedState(WantedSuperState.DEFAULT_STATE);
+                    } else {
+                        if(affector.getPosition().wrist < 0){
+                            affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
+                        } else {
+                            affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
+                        }
+                    } 
+                }
+                if(fL1 || fL4){
+                    bufferedPos = Constants.Affector.L1_POSITION;
+                }
+            break;
+            case CLIMB:
+                led.setColor(Color.kMagenta);
+            break;
+            default:
+            break;
+        }
+    }
+
+    public void setWantedState(WantedSuperState state){
+        wantedState = state;
+
+        switch (state){
+            case HOME:
+                intake.setWantedState(Intake.WantedIntakeState.STOP);
+            break;
+            case STOPPED:
+                intake.setWantedState(Intake.WantedIntakeState.STOP);
+                affector.stop();
+            break;
+            case INTAKE_CORAL:
+                affector.setWantedState(Affector.WantedAffectorState.POSITION, Constants.Affector.STATION_POSITION);
+                intake.setWantedState(Intake.WantedIntakeState.INTAKE);
+            break;
+            case L1:
+                tL1 = true;
+                bufferedPos = Constants.Affector.L1_POSITION;
+            break;
+            case L2:
+                affector.setWantedState(Affector.WantedAffectorState.POSITION, Constants.Affector.L2_POSITION);
+            break;
+            case L3:
+                affector.setWantedState(Affector.WantedAffectorState.POSITION, Constants.Affector.L3_POSITION);
+            break;
+            case L4:
+                tL4 = true;
+                bufferedPos = Constants.Affector.L4_POSITION;
+            break;
+            case CLIMB:
+                affector.setWantedState(Affector.WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
+            break;
+            default:
+            break;
+        }
+    }
+    
+  public boolean getFOD(){return fod;}
+    
+    /**
+     * get closest reef april tag pose to given position
+     * 
+     * @param pose field relative position
+     * @return
+     */
+    public static Pose2d getClosestReefAprilTag(Pose2d pose) {
+        var alliance = DriverStation.getAlliance();
+        
+        ArrayList<Pose2d> reefPoseList;
+        if (alliance.isEmpty()) {
+            reefPoseList = allReefTagPoses;
+        } else{
+            reefPoseList = alliance.get() == Alliance.Blue ? 
+                blueReefTagPoses :
+                redReefTagPoses;
+        }
+
+
+        return pose.nearest(reefPoseList);
+
+    }
+  
+    private static Pose2d getBranchFromTag(Pose2d tag, BranchSide side) {
+        var translation = tag.getTranslation().plus(
+            new Translation2d(
+                side.tagOffset.getY(),
+                side.tagOffset.getX()
+            ).rotateBy(tag.getRotation())
+        );    
+
+        return new Pose2d(
+            translation.getX(),
+            translation.getY(),
+            tag.getRotation().rotateBy(Rotation2d.kCCW_90deg)
+        );
+    }
+
+    public void updateAScopePoses(){
+        //actual pos
+        Logger.recordOutput("AScope/componentPoses", new Pose3d[] {
+            affector.calculatePoseElevMiddleStage(affector.getPosition().elev),
+            affector.calculatePoseElevInnerStage(affector.getPosition().elev),
+            affector.calculatePoseWrist(affector.getPosition().wrist, affector.getPosition().elev),
+            intake.isHolding() ? new Pose3d(
+                WristConstants.WRIST_POS.plus(new Translation3d(0, Math.cos(affector.getPosition().wrist)*IntakeConstants.pivotToCoral, affector.getPosition().elev + Math.sin(affector.getPosition().wrist)*IntakeConstants.pivotToCoral)),
+                new Rotation3d(0, -affector.getPosition().wrist+Math.PI/2, 0).rotateBy(new Rotation3d(0, 0, Math.PI/2))
+            ) : new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
+        });
+        //setpoints
+        Logger.recordOutput("AScope/componentSetPoses", new Pose3d[] {
+            affector.calculatePoseElevMiddleStage(affector.getPositionSet().elev),
+            affector.calculatePoseElevInnerStage(affector.getPositionSet().elev),
+            affector.calculatePoseWrist(affector.getPositionSet().wrist, affector.getPositionSet().elev),
+            new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
+        });
+    }
+  
+    public void updateLEDs(){
+        led.setColor(
+            isReady() ? Color.kWhite
+            : intake.isHolding() ? Color.kGreen : Color.kOrange
+        );
+        led.setHomed(affector.isElevHomed());
+        led.setIntaking(intake.isMoving());
+    }
+
+    public boolean isReady(){
+        return affector.isElevHomed()//elevator homed
+            && affector.atSetpoint()//in pos
+            && (isAffectorPosScoring(affector.getPositionSet()) ? intake.isHolding() || !intake.getHoldLock() : true)//holding if in scoring pos or bypass(hold lock override assumes sensor is non functional)
+            && (affector.getPositionSet() == Constants.Affector.STATION_POSITION ? intake.isIntaking() : true);//intaking if in station pos
+    }
+
+    private boolean isAffectorPosScoring(AffectorPosition p){
+        return p == Constants.Affector.L1_POSITION || p == Constants.Affector.L2_POSITION || p == Constants.Affector.L3_POSITION || p == Constants.Affector.L4_POSITION;
+    }
+
+    public void autoAlign(BranchSide side){
+        var tag = getClosestReefAprilTag(drive.getPose());
+        var branch = getBranchFromTag(tag, side);
+        drive.setTargetPose(branch);
+    }
+    
+    public void alignWithStation(StationSide side){
+        Rotation2d angle;
+        switch (side) {
+            case LEFT:
+                angle = DriveConstants.presets.WEST_STATION.getRotation();
+                break;
+            case RIGHT:
+                angle = DriveConstants.presets.EAST_STATION.getRotation();
+                break;
+            default:
+                angle = stationAngle;
+                break;
+        }
+        drive.setTargetRotation(angle.rotateBy(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? Rotation2d.k180deg : new Rotation2d()).getRadians());
+    }
+
+    public void toggleFOD(){fod = !fod;}
+
+    public void score(){
+        scoring = true;
     }
 }

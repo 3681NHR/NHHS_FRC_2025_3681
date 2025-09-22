@@ -65,6 +65,18 @@ public class IntakeIOSim implements IntakeIO {
                 Radians.of(affector.getPosition().wrist-Units.degreesToRadians(90))
             ));
         }
+        if(coralLocation < -Units.inchesToMeters(10) && holding){
+            holding = false;
+            SimulatedArena.getInstance().addGamePieceProjectile(new ReefscapeCoralOnFly(
+                driveSim.getSimulatedDriveTrainPose().getTranslation(),
+                IntakeConstants.WRIST_POS.toTranslation2d().plus(new Translation2d(Math.cos(affector.getPosition().wrist)*pivotToCoral, 0)),
+                driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                driveSim.getSimulatedDriveTrainPose().getRotation().rotateBy(Rotation2d.kCCW_90deg),
+                Meters.of(affector.getPosition().elev + WristConstants.WRIST_POS.getZ() + Math.sin(affector.getPosition().wrist)*pivotToCoral),
+                MetersPerSecond.of(vel * Units.inchesToMeters(0.5)),
+                Radians.of(affector.getPosition().wrist+Units.degreesToRadians(270))
+            ));
+        }
     }
     
     @Override

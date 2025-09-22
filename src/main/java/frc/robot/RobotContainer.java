@@ -2,20 +2,20 @@
 
 package frc.robot;
 
-import frc.robot.commands.AnglePresetDriveCommand;
-import frc.robot.commands.DriveCommands;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.StationIntake;
-import frc.robot.constants.AffectorPosition;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.ElevatorConstants;
-import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.VisionConstants;
-import frc.robot.constants.WristConstants;
 import frc.robot.subsystems.Led;
+import frc.robot.subsystems.Superstructure;
+import frc.robot.subsystems.Superstructure.BranchSide;
+import frc.robot.subsystems.Superstructure.CurrentSuperState;
+import frc.robot.subsystems.Superstructure.StationSide;
+import frc.robot.subsystems.Superstructure.WantedSuperState;
 import frc.robot.subsystems.affector.Affector;
 import frc.robot.subsystems.affector.Affector.WantedAffectorState;
 import frc.robot.subsystems.affector.elevator.ElevatorIO;
@@ -49,7 +49,6 @@ import frc.robot.subsystems.vision.CameraIOPhoton;
 import frc.robot.subsystems.vision.CameraIOPhotonSim;
 import frc.robot.subsystems.vision.Vision;
 import frc.utils.rumble.*;
-import frc.utils.TimerHandler;
 import frc.utils.VariableLimSLR;
 import frc.utils.Joystick.duelJoystickAxis;
 import frc.utils.BatteryVoltageSim;
@@ -62,12 +61,10 @@ import static edu.wpi.first.units.Units.Meters;
 
 import static frc.utils.ControllerMap.*;
 
-import java.util.function.DoubleSupplier;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggedPowerDistribution;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -77,9 +74,6 @@ import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -89,7 +83,6 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -121,30 +114,28 @@ public class RobotContainer {
 
   private LoggedNetworkBoolean resetOdometry = new LoggedNetworkBoolean("resetOdometry", false);
   private LoggedDashboardChooser<Command> autoChooser;
-  private LoggedNetworkBoolean useVisionOdometry = new LoggedNetworkBoolean("overrides/useVisionOdometry", DriveConstants.USE_VISION);
-
-  private boolean fod = Constants.drive.STARTING_FOD;
-  private boolean directAngle = Constants.drive.STARTING_DIRECT_ANGLE;
-
-  private Rotation2d stationAngle = new Rotation2d();
-
-  private duelJoystickAxis driverSticks;
-
 
   private RumbleHandler rumbler = new RumbleHandler(driverController);
   private RumbleHandler opRumbler = new RumbleHandler(operatorController);
 
   private PowerDistribution pdp = new PowerDistribution(1  , ModuleType.kRev);
   
-  private final Alert driverDisconnected =
-      new Alert("Driver controller disconnected (port 0).", AlertType.kWarning);
-  private final Alert operatorDisconnected =
-      new Alert("Operator controller disconnected (port 1).", AlertType.kWarning);
-
+    
   private VariableLimSLR lxLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
   private VariableLimSLR lyLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
   private VariableLimSLR rxLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
   private VariableLimSLR ryLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
+
+  private double mult = 1.0;
+  
+  private final Alert driverDisconnected =
+  new Alert("Driver controller disconnected (port 0).", AlertType.kWarning);
+private final Alert operatorDisconnected =
+  new Alert("Operator controller disconnected (port 1).", AlertType.kWarning);
+
+  private Superstructure superstructure;
+  
+  private duelJoystickAxis driverSticks;
 
   public RobotContainer() {
 
@@ -161,21 +152,21 @@ public class RobotContainer {
                   COTS.WHEELS.DEFAULT_NEOPRENE_TREAD.cof,
                   2))
           .withTrackLengthTrackWidth(Meters.of(DriveConstants.LENGTH), Meters.of(DriveConstants.WIDTH))
-          .withBumperSize(Inches.of(30), Inches.of(27));
+          .withBumperSize(Inches.of(33), Inches.of(35));
 
       driveSim = new SwerveDriveSimulation(driveTrainSimulationConfig, Constants.STARTING_POSE);
       // Register the drivetrain simulation to the default simulation world
       SimulatedArena.getInstance().addDriveTrainSimulation(driveSim);
     }
 
-
     //process driver controls(radial deadzone, curve, trigger slowdown, and inversion)
     driverSticks = new duelJoystickAxis(
-      () -> lxLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND,  driverController.getRawAxis(LEFT_STICK_X), driverController.getRawAxis(LEFT_STICK_Y)).getX() ,  -1.0, Constants.OperatorConstants.TRANSLATION_CURVE, 0.0)),
-      () -> lyLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND,  driverController.getRawAxis(LEFT_STICK_X), driverController.getRawAxis(LEFT_STICK_Y)).getY() ,  -1.0, Constants.OperatorConstants.TRANSLATION_CURVE, 0.0)),
-      () -> rxLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, driverController.getRawAxis(RIGHT_STICK_X), driverController.getRawAxis(RIGHT_STICK_Y)).getX(), -0.75, Constants.OperatorConstants.ROTATION_CURVE   , 0.0)),
-      () -> ryLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, driverController.getRawAxis(RIGHT_STICK_X), driverController.getRawAxis(RIGHT_STICK_Y)).getY(), -1.0, Constants.OperatorConstants.ROTATION_CURVE   , 0.0))
+        () -> lxLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND,  driverController.getRawAxis(LEFT_STICK_X), driverController.getRawAxis(LEFT_STICK_Y)).getX() ,  -1.0 * ExtraMath.remap(superstructure.wantedState == WantedSuperState.CLIMB ? driverController.getRawAxis(LEFT_TRIGGER)  : 0, 0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0)),
+        () -> lyLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.LEFT_DEADBAND,  driverController.getRawAxis(LEFT_STICK_X), driverController.getRawAxis(LEFT_STICK_Y)).getY() ,  -1.0 * ExtraMath.remap(superstructure.wantedState == WantedSuperState.CLIMB ? driverController.getRawAxis(LEFT_TRIGGER)  : 0, 0, 1.0, 1.0, 0.1), Constants.OperatorConstants.TRANSLATION_CURVE, 0.0)),
+        () -> rxLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, driverController.getRawAxis(RIGHT_STICK_X), driverController.getRawAxis(RIGHT_STICK_Y)).getX(), -0.75* ExtraMath.remap(superstructure.wantedState == WantedSuperState.CLIMB ? driverController.getRawAxis(RIGHT_TRIGGER) : 0, 0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0)),
+        () -> ryLim.calculate(ExtraMath.processInput(Joystick.deadzone(Constants.OperatorConstants.RIGHT_DEADBAND, driverController.getRawAxis(RIGHT_STICK_X), driverController.getRawAxis(RIGHT_STICK_Y)).getY(), -1.0 * ExtraMath.remap(superstructure.wantedState == WantedSuperState.CLIMB ? driverController.getRawAxis(RIGHT_TRIGGER) : 0, 0, 1.0, 1.0, 0.1), Constants.OperatorConstants.ROTATION_CURVE   , 0.0))
     );
+
 
     switch (Constants.MODE) {
       case REAL:
@@ -252,13 +243,13 @@ public class RobotContainer {
     
     NamedCommands.registerCommand("station", new StationIntake(affector, intake).withTimeout(5));
     NamedCommands.registerCommand("L2", Commands.runOnce(() -> {
-      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L2_POSITION);
+      superstructure.setWantedState(WantedSuperState.L2);
       }, affector));
     NamedCommands.registerCommand("L3", Commands.runOnce(() -> {
-      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L3_POSITION);
+      superstructure.setWantedState(WantedSuperState.L3);
     }, affector));
   NamedCommands.registerCommand("L4", Commands.runOnce(() -> {
-    affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L4_POSITION);
+    superstructure.setWantedState(WantedSuperState.L4);
   }, affector));
   NamedCommands.registerCommand("stow", Commands.runOnce(() -> {
     affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
@@ -310,6 +301,19 @@ NamedCommands.registerCommand("score", Commands
         "Wrist SysId (Dynamic Reverse)", affector.wristSysIdDynamic(SysIdRoutine.Direction.kReverse).withName("sysid wdr"));
       } 
 
+    superstructure = new Superstructure(
+        drive, 
+        intake, 
+        climber, 
+        affector, 
+        vision, 
+        led, 
+        lxLim, 
+        lyLim, 
+        rxLim, 
+        ryLim
+    );
+
     configureBindings();
 
     LoggedPowerDistribution.getInstance(pdp.getModule(), ModuleType.kRev);
@@ -338,7 +342,7 @@ NamedCommands.registerCommand("score", Commands
 
     //fod toggle
     new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON)).onTrue(new InstantCommand(() -> {
-    this.fod = !this.fod;
+      superstructure.toggleFOD();
     }));
 
     new Trigger(() -> intake.isHolding() && !intake.wasHolding()).onTrue(new InstantCommand(() -> {
@@ -347,10 +351,25 @@ NamedCommands.registerCommand("score", Commands
     }));
     //aim to station
     new Trigger(() -> driverController.getRawButton(LB)).onTrue(new InstantCommand(() -> {
-        drive.setTargetRotation(stationAngle.rotateBy(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? Rotation2d.k180deg : new Rotation2d()).getRadians());
+      if(superstructure.currentState != CurrentSuperState.CLIMB){
+        if(!intake.isHolding()){
+          superstructure.alignWithStation(StationSide.LEFT);
+        } else {
+          superstructure.autoAlign(BranchSide.LEFT);
+        }
+      }
     }));
+
     //aim for reef
-    new Trigger(() -> driverController.getPOV() == 90).onTrue(drive.driveToPose(new Pose2d(3.23, 4.0, Rotation2d.kZero)));
+    new Trigger(() -> driverController.getRawButton(RB)).onTrue(new InstantCommand(() -> {
+      if(superstructure.currentState != CurrentSuperState.CLIMB){
+        if(!intake.isHolding()){
+          superstructure.alignWithStation(StationSide.RIGHT);
+        } else {
+          superstructure.autoAlign(BranchSide.RIGHT);
+        }
+      }
+    }));
  
     //physical button
     new Trigger(() -> buttons.get(0)).onTrue(new DisabledInstantCommand(() -> {
@@ -360,44 +379,84 @@ NamedCommands.registerCommand("score", Commands
 
     //home
     new Trigger(() -> operatorController.getRawButton(A)).onTrue(new InstantCommand(() -> {
-      affector.setWantedState(WantedAffectorState.HOME);
+      superstructure.setWantedState(WantedSuperState.HOME);
     }));
         
     //intake controls
     // new Trigger(() -> driverController.getRawButton(RB)).or(() -> operatorController.getRawButton(RB)).whileTrue(new IntakeCommand(intake));
     new Trigger(() -> operatorController.getRawButton(Y)).onTrue(new InstantCommand(() -> {
-      intake.setWantedState(WantedIntakeState.OUTTAKE);;
+      intake.setWantedState(WantedIntakeState.OUTTAKE);
     })).onFalse(new InstantCommand(() -> {
-      intake.setWantedState(WantedIntakeState.STOP);; 
+      intake.setWantedState(WantedIntakeState.STOP);;
     }));
 
     new Trigger(() -> driverController.getRawButton(A)).onTrue(new InstantCommand(() -> {
-      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L1_POSITION);
+      superstructure.setWantedState(WantedSuperState.L1);
     }));
     new Trigger(() -> driverController.getRawButton(B)).onTrue(new InstantCommand(() -> {
-      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L2_POSITION);
+      superstructure.setWantedState(WantedSuperState.L2);
     }));
     new Trigger(() -> driverController.getRawButton(X)).onTrue(new InstantCommand(() -> {
-      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L3_POSITION);
+      superstructure.setWantedState(WantedSuperState.L3);
     }));
     new Trigger(() -> driverController.getRawButton(Y)).onTrue(new InstantCommand(() -> {
-      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L4_POSITION);
+      superstructure.setWantedState(WantedSuperState.L4);
+    }));
+    new Trigger(() -> operatorController.getRawButton(LB)).onTrue(new InstantCommand(() -> {
+      if(superstructure.currentState != CurrentSuperState.CLIMB){
+        superstructure.setWantedState(WantedSuperState.INTAKE_CORAL);
+      }
     }));
     new Trigger(() -> driverController.getRawAxis(LEFT_TRIGGER) > 0.5).onTrue(new InstantCommand(() -> {
-      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STATION_POSITION);
+      if(superstructure.currentState != CurrentSuperState.CLIMB){
+        if(!intake.isHolding()){
+          superstructure.setWantedState(WantedSuperState.INTAKE_CORAL);
+        }
+      }
     }));
-    new Trigger(() -> driverController.getRawAxis(LEFT_TRIGGER) > 0.5).whileTrue(new IntakeCommand(intake));
-    new Trigger(() -> driverController.getRawAxis(RIGHT_TRIGGER) > 0.5).whileTrue(new IntakeCommand(intake));
-    
-    new Trigger(() -> driverController.getPOV() == 0).onTrue(new InstantCommand(() -> {
+
+
+    new Trigger(() -> operatorController.getPOV() == 0).onTrue(new InstantCommand(() -> {
+      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L4_POSITION);
+    }));
+    new Trigger(() -> operatorController.getPOV() == 90).onTrue(new InstantCommand(() -> {
+      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L2_POSITION);
+    }));
+    new Trigger(() -> operatorController.getPOV() == 180).onTrue(new InstantCommand(() -> {
+      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L1_POSITION);
+    }));
+    new Trigger(() -> operatorController.getPOV() == 270).onTrue(new InstantCommand(() -> {
+      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L3_POSITION);
+    }));
+    new Trigger(() -> operatorController.getPOV() == 270).onTrue(new InstantCommand(() -> {
+      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.L3_POSITION);
+    }));
+    new Trigger(() -> operatorController.getRawButton(LOGO_LEFT)).onTrue(new InstantCommand(() -> {
       affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
     }));
 
-    // new Trigger(() -> driverController.getRawButton(X))
-    // .and(() -> ExtraMath.getDistance(drive.getPose(), ExtraMath.getNearestPose(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? Constants.positions.REEFS : Constants.positions.RED_REEFS, drive.getPose())) < .5)
-    // .whileTrue(Commands.run(() -> {
-    //   drive.driveToPose(ExtraMath.getNearestPose(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? Constants.positions.REEFS : Constants.positions.RED_REEFS, drive.getPose()));
-    // }));
+    // new Trigger(() -> driverController.getRawAxis(LEFT_TRIGGER) > 0.5).whileTrue(new IntakeCommand(intake));
+    new Trigger(() -> driverController.getRawAxis(RIGHT_TRIGGER) > 0.5).onTrue(new InstantCommand(() -> {
+      if(superstructure.currentState != CurrentSuperState.CLIMB){
+        superstructure.score();
+      }
+    }));
+    new Trigger(() -> operatorController.getRawButton(RB)).onTrue(new InstantCommand(() -> {
+      superstructure.score();
+    }));
+    
+    new Trigger(() -> driverController.getPOV() == 180).or(() -> operatorController.getRawButton(LOGO_RIGHT)).onTrue(new InstantCommand(() -> {
+      superstructure.setWantedState(WantedSuperState.DEFAULT_STATE);
+    }));
+
+    new Trigger(() -> driverController.getPOV() == 270).onTrue(new InstantCommand(() -> {
+      superstructure.setWantedState(WantedSuperState.CLIMB);
+    }));
+    new Trigger(() -> driverController.getPOV() == 90).onTrue(new InstantCommand(() -> {
+      if(superstructure.wantedState == WantedSuperState.CLIMB){
+        superstructure.setWantedState(WantedSuperState.DEFAULT_STATE);
+      }
+    }));
 
     //climber
     new Trigger(() -> operatorController.getRawButton(X))
@@ -411,50 +470,9 @@ NamedCommands.registerCommand("score", Commands
 
 
   public void Periodic(){
-    double rlim = Double.POSITIVE_INFINITY;
-    if(affector.getPosition().elev > .75){
-      rlim = 1/0.2;
-    }
-    lxLim.setLim(rlim);
-    lyLim.setLim(rlim);
-    rxLim.setLim(rlim);
-    ryLim.setLim(rlim);
-
-    drive.setFOD(fod);
-
-    // SmartDashboard.putBoolean("holding", !holdingSens.get());
-    led.setHomed(affector.isElevHomed());
-    led.setIntaking(intake.isMoving());
-    
-    led.setColor(isReady() ? Color.kWhite : intake.isHolding() ? Color.kGreen : Color.kOrange);
-
-    Logger.recordOutput("Drive/fieldOrientedDrive", getFOD());
-    Logger.recordOutput("Drive/directAngle", getDirectAngle());
-
-    DriveConstants.USE_VISION = useVisionOdometry.get();
-
     rumbler.update(0.02);
-
-    if(DriverStation.getAlliance().isPresent()){
-      if(DriverStation.getAlliance().get() == Alliance.Red){
-        if(drive.getPose().getTranslation().getY() > 4){
-          stationAngle = DriveConstants.presets.EAST_STATION.getRotation();
-        } else {
-          stationAngle = DriveConstants.presets.WEST_STATION.getRotation();
-        }
-      } else {
-        if(drive.getPose().getTranslation().getY() > 4){
-          stationAngle = DriveConstants.presets.WEST_STATION.getRotation();
-        } else {
-          stationAngle = DriveConstants.presets.EAST_STATION.getRotation();
-        }
-      }
-    }
-
     driverDisconnected.set(!driverController.isConnected());
     operatorDisconnected.set(!operatorController.isConnected());
-
-    updateAScopePoses();
   }
 
   public void SimPeriodic(){
@@ -485,8 +503,7 @@ NamedCommands.registerCommand("score", Commands
     driveSim.setSimulationWorldPose(pose);
   }
   
-  public boolean getFOD(){return fod;}
-  public boolean getDirectAngle(){return directAngle;}
+  // public boolean getDirectAngle(){return directAngle;}
 
   public void enable(){
     affector.setElevBrake(true);
@@ -498,50 +515,6 @@ NamedCommands.registerCommand("score", Commands
   }
 
 
-  public void updateAScopePoses(){
-    //actual pos
-    Logger.recordOutput("AScope/componentPoses", new Pose3d[] {
-        affector.calculatePoseElevMiddleStage(affector.getPosition().elev),
-        affector.calculatePoseElevInnerStage(affector.getPosition().elev),
-        affector.calculatePoseWrist(affector.getPosition().wrist, affector.getPosition().elev),
-        intake.isHolding() ? new Pose3d(
-            WristConstants.WRIST_POS.plus(new Translation3d(0, Math.cos(affector.getPosition().wrist)*IntakeConstants.pivotToCoral, affector.getPosition().elev + Math.sin(affector.getPosition().wrist)*IntakeConstants.pivotToCoral)),
-            new Rotation3d(0, -affector.getPosition().wrist+Math.PI/2, 0).rotateBy(new Rotation3d(0, 0, Math.PI/2))
-        ) : new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
-    });
-    //setpoints
-    Logger.recordOutput("AScope/componentSetPoses", new Pose3d[] {
-      affector.calculatePoseElevMiddleStage(affector.getPositionSet().elev),
-      affector.calculatePoseElevInnerStage(affector.getPositionSet().elev),
-      affector.calculatePoseWrist(affector.getPositionSet().wrist, affector.getPositionSet().elev),
-      new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
-    });
-    //targets, may not be applied
-    // Logger.recordOutput("AScope/componentTargetPoses", new Pose3d[] {
-    //   affector.calculatePoseElevMiddleStage(target.elev),
-    //   affector.calculatePoseElevInnerStage(target.elev),
-    //   affector.calculatePoseWrist(target.wrist, target.elev),
-    //   new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
-    // });
-  }
-  public void updateLEDs(){
-    led.setColor(
-        isReady() ? Color.kWhite
-        : intake.isHolding() ? Color.kGreen : Color.kOrange
-    );
-    led.setHomed(affector.isElevHomed());
-    led.setIntaking(intake.isMoving());
-  }
 
-  public boolean isReady(){
-    return affector.isElevHomed()//elevator homed
-     && affector.atSetpoint()//in pos
-     && (isAffectorPosScoring(affector.getPositionSet()) ? intake.isHolding() || !intake.getHoldLock() : true)//holding if in scoring pos or bypass(hold lock override assumes sensor is non functional)
-     && (affector.getPositionSet() == Constants.Affector.STATION_POSITION ? intake.isIntaking() : true);//intaking if in station pos
-    //  && affector.getPositionSet() == target; // target is not buffered
-  }
-
-  private boolean isAffectorPosScoring(AffectorPosition p){
-    return p == Constants.Affector.L1_POSITION || p == Constants.Affector.L2_POSITION || p == Constants.Affector.L3_POSITION || p == Constants.Affector.L4_POSITION;
-  }
+  
 }

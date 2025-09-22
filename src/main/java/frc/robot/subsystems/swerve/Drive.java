@@ -11,6 +11,7 @@ import com.pathplanner.lib.path.IdealStartingState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.path.Waypoint;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
 import com.pathplanner.lib.util.PathPlannerLogging;
 
 import edu.wpi.first.hal.FRCNetComm.tInstances;
@@ -36,6 +37,9 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.Constants;
@@ -91,6 +95,9 @@ public class Drive extends SubsystemBase {
         new PID(
         RobotBase.isReal() ? ANGLE_PID : ANGLE_PID_SIM);
 
+    private PPHolonomicDriveController autoController = new PPHolonomicDriveController(
+        new PIDConstants(TRANS_PID.kP(), TRANS_PID.kI(), TRANS_PID.kD()), new PIDConstants(AUTO_ANGLE_PID.kP(), AUTO_ANGLE_PID.kI(), AUTO_ANGLE_PID.kD()));
+
     public static final Lock odometryLock = new ReentrantLock();
     private final GyroIO gyroIO;
     private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
@@ -145,8 +152,7 @@ public class Drive extends SubsystemBase {
                 this::setPose,
                 this::getChassisSpeeds,
                 this::runVelocity,
-                new PPHolonomicDriveController(
-                        new PIDConstants(TRANS_PID.kP(), TRANS_PID.kI(), TRANS_PID.kD()), new PIDConstants(AUTO_ANGLE_PID.kP(), AUTO_ANGLE_PID.kI(), AUTO_ANGLE_PID.kD())),
+                autoController,
                 PP_CONFIG,
                 () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
                 this);
@@ -408,7 +414,10 @@ public class Drive extends SubsystemBase {
 
     public void setTargetPose(Pose2d p){
         setWantedState(WantedDriveState.DRIVE_TO_POINT);
-        CommandScheduler.getInstance().schedule(driveToPose(p).andThen(() -> setWantedState(WantedDriveState.TELEOP_DRIVE)));
+        CommandScheduler.getInstance().schedule(
+             driveToPose(p).withTimeout(5)
+            .andThen(() -> setWantedState(WantedDriveState.TELEOP_DRIVE))
+        );
     }
 
     /**
@@ -574,14 +583,60 @@ public class Drive extends SubsystemBase {
         return new Rotation2d(Math.atan2(getChassisSpeeds().vyMetersPerSecond, getChassisSpeeds().vxMetersPerSecond));
     }
 
-    public Command driveToPose(Pose2d p){
-        Pose2d end   = new Pose2d(p.getTranslation(), Rotation2d.kZero);
-        Pose2d start = new Pose2d(getPose().getTranslation(), getVelocityDir());
+    private Command driveToPose(Pose2d p){
+        Pose2d end   = new Pose2d(p.getTranslation(), p.getRotation().rotateBy(Rotation2d.k180deg));
+        Pose2d start = new Pose2d(getPose().getTranslation(), getPathVelocityHeading(getChassisSpeeds(), end));
 
         List<Waypoint> points = PathPlannerPath.waypointsFromPoses(start, end);
+        
+        if(points.size() < 2){
+            return new InstantCommand();
+        }
+        
         PathConstraints constraints = new PathConstraints(DriveConstants.MAX_SPEED_PP, DriveConstants.MAX_ACCEL_PP, DriveConstants.MAX_ANGLE_SPEED_PP, DriveConstants.MAX_ANGLE_ACCEL_PP);
         PathPlannerPath path = new PathPlannerPath(points, constraints, new IdealStartingState(MetersPerSecond.of(getSpeed()), getPose().getRotation()), new GoalEndState(0, p.getRotation()));
         path.preventFlipping = true;
-        return AutoBuilder.followPath(path);
+
+
+        return AutoBuilder.followPath(path).andThen(Commands.run(() -> {
+            PathPlannerTrajectoryState state = new PathPlannerTrajectoryState();
+            state.pose = p;
+
+            runVelocity(autoController.calculateRobotRelativeSpeeds(getPose(), state));
+
+            Logger.recordOutput("Drive/Align/Fine tune/distance to target", getPose().getTranslation().getDistance(p.getTranslation()));
+            Logger.recordOutput("Drive/Align/Fine tune/angle to target"   , Math.abs(getPose().getRotation().minus(p.getRotation()).getDegrees()));
+        }).until(() -> 
+            getPose().getTranslation().getDistance(p.getTranslation()) <= AUTO_ALIGN_POS_MAX_OFFSET &&
+            Math.abs(getPose().getRotation().minus(p.getRotation()).getDegrees()) <= AUTO_ALIGN_ANGLE_MAX_OFFSET
+        )
+        .withTimeout(1));
+    }
+
+    /**
+     * 
+     * @param cs field relative chassis speeds
+     * @return
+     */
+    private Rotation2d getPathVelocityHeading(ChassisSpeeds cs, Pose2d target){
+        if (getSpeed() < 0.25) {
+            Logger.recordOutput("Drive/Align/approach", "straight line");
+            var diff = target.getTranslation().minus(getPose().getTranslation());
+            Logger.recordOutput("Drive/Align/Calc/x"  , diff.getX());
+            Logger.recordOutput("Drive/Align/Calc/y"  , diff.getY());
+            Logger.recordOutput("Drive/Align/Calc/dir", diff.getAngle());
+
+            return (diff.getNorm() < 0.01) ? target.getRotation() : diff.getAngle();
+        }
+
+        Logger.recordOutput("Drive/Align/approach", "velocity comp");
+
+        var rotation = new Rotation2d(cs.vxMetersPerSecond, cs.vyMetersPerSecond);
+        
+        Logger.recordOutput("Drive/Align/Calc/x"  , cs.vxMetersPerSecond);
+        Logger.recordOutput("Drive/Align/Calc/y"  , cs.vyMetersPerSecond);
+        Logger.recordOutput("Drive/Align/Calc/dir", rotation);
+
+        return rotation.rotateBy(Rotation2d.k180deg);
     }
 }

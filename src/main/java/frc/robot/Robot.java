@@ -152,7 +152,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void teleopPeriodic() {
     
-    m_robotContainer.Periodic();
+    // m_robotContainer.Periodic();
 
     TimerHandler.updateTeleop();
   }
