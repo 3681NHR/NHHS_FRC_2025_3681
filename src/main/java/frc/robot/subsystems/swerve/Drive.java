@@ -27,11 +27,9 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -39,12 +37,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.Constants.RobotMode;
+import frc.robot.subsystems.Led;
 import frc.robot.subsystems.swerve.gyro.GyroIO;
 import frc.robot.subsystems.swerve.gyro.GyroIOInputsAutoLogged;
 import frc.robot.subsystems.swerve.module.Module;
@@ -54,7 +52,6 @@ import frc.robot.subsystems.vision.VisionEstimate;
 import frc.utils.ExtraMath;
 import frc.utils.LoggedField2d;
 import frc.utils.PID;
-import frc.utils.ProfiledPID;
 import frc.utils.SparkOdometryThread;
 import frc.utils.Joystick.duelJoystickAxis;
 
@@ -87,8 +84,9 @@ public class Drive extends SubsystemBase {
     private CurrentDriveState currentState = CurrentDriveState.IDLE;
     private CurrentDriveState previousState = CurrentDriveState.IDLE;
 
+    private Led led;
+
     private double rotationLockHeading = 0;
-    private Translation2d driveToPointTarget;
     private boolean FODEnabled = true;
 
     private PID angleController =
@@ -129,10 +127,12 @@ public class Drive extends SubsystemBase {
             ModuleIO blModuleIO,
             ModuleIO brModuleIO,
             Vision vision,
-            duelJoystickAxis driverController) {
+            duelJoystickAxis driverController,
+            Led led) {
         this.vision = vision;
         this.gyroIO = gyroIO;
         this.driverSticks = driverController;
+        this.led = led;
         modules[0] = new Module(flModuleIO, 0);
         modules[1] = new Module(frModuleIO, 1);
         modules[2] = new Module(blModuleIO, 2);
@@ -321,6 +321,10 @@ public class Drive extends SubsystemBase {
         if(currentState == CurrentDriveState.ROTATION_LOCK && previousState != CurrentDriveState.ROTATION_LOCK){
             angleController.reset();
         }
+        if(currentState != CurrentDriveState.ROTATION_LOCK){
+            led.rotLock = false;
+        }
+
         switch (currentState) {
             case SYS_ID:
             break;
@@ -330,8 +334,6 @@ public class Drive extends SubsystemBase {
                 } else {
                     runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(getSpeedsFromController(), getRotation()));
                 }
-            break;
-            case CHOREO_PATH:
             break;
             case ROTATION_LOCK:
                 ChassisSpeeds speeds = getTranslationalSpeedsFromController(MathUtil.clamp(angleController.calculate(getRotation().getRadians(), rotationLockHeading), -ANGLE_MAX_VELOCITY, ANGLE_MAX_VELOCITY));
@@ -344,11 +346,14 @@ public class Drive extends SubsystemBase {
                 if(angleController.atSetpoint()){
                     setWantedState(WantedDriveState.TELEOP_DRIVE);
                 }
+                led.rotLock = true;
             break;
             case DRIVE_TO_POINT:
             break;
             case IDLE:
                 runVelocity(new ChassisSpeeds());
+            break;
+            default:
             break;
         }
     }
@@ -415,8 +420,15 @@ public class Drive extends SubsystemBase {
     public void setTargetPose(Pose2d p){
         setWantedState(WantedDriveState.DRIVE_TO_POINT);
         CommandScheduler.getInstance().schedule(
-             driveToPose(p).withTimeout(5)
-            .andThen(() -> setWantedState(WantedDriveState.TELEOP_DRIVE))
+             driveToPose(p)
+             .alongWith(Commands.run(() -> {
+                led.aligningReef = true;
+            }))
+            .withTimeout(5)
+            .andThen(new InstantCommand(() -> {
+                setWantedState(WantedDriveState.TELEOP_DRIVE);
+                led.aligningReef = false;
+            }))
         );
     }
 
@@ -590,7 +602,7 @@ public class Drive extends SubsystemBase {
     }
 
     private Command driveToPose(Pose2d p){
-        Pose2d end   = new Pose2d(p.getTranslation(), p.getRotation().rotateBy(Rotation2d.k180deg));
+        Pose2d end   = new Pose2d(p.getTranslation(), p.getRotation().rotateBy(Rotation2d.kCCW_90deg));
         Pose2d start = new Pose2d(getPose().getTranslation(), getPathVelocityHeading(getFieldChassisSpeeds(), p));
 
         List<Waypoint> points = PathPlannerPath.waypointsFromPoses(start, end);
@@ -612,6 +624,13 @@ public class Drive extends SubsystemBase {
 
             Logger.recordOutput("Drive/Align/Fine tune/distance to target", getPose().getTranslation().getDistance(p.getTranslation()));
             Logger.recordOutput("Drive/Align/Fine tune/angle to target"   , Math.abs(getPose().getRotation().minus(p.getRotation()).getDegrees()));
+
+            if(getPose().getTranslation().getDistance(p.getTranslation()) <= AUTO_ALIGN_POS_MAX_OFFSET &&
+            Math.abs(getPose().getRotation().minus(p.getRotation()).getDegrees()) <= AUTO_ALIGN_ANGLE_MAX_OFFSET){
+                led.alignInPos = true;
+            } else {
+                led.alignInPos = false;
+            }
         }).until(() -> 
             getPose().getTranslation().getDistance(p.getTranslation()) <= AUTO_ALIGN_POS_MAX_OFFSET &&
             Math.abs(getPose().getRotation().minus(p.getRotation()).getDegrees()) <= AUTO_ALIGN_ANGLE_MAX_OFFSET

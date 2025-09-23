@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -19,7 +18,6 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.AffectorPosition;
 import frc.robot.constants.Constants;
@@ -207,10 +205,11 @@ public class Superstructure extends SubsystemBase{
         drive.setFOD(fod);
 
         // SmartDashboard.putBoolean("holding", !holdingSens.get());
-        led.setHomed(affector.isElevHomed());
-        led.setIntaking(intake.isMoving());
+        led.setRunning(intake.isMoving());
 
-        led.setColor(isReady() ? Color.kWhite : intake.isHolding() ? Color.kGreen : Color.kOrange);
+        led.hasCoral = intake.isHolding();
+
+        led.homed = affector.isElevHomed();
 
         Logger.recordOutput("Drive/fieldOrientedDrive", getFOD());
 
@@ -308,7 +307,7 @@ public class Superstructure extends SubsystemBase{
             } else {
                 intake.setWantedState(WantedIntakeState.INTAKE);
             }
-            if(!intake.isHolding()){
+            if(!intake.isHolding() && currentState != CurrentSuperState.L1){
                 scoring = false;
                 intake.setWantedState(WantedIntakeState.STOP);
             }
@@ -371,6 +370,15 @@ public class Superstructure extends SubsystemBase{
             
         }
 
+        led.affectorInPos = affector.atSetpoint();
+
+        if(currentState != CurrentSuperState.HOME){
+            led.homing = false;
+        }
+        if(currentState != CurrentSuperState.CLIMB){
+            led.climbMode = false;
+        }
+
         switch(currentState){
             case HOME:
                 if(previousState != CurrentSuperState.HOME){
@@ -379,6 +387,7 @@ public class Superstructure extends SubsystemBase{
                 if(affector.isElevHomed()){
                     setWantedState(WantedSuperState.DEFAULT_STATE);
                 }
+                led.homing = true;
             break;
             case STOPPED:
             break;
@@ -456,23 +465,23 @@ public class Superstructure extends SubsystemBase{
                 }
             break;
             case L1:
-                if(!intake.isHolding()){
-                    if(previousState != currentState){
-                        setWantedState(WantedSuperState.DEFAULT_STATE);
-                    } else {
-                        if(affector.getPosition().wrist < 0){
-                            affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
-                        } else {
-                            affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
-                        }
-                    } 
-                }
+                // if(!intake.isHolding()){
+                //     if(previousState != currentState){
+                //         setWantedState(WantedSuperState.DEFAULT_STATE);
+                //     } else {
+                //         if(affector.getPosition().wrist < 0){
+                //             affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
+                //         } else {
+                //             affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
+                //         }
+                //     } 
+                // }
                 if(fL1 || fL4){
                     bufferedPos = Constants.Affector.L1_POSITION;
                 }
             break;
             case CLIMB:
-                led.setColor(Color.kMagenta);
+                led.climbMode = true;
             break;
             default:
             break;
@@ -587,15 +596,6 @@ public class Superstructure extends SubsystemBase{
             new Pose3d(new Translation3d(0, 0, -10), new Rotation3d()),
         });
     }
-  
-    public void updateLEDs(){
-        led.setColor(
-            isReady() ? Color.kWhite
-            : intake.isHolding() ? Color.kGreen : Color.kOrange
-        );
-        led.setHomed(affector.isElevHomed());
-        led.setIntaking(intake.isMoving());
-    }
 
     public boolean isReady(){
         return affector.isElevHomed()//elevator homed
@@ -634,5 +634,9 @@ public class Superstructure extends SubsystemBase{
 
     public void score(){
         scoring = true;
+    }
+    
+    public void endScore(){
+        scoring = false;
     }
 }
