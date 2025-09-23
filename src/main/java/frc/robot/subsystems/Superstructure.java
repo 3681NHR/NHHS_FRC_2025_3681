@@ -308,7 +308,7 @@ public class Superstructure extends SubsystemBase{
             } else {
                 intake.setWantedState(WantedIntakeState.INTAKE);
             }
-            if(!intake.isHolding()){
+            if(!intake.isHolding() && currentState != CurrentSuperState.L1){
                 scoring = false;
                 intake.setWantedState(WantedIntakeState.STOP);
             }
@@ -617,5 +617,9 @@ public class Superstructure extends SubsystemBase{
 
     public void score(){
         scoring = true;
+    }
+    
+    public void endScore(){
+        scoring = false;
     }
 }

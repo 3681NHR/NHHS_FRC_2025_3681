@@ -440,6 +440,10 @@ NamedCommands.registerCommand("score", Commands
       if(superstructure.currentState != CurrentSuperState.CLIMB){
         superstructure.score();
       }
+    })).onFalse(new InstantCommand(() -> {
+      if(superstructure.currentState != CurrentSuperState.CLIMB){
+        superstructure.endScore();
+      }
     }));
     new Trigger(() -> operatorController.getRawButton(RB)).onTrue(new InstantCommand(() -> {
       superstructure.score();
