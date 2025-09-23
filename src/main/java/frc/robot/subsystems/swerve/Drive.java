@@ -334,7 +334,6 @@ public class Drive extends SubsystemBase {
                 } else {
                     runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(getSpeedsFromController(), getRotation()));
                 }
-                led.rotLock = true;
             break;
             case ROTATION_LOCK:
                 ChassisSpeeds speeds = getTranslationalSpeedsFromController(MathUtil.clamp(angleController.calculate(getRotation().getRadians(), rotationLockHeading), -ANGLE_MAX_VELOCITY, ANGLE_MAX_VELOCITY));
@@ -347,6 +346,7 @@ public class Drive extends SubsystemBase {
                 if(angleController.atSetpoint()){
                     setWantedState(WantedDriveState.TELEOP_DRIVE);
                 }
+                led.rotLock = true;
             break;
             case DRIVE_TO_POINT:
             break;

@@ -34,7 +34,7 @@ public class Led extends SubsystemBase {
     private AddressableLED led = new AddressableLED(0);
     private AddressableLEDBuffer buffer = new AddressableLEDBuffer(50);
 
-    private LEDPattern pattern;
+    private LEDPattern pattern = LEDPattern.solid(Color.kBlack);
 
     private LoggedNetworkBoolean rainbow = new LoggedNetworkBoolean("LED override", false);
 
@@ -90,7 +90,7 @@ public class Led extends SubsystemBase {
         status = status.mask(statusMask);
         state  = state.mask(stateMask);
 
-        pattern = status.overlayOn(state);
+        pattern = state;
 
         if(intakeRunning){
             pattern = pattern.blink(Seconds.of(.125));
