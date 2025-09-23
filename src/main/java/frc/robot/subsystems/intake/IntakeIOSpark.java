@@ -3,6 +3,7 @@ package frc.robot.subsystems.intake;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.DigitalInput;
 
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -17,6 +18,7 @@ public class IntakeIOSpark implements IntakeIO {
     private final SparkMax motor = new SparkMax(MOTOR_ID, MotorType.kBrushless);
     private final SparkMaxConfig motorConfig = new SparkMaxConfig();
     private DigitalInput holdingSens = new DigitalInput(SENS_ID);
+    private Debouncer holdingDebouncer = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
     
     private double voltage = 0.0;
     
@@ -49,7 +51,7 @@ public class IntakeIOSpark implements IntakeIO {
         inputs.motorTemperature = motor.getMotorTemperature();
         inputs.motorVelocityRPM = motor.getEncoder().getVelocity();
 
-        inputs.holding = !holdingSens.get();
+        inputs.holding = holdingDebouncer.calculate(!holdingSens.get());
     }
     
     @Override
