@@ -370,13 +370,6 @@ public class Superstructure extends SubsystemBase{
             }
             
         }
-        
-        if(previousState != currentState && previousState == CurrentSuperState.L1){
-            fL1 = true;
-        }
-        if(previousState != currentState && previousState == CurrentSuperState.L4){
-            fL4 = true;
-        }
 
         switch(currentState){
             case HOME:
@@ -393,20 +386,32 @@ public class Superstructure extends SubsystemBase{
                 if(currentState != previousState){
                     affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
                 }
+                if(fL1 || fL4){
+                    bufferedPos = Constants.Affector.STOW_POSITION;
+                }
             break;
             case HOLDING_CORAL_TELEOP:
                 if(currentState != previousState){
                 affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.HOLD_POSITION);
+                }
+                if(fL1 || fL4){
+                    bufferedPos = Constants.Affector.HOLD_POSITION;
                 }
             break;
             case NO_PIECE_AUTO:
                 if(currentState != previousState){
                     affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
                 }
+                if(fL1 || fL4){
+                    bufferedPos = Constants.Affector.STOW_POSITION;
+                }
             break;
             case HOLDING_CORAL_AUTO:
                 if(currentState != previousState){
                 affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.HOLD_POSITION);
+                }
+                if(fL1 || fL4){
+                    bufferedPos = Constants.Affector.HOLD_POSITION;
                 }
             break;
             case INTAKE_CORAL:
@@ -477,6 +482,14 @@ public class Superstructure extends SubsystemBase{
     public void setWantedState(WantedSuperState state){
         wantedState = state;
 
+
+        if(previousState == CurrentSuperState.L1){
+            fL1 = true;
+        }
+        if(previousState == CurrentSuperState.L4){
+            fL4 = true;
+        }
+
         switch (state){
             case HOME:
                 intake.setWantedState(Intake.WantedIntakeState.STOP);
@@ -490,7 +503,9 @@ public class Superstructure extends SubsystemBase{
                 intake.setWantedState(Intake.WantedIntakeState.INTAKE);
             break;
             case L1:
-                tL1 = true;
+                if(intake.isHolding()){
+                    tL1 = true;
+                }
                 bufferedPos = Constants.Affector.L1_POSITION;
             break;
             case L2:
@@ -500,7 +515,9 @@ public class Superstructure extends SubsystemBase{
                 affector.setWantedState(Affector.WantedAffectorState.POSITION, Constants.Affector.L3_POSITION);
             break;
             case L4:
-                tL4 = true;
+                if(intake.isHolding()){
+                    tL4 = true;
+                }
                 bufferedPos = Constants.Affector.L4_POSITION;
             break;
             case CLIMB:
