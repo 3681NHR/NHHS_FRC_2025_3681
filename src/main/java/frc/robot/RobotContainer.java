@@ -183,7 +183,8 @@ private final Alert operatorDisconnected =
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3),
                 vision,
-                driverSticks);
+                driverSticks,
+                led);
         affector = new Affector(new ElevatorIOSpark(), new WristIOSpark(), operatorController);
         intake = new Intake(new IntakeIOSpark());
         buttons = new Buttons(new ButtonIODIO(4));
@@ -206,7 +207,8 @@ private final Alert operatorDisconnected =
                   new ModuleIOSim(driveSim.getModules()[2]),
                   new ModuleIOSim(driveSim.getModules()[3]),
                   vision,
-                  driverSticks
+                  driverSticks,
+                  led
                   );
         affector = new Affector(new ElevatorIOSim(), new WristIOSim(), operatorController);
         affector.setElevHomed(true);
@@ -231,7 +233,8 @@ private final Alert operatorDisconnected =
                 new ModuleIO() {},
                 new ModuleIO() {},
                 vision,
-                driverSticks
+                driverSticks,
+                led
                 );
         affector = new Affector(new ElevatorIO() {}, new WristIO() {}, operatorController);
         intake = new Intake(new IntakeIO() {});
