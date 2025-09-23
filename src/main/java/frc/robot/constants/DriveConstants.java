@@ -32,7 +32,7 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.utils.PIDGains; 
 
 public class DriveConstants {
-    public static final PIDGains.PID ANGLE_PID = new PIDGains.PID(0.5, 0.0, 0.025);
+    public static final PIDGains.PID ANGLE_PID = new PIDGains.PID(4, 0.0, 0.1);
     public static final PIDGains.PID ANGLE_PID_SIM = new PIDGains.PID(4, 0.0, 0.1);
 
     public static final double ANGLE_MAX_VELOCITY = 11.2;

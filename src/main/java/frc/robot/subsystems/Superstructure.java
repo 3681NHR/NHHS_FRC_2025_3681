@@ -451,17 +451,17 @@ public class Superstructure extends SubsystemBase{
                 }
             break;
             case L1:
-                if(!intake.isHolding()){
-                    if(previousState != currentState){
-                        setWantedState(WantedSuperState.DEFAULT_STATE);
-                    } else {
-                        if(affector.getPosition().wrist < 0){
-                            affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
-                        } else {
-                            affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
-                        }
-                    } 
-                }
+                // if(!intake.isHolding()){
+                //     if(previousState != currentState){
+                //         setWantedState(WantedSuperState.DEFAULT_STATE);
+                //     } else {
+                //         if(affector.getPosition().wrist < 0){
+                //             affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
+                //         } else {
+                //             affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
+                //         }
+                //     } 
+                // }
                 if(fL1 || fL4){
                     bufferedPos = Constants.Affector.L1_POSITION;
                 }

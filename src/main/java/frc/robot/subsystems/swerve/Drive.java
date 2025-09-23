@@ -590,7 +590,7 @@ public class Drive extends SubsystemBase {
     }
 
     private Command driveToPose(Pose2d p){
-        Pose2d end   = new Pose2d(p.getTranslation(), p.getRotation().rotateBy(Rotation2d.k180deg));
+        Pose2d end   = new Pose2d(p.getTranslation(), p.getRotation().rotateBy(Rotation2d.kCCW_90deg));
         Pose2d start = new Pose2d(getPose().getTranslation(), getPathVelocityHeading(getFieldChassisSpeeds(), p));
 
         List<Waypoint> points = PathPlannerPath.waypointsFromPoses(start, end);
