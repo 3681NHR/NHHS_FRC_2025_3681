@@ -39,7 +39,7 @@ public class DriveConstants {
     public static boolean USE_VISION = true;
 
     public static final double MAX_SPEED_PP = 5;
-    public static final double MAX_ACCEL_PP = 1;
+    public static final double MAX_ACCEL_PP = 2;
     public static final double MAX_ANGLE_SPEED_PP = 10;
     public static final double MAX_ANGLE_ACCEL_PP = MAX_ANGLE_SPEED_PP*3;
     
@@ -47,10 +47,10 @@ public class DriveConstants {
     public static final double AUTO_ALIGN_POS_MAX_OFFSET   = 0.02;//meters
 
     public static final PIDGains.PID AUTO_ANGLE_PID = new PIDGains.PID(8, 0.0, 0.0);//TODO tune
-    public static final PIDGains.PID AUTO_ANGLE_PID_SIM = new PIDGains.PID(5, 0.0, 0.0);
+    public static final PIDGains.PID AUTO_ANGLE_PID_SIM = new PIDGains.PID(8, 0.5, 0.2);
     
     public static final PIDGains.PID TRANS_PID = new PIDGains.PID(5, 0.0, 0.0);//TODO tune
-    public static final PIDGains.PID TRANS_PID_SIM = new PIDGains.PID(6, 0.0, 0.0);
+    public static final PIDGains.PID TRANS_PID_SIM = new PIDGains.PID(7, 1, 0.2);
     public static final double MAX_SPEED = 4.7;//TODO tune
 
     public static final double ODOMETRY_FREQ = 100.0; // Hz

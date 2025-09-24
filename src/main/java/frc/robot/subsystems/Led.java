@@ -18,16 +18,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Led extends SubsystemBase {
 
-    public boolean hasCoral = false;
-    public boolean rotLock = false;
-    public boolean aligningReef = false;
-    public boolean homing = false;
-    public boolean climbMode = false;
-    public boolean homed = false;
-    public boolean posAlign = false;
-    public boolean rotAlign = false;
+    public boolean hasCoral      = false;
+    public boolean rotLock       = false;
+    public boolean aligningReef  = false;
+    public boolean homing        = false;
+    public boolean climbMode     = false;
+    public boolean homed         = false;
     public boolean affectorInPos = false;
-    public boolean alignInPos = false;
+    public boolean alignInPos    = false;
 
     private boolean intakeRunning = false;
 
@@ -46,61 +44,61 @@ public class Led extends SubsystemBase {
     
     @Override
     public void periodic() {
-        LEDPattern status = LEDPattern.solid(Color.kBlack);
-        LEDPattern state  = LEDPattern.solid(Color.kBlack);
+        Color status = Color.kBlack;
+        Color state  = Color.kBlack;
         LEDPattern stateMask = LEDPattern.steps(Map.of(0, Color.kBlack, 0.5, Color.kWhite));
         LEDPattern statusMask  = LEDPattern.steps(Map.of(0, Color.kWhite, 0.5, Color.kBlack));
         
-        if(affectorInPos){
-            status = LEDPattern.solid(new Color(0, 0, 0));
-        }
-        // if(posAlignMode){
-            status = LEDPattern.solid(Color.kYellow);
-        // }
-        // if(rotAlignMode){
-        //     status = LEDPattern.solid(Color.kOrange);
+        // if(affectorInPos){
+        //     status = Color.kBlack;
         // }
         if(homing){
-            state = LEDPattern.solid(new Color(255, 0, 0));
-            state = state.mask(LEDPattern.steps(Map.of(0, Color.kBlack, 0.45, Color.kWhite, 0.55, Color.kBlack)));
-            state = state.scrollAtRelativeSpeed(Percent.per(Second).of(0.25));
-        }
-        if(alignInPos){
-            status = LEDPattern.solid(Color.kTeal);
+            state = new Color(255, 0, 0);
+            // state = state.mask(LEDPattern.steps(Map.of(0, Color.kBlack, 0.45, Color.kWhite, 0.55, Color.kBlack)));
+            // state = state.scrollAtRelativeSpeed(Percent.per(Second).of(0.25));
         }
         if(hasCoral){
-            state = LEDPattern.solid(new Color(0, 255, 0));
+            state = new Color(0, 255, 0);
+        } else {
+            state = new Color(255, 255, 0);
+            alignInPos = false;
         }
         if(rotLock){
-            state = LEDPattern.solid(new Color(255, 255, 255));
-        }
-        if(!homed){
-            status = LEDPattern.solid(new Color(255, 0, 0));
-            status = status.breathe(Seconds.of(1));
+            status = new Color(255, 255, 255);
+            alignInPos = false;
         }
         if(aligningReef){
-            state = LEDPattern.solid(new Color(0, 0, 255));
+            status = new Color(0, 0, 255);
+            alignInPos = false;
+        }
+        if(alignInPos){
+            status = new Color(0, 255, 255);
+        }
+        if(!homed){
+            state = new Color(255, 0, 0);
+            // status = status.breathe(Seconds.of(1));
         }
         if(climbMode){
-            state = LEDPattern.solid(Color.kMagenta);
-            status = LEDPattern.solid(Color.kMagenta);
+            state = Color.kMagenta;
+            status = Color.kMagenta;
         }
 
-
-        status = status.mask(statusMask);
-        state  = state.mask(stateMask);
-
-        pattern = state;
-
-        if(intakeRunning){
-            pattern = pattern.blink(Seconds.of(.125));
-        }
+        // if(intakeRunning){
+        //     pattern = pattern.blink(Seconds.of(.125));
+        // }
 
         if(rainbow.get()){
             pattern = LEDPattern.rainbow(255, 255).scrollAtRelativeSpeed(Percent.per(Second).of(25));
+            pattern.applyTo(buffer);
         }
 
-        pattern.applyTo(buffer);
+
+        if(!rainbow.get()){
+            for(int i=0; i<buffer.getLength(); i++){
+
+                buffer.setLED(i, i < buffer.getLength()/2 ? status : state);//overlayOn is broken, so we use this
+            }
+        }
 
         led.setData(buffer);
 
@@ -108,8 +106,6 @@ public class Led extends SubsystemBase {
         Logger.recordOutput("led state" , buffer.getLED(49).toHexString());
 
         Logger.recordOutput("led/hasCoral", hasCoral);
-        Logger.recordOutput("led/rotAlign", rotAlign);
-        Logger.recordOutput("led/posAlign", posAlign);
         Logger.recordOutput("led/rotLock", rotLock);
         Logger.recordOutput("led/aligningReef", aligningReef);
         Logger.recordOutput("led/homing", homing);

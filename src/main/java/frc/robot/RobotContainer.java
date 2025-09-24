@@ -120,13 +120,10 @@ public class RobotContainer {
 
   private PowerDistribution pdp = new PowerDistribution(1  , ModuleType.kRev);
   
-    
   private VariableLimSLR lxLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
   private VariableLimSLR lyLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
   private VariableLimSLR rxLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
   private VariableLimSLR ryLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
-
-  private double mult = 1.0;
   
   private final Alert driverDisconnected =
   new Alert("Driver controller disconnected (port 0).", AlertType.kWarning);

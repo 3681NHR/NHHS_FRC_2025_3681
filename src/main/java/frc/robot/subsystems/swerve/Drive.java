@@ -39,10 +39,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.FineTuneAlign;
 import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.Constants.RobotMode;
 import frc.robot.subsystems.Led;
+import frc.robot.subsystems.Superstructure.BranchSide;
 import frc.robot.subsystems.swerve.gyro.GyroIO;
 import frc.robot.subsystems.swerve.gyro.GyroIOInputsAutoLogged;
 import frc.robot.subsystems.swerve.module.Module;
@@ -93,7 +95,7 @@ public class Drive extends SubsystemBase {
         new PID(
         RobotBase.isReal() ? ANGLE_PID : ANGLE_PID_SIM);
 
-    private PPHolonomicDriveController autoController = new PPHolonomicDriveController(
+    public PPHolonomicDriveController autoController = new PPHolonomicDriveController(
         new PIDConstants(TRANS_PID.kP(), TRANS_PID.kI(), TRANS_PID.kD()), new PIDConstants(AUTO_ANGLE_PID.kP(), AUTO_ANGLE_PID.kI(), AUTO_ANGLE_PID.kD()));
 
     public static final Lock odometryLock = new ReentrantLock();
@@ -421,14 +423,9 @@ public class Drive extends SubsystemBase {
         setWantedState(WantedDriveState.DRIVE_TO_POINT);
         CommandScheduler.getInstance().schedule(
              driveToPose(p)
-             .alongWith(Commands.run(() -> {
-                led.aligningReef = true;
-            }))
-            .withTimeout(5)
-            .andThen(new InstantCommand(() -> {
+            .withTimeout(5).finallyDo(() -> {
                 setWantedState(WantedDriveState.TELEOP_DRIVE);
-                led.aligningReef = false;
-            }))
+            })
         );
     }
 
@@ -615,27 +612,9 @@ public class Drive extends SubsystemBase {
         PathPlannerPath path = new PathPlannerPath(points, constraints, new IdealStartingState(getSpeed(), getPose().getRotation()), new GoalEndState(0, p.getRotation()));
         path.preventFlipping = true;
 
+        led.alignInPos = false;
 
-        return AutoBuilder.followPath(path).andThen(Commands.run(() -> {
-            PathPlannerTrajectoryState state = new PathPlannerTrajectoryState();
-            state.pose = p;
-
-            runVelocity(autoController.calculateRobotRelativeSpeeds(getPose(), state));
-
-            Logger.recordOutput("Drive/Align/Fine tune/distance to target", getPose().getTranslation().getDistance(p.getTranslation()));
-            Logger.recordOutput("Drive/Align/Fine tune/angle to target"   , Math.abs(getPose().getRotation().minus(p.getRotation()).getDegrees()));
-
-            if(getPose().getTranslation().getDistance(p.getTranslation()) <= AUTO_ALIGN_POS_MAX_OFFSET &&
-            Math.abs(getPose().getRotation().minus(p.getRotation()).getDegrees()) <= AUTO_ALIGN_ANGLE_MAX_OFFSET){
-                led.alignInPos = true;
-            } else {
-                led.alignInPos = false;
-            }
-        }).until(() -> 
-            getPose().getTranslation().getDistance(p.getTranslation()) <= AUTO_ALIGN_POS_MAX_OFFSET &&
-            Math.abs(getPose().getRotation().minus(p.getRotation()).getDegrees()) <= AUTO_ALIGN_ANGLE_MAX_OFFSET
-        )
-        .withTimeout(1));
+        return AutoBuilder.followPath(path).alongWith(new InstantCommand(() -> {led.aligningReef = true;})).andThen(new FineTuneAlign(p, this, led).withTimeout(2));
     }
 
     /**

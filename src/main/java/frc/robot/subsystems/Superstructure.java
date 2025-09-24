@@ -124,9 +124,9 @@ public class Superstructure extends SubsystemBase{
 
     private LoggedNetworkBoolean useVisionOdometry = new LoggedNetworkBoolean("overrides/useVisionOdometry", DriveConstants.USE_VISION);
     
-    public static ArrayList<Pose2d> blueReefTagPoses = new ArrayList<>();
-    public static ArrayList<Pose2d> redReefTagPoses = new ArrayList<>();
-    public static ArrayList<Pose2d> allReefTagPoses = new ArrayList<>();
+    public static  final ArrayList<Pose2d> blueReefTagPoses = new ArrayList<>();
+    public static  final ArrayList<Pose2d> redReefTagPoses = new ArrayList<>();
+    public static  final ArrayList<Pose2d> allReefTagPoses = new ArrayList<>();
 
     static{
         var field = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
@@ -557,10 +557,9 @@ public class Superstructure extends SubsystemBase{
                 redReefTagPoses;
         }
 
-
         return pose.nearest(reefPoseList);
-
     }
+    
   
     private static Pose2d getBranchFromTag(Pose2d tag, BranchSide side) {
         var translation = tag.getTranslation().plus(
@@ -609,7 +608,8 @@ public class Superstructure extends SubsystemBase{
     }
 
     public void autoAlign(BranchSide side){
-        var tag = getClosestReefAprilTag(drive.getPose());
+
+        Pose2d tag = getClosestReefAprilTag(drive.getPose());
         var branch = getBranchFromTag(tag, side);
         drive.setTargetPose(branch);
     }
