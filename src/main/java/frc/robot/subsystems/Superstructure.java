@@ -96,11 +96,9 @@ public class Superstructure extends SubsystemBase{
     public CurrentSuperState currentState  = CurrentSuperState.STOPPED;
     public CurrentSuperState previousState = CurrentSuperState.STOPPED;
 
-    private boolean fL4 = false;
-    private boolean tL4 = false;
-    private boolean fL1 = false;
-    private boolean tL1 = false;
-
+    private boolean affectorTransition = false;
+    @AutoLogOutput(key="Superstructure/transitionWristThreshold")
+    private double transitionWristThreshold = 45.0;
     private AffectorPosition bufferedPos = new AffectorPosition(0, 0);
 
     Intake intake;
@@ -238,10 +236,7 @@ public class Superstructure extends SubsystemBase{
         Logger.recordOutput("Superstructure/currentState", currentState);
         Logger.recordOutput("Superstructure/wantedState", wantedState);
 
-        Logger.recordOutput("Superstructure/flags/from L4", fL4);
-        Logger.recordOutput("Superstructure/flags/from L1", fL1);
-        Logger.recordOutput("Superstructure/flags/to L4", tL4);
-        Logger.recordOutput("Superstructure/flags/to L1", tL1);
+        Logger.recordOutput("Superstructure/affector transition", affectorTransition);
 
         Logger.recordOutput("Superstructure/bufferedPos/elev" , bufferedPos.elev);
         Logger.recordOutput("Superstructure/bufferedPos/wrist", bufferedPos.wrist);
@@ -313,61 +308,17 @@ public class Superstructure extends SubsystemBase{
             }
         }
 
-        if(fL4){
-            if(affector.getPosition().wrist < Units.degreesToRadians(45)){
+        if(affectorTransition){
+            if(affector.getPosition().wrist < Units.degreesToRadians(transitionWristThreshold)){
                 affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
             } else {
                 if(Math.abs(affector.getPosition().elev - bufferedPos.elev) < ElevatorConstants.NEAR_POS_TOLERANCE){
                     affector.setWantedState(WantedAffectorState.POSITION, bufferedPos);
-                    fL4 = false;
+                    affectorTransition = false;
                 } else {
                     affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(bufferedPos.elev, Constants.Affector.STOW_POSITION.wrist));
                 }
             }
-        }
-        if(tL4){
-            if(affector.getPosition().wrist < Units.degreesToRadians(75)){
-                affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
-            } else {
-                if(Math.abs(affector.getPosition().elev - bufferedPos.elev) < ElevatorConstants.NEAR_POS_TOLERANCE){
-                    affector.setWantedState(WantedAffectorState.POSITION, bufferedPos);
-                    tL4 = false;
-                } else {
-                    affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(bufferedPos.elev, Constants.Affector.STOW_POSITION.wrist));
-                }
-            }
-            
-        }
-        if(fL1){
-            if(affector.getPosition().wrist < Units.degreesToRadians(75)){
-                affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
-            } else {
-                if(Math.abs(affector.getPosition().elev - bufferedPos.elev) < ElevatorConstants.NEAR_POS_TOLERANCE){
-                    affector.setWantedState(WantedAffectorState.POSITION, bufferedPos);
-                    fL1 = false;
-                } else {
-                    affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(bufferedPos.elev, Constants.Affector.STOW_POSITION.wrist));
-                }
-            }
-            
-        }
-        if(tL1){
-            if(affector.getPosition(). wrist > Units.degreesToRadians(-20)){
-                if(affector.getPosition().wrist < Units.degreesToRadians(75)){
-                    affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
-                } else {
-                    if(Math.abs(affector.getPosition().elev - bufferedPos.elev) < ElevatorConstants.NEAR_POS_TOLERANCE){
-                        affector.setWantedState(WantedAffectorState.POSITION, bufferedPos);
-                        tL1 = false;
-                    } else {
-                        affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(bufferedPos.elev, Constants.Affector.STOW_POSITION.wrist));
-                    }
-                }
-            } else {
-                affector.setWantedState(WantedAffectorState.POSITION, bufferedPos);
-                tL1 = false;
-            }
-            
         }
 
         led.affectorInPos = affector.atSetpoint();
@@ -395,7 +346,7 @@ public class Superstructure extends SubsystemBase{
                 if(currentState != previousState){
                     affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
                 }
-                if(fL1 || fL4){
+                if(affectorTransition){
                     bufferedPos = Constants.Affector.STOW_POSITION;
                 }
             break;
@@ -403,7 +354,7 @@ public class Superstructure extends SubsystemBase{
                 if(currentState != previousState){
                 affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.HOLD_POSITION);
                 }
-                if(fL1 || fL4){
+                if(affectorTransition){
                     bufferedPos = Constants.Affector.HOLD_POSITION;
                 }
             break;
@@ -411,7 +362,7 @@ public class Superstructure extends SubsystemBase{
                 if(currentState != previousState){
                     affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
                 }
-                if(fL1 || fL4){
+                if(affectorTransition){
                     bufferedPos = Constants.Affector.STOW_POSITION;
                 }
             break;
@@ -419,49 +370,26 @@ public class Superstructure extends SubsystemBase{
                 if(currentState != previousState){
                 affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.HOLD_POSITION);
                 }
-                if(fL1 || fL4){
-                    bufferedPos = Constants.Affector.HOLD_POSITION;
-                }
             break;
             case INTAKE_CORAL:
                 if(intake.isHolding()){
                     setWantedState(WantedSuperState.DEFAULT_STATE);
                     intake.setWantedState(Intake.WantedIntakeState.STOP);
                 }
-                if(fL1 || fL4){
-                    bufferedPos = Constants.Affector.STATION_POSITION;
-                }
             break;
             case L4:
                 if(!intake.isHolding()){
-                    if(previousState != currentState){
-                        setWantedState(WantedSuperState.DEFAULT_STATE);
-                    } else {
-                        if(affector.getPosition().wrist < Units.degreesToRadians(45)){
-                            affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
-                        } else {
-                            affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
-                        }
-                    } 
-                }
-                if(fL1 || fL4){
-                    bufferedPos = Constants.Affector.L4_POSITION;
+                    setWantedState(WantedSuperState.DEFAULT_STATE);
                 }
             break;
             case L3:
                 if(!intake.isHolding()){
                     setWantedState(WantedSuperState.DEFAULT_STATE);
                 }
-                if(fL1 || fL4){
-                    bufferedPos = Constants.Affector.L3_POSITION;
-                }
             break;
             case L2:
                 if(!intake.isHolding()){
                     setWantedState(WantedSuperState.DEFAULT_STATE);
-                }
-                if(fL1 || fL4){
-                    bufferedPos = Constants.Affector.L2_POSITION;
                 }
             break;
             case L1:
@@ -476,7 +404,7 @@ public class Superstructure extends SubsystemBase{
                 //         }
                 //     } 
                 // }
-                if(fL1 || fL4){
+                if(affectorTransition){
                     bufferedPos = Constants.Affector.L1_POSITION;
                 }
             break;
@@ -491,14 +419,11 @@ public class Superstructure extends SubsystemBase{
     public void setWantedState(WantedSuperState state){
         wantedState = state;
 
-
-        if(previousState == CurrentSuperState.L1){
-            fL1 = true;
+        if(currentState == CurrentSuperState.L2 || currentState == CurrentSuperState.L3){
+            transitionWristThreshold = 70.0;
+        } else {
+            transitionWristThreshold = 45.0;
         }
-        if(previousState == CurrentSuperState.L4){
-            fL4 = true;
-        }
-
         switch (state){
             case HOME:
                 intake.setWantedState(Intake.WantedIntakeState.STOP);
@@ -508,26 +433,35 @@ public class Superstructure extends SubsystemBase{
                 affector.stop();
             break;
             case INTAKE_CORAL:
-                affector.setWantedState(Affector.WantedAffectorState.POSITION, Constants.Affector.STATION_POSITION);
-                intake.setWantedState(Intake.WantedIntakeState.INTAKE);
+                if(!intake.isHolding() && bufferedPos != Constants.Affector.STATION_POSITION){
+                    affectorTransition = true;
+                    bufferedPos = Constants.Affector.STATION_POSITION;
+                    intake.setWantedState(Intake.WantedIntakeState.INTAKE);
+                }
             break;
             case L1:
-                if(intake.isHolding()){
-                    tL1 = true;
+                if(intake.isHolding() && bufferedPos != Constants.Affector.L1_POSITION){
+                    affectorTransition = true;
+                    bufferedPos = Constants.Affector.L1_POSITION;
                 }
-                bufferedPos = Constants.Affector.L1_POSITION;
             break;
             case L2:
-                affector.setWantedState(Affector.WantedAffectorState.POSITION, Constants.Affector.L2_POSITION);
+                if(intake.isHolding() && bufferedPos != Constants.Affector.L2_POSITION){
+                    affectorTransition = true;
+                    bufferedPos = Constants.Affector.L2_POSITION;
+                }
             break;
             case L3:
-                affector.setWantedState(Affector.WantedAffectorState.POSITION, Constants.Affector.L3_POSITION);
+                if(intake.isHolding() && bufferedPos != Constants.Affector.L3_POSITION){
+                    affectorTransition = true;
+                    bufferedPos = Constants.Affector.L3_POSITION;
+                }
             break;
             case L4:
-                if(intake.isHolding()){
-                    tL4 = true;
+                if(intake.isHolding() && bufferedPos != Constants.Affector.L4_POSITION){
+                    affectorTransition = true;
+                    bufferedPos = Constants.Affector.L4_POSITION;
                 }
-                bufferedPos = Constants.Affector.L4_POSITION;
             break;
             case CLIMB:
                 affector.setWantedState(Affector.WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);

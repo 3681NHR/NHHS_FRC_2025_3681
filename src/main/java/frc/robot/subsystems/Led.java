@@ -60,8 +60,11 @@ public class Led extends SubsystemBase {
         if(hasCoral){
             state = new Color(0, 255, 0);
         } else {
-            state = new Color(255, 255, 0);
+            state = new Color(255, 100, 0);
             alignInPos = false;
+        }
+        if(intakeRunning){
+            state = new Color(255, 255, 0);
         }
         if(rotLock){
             status = new Color(255, 255, 255);

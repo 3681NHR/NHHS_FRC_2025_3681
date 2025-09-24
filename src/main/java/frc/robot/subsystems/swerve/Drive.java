@@ -82,9 +82,9 @@ public class Drive extends SubsystemBase {
     }
     private duelJoystickAxis driverSticks;
 
-    private WantedDriveState wantedState = WantedDriveState.IDLE;
-    private CurrentDriveState currentState = CurrentDriveState.IDLE;
-    private CurrentDriveState previousState = CurrentDriveState.IDLE;
+    public WantedDriveState wantedState = WantedDriveState.IDLE;
+    public CurrentDriveState currentState = CurrentDriveState.IDLE;
+    public CurrentDriveState previousState = CurrentDriveState.IDLE;
 
     private Led led;
 
@@ -423,8 +423,9 @@ public class Drive extends SubsystemBase {
         setWantedState(WantedDriveState.DRIVE_TO_POINT);
         CommandScheduler.getInstance().schedule(
              driveToPose(p)
-            .withTimeout(5).finallyDo(() -> {
+            .withTimeout(3.5).finallyDo(() -> {
                 setWantedState(WantedDriveState.TELEOP_DRIVE);
+                led.aligningReef = false;
             })
         );
     }
@@ -614,7 +615,7 @@ public class Drive extends SubsystemBase {
 
         led.alignInPos = false;
 
-        return AutoBuilder.followPath(path).alongWith(new InstantCommand(() -> {led.aligningReef = true;})).andThen(new FineTuneAlign(p, this, led).withTimeout(2));
+        return AutoBuilder.followPath(path).alongWith(new InstantCommand(() -> {led.aligningReef = true;})).andThen(new FineTuneAlign(p, this, led).withTimeout(3)); 
     }
 
     /**

@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.DriveConstants;
 import frc.robot.subsystems.Led;
 import frc.robot.subsystems.swerve.Drive;
+import frc.robot.subsystems.swerve.Drive.CurrentDriveState;
 
 public class FineTuneAlign extends Command {
 
@@ -58,6 +59,6 @@ public class FineTuneAlign extends Command {
 
     @Override
     public boolean isFinished() {
-        return done;
+        return done || drive.currentState != CurrentDriveState.DRIVE_TO_POINT;
     }
 }
