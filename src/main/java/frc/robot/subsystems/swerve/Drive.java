@@ -336,6 +336,7 @@ public class Drive extends SubsystemBase {
                 } else {
                     runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(getSpeedsFromController(), getRotation()));
                 }
+                
             break;
             case ROTATION_LOCK:
                 ChassisSpeeds speeds = getTranslationalSpeedsFromController(MathUtil.clamp(angleController.calculate(getRotation().getRadians(), rotationLockHeading), -ANGLE_MAX_VELOCITY, ANGLE_MAX_VELOCITY));
@@ -615,7 +616,10 @@ public class Drive extends SubsystemBase {
 
         led.alignInPos = false;
 
-        return AutoBuilder.followPath(path).alongWith(new InstantCommand(() -> {led.aligningReef = true;})).andThen(new FineTuneAlign(p, this, led).withTimeout(3)); 
+        return AutoBuilder.followPath(path)
+        .alongWith(new InstantCommand(() -> {led.aligningReef = true;}))
+        .andThen(new FineTuneAlign(p, this, led)
+        .withTimeout(3)); 
     }
 
     /**

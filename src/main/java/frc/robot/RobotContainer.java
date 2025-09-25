@@ -464,7 +464,7 @@ NamedCommands.registerCommand("score", Commands
     //override drive 
     new Trigger(() -> driverController.getPOV() == 0).onTrue(new InstantCommand(() -> {
         drive.setWantedState(WantedDriveState.TELEOP_DRIVE);
-      }));
+    }, drive));
 
     //climber
     new Trigger(() -> operatorController.getRawButton(X))
