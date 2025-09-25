@@ -63,9 +63,9 @@ public class Superstructure extends SubsystemBase{
     }
     // X = side to side, Y = away from tag
     public enum BranchSide{ //? you could consider bringing the tag offsets back and modifying dynamics
-        LEFT  (new Translation2d(Units.inchesToMeters(-17), Units.inchesToMeters(17))),
-        RIGHT (new Translation2d(Units.inchesToMeters(-3.5)  , Units.inchesToMeters(17))),
-        MIDDLE(new Translation2d());
+        LEFT  (new Translation2d(Units.inchesToMeters(-15.75), Units.inchesToMeters(17))),
+        RIGHT (new Translation2d(Units.inchesToMeters(-4)  , Units.inchesToMeters(17))),
+        MIDDLE(new Translation2d());//16.825
 
         public Translation2d tagOffset;
         private BranchSide(Translation2d offsets) {
@@ -343,33 +343,21 @@ public class Superstructure extends SubsystemBase{
             case STOPPED:
             break;
             case NO_PIECE_TELEOP:
-                if(currentState != previousState){
-                    affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
-                }
                 if(affectorTransition){
                     bufferedPos = Constants.Affector.STOW_POSITION;
                 }
             break;
             case HOLDING_CORAL_TELEOP:
-                if(currentState != previousState){
-                affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.HOLD_POSITION);
-                }
                 if(affectorTransition){
                     bufferedPos = Constants.Affector.HOLD_POSITION;
                 }
             break;
             case NO_PIECE_AUTO:
-                if(currentState != previousState){
-                    affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
-                }
                 if(affectorTransition){
                     bufferedPos = Constants.Affector.STOW_POSITION;
                 }
             break;
             case HOLDING_CORAL_AUTO:
-                if(currentState != previousState){
-                affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.HOLD_POSITION);
-                }
             break;
             case INTAKE_CORAL:
                 if(intake.isHolding()){
@@ -425,6 +413,10 @@ public class Superstructure extends SubsystemBase{
             transitionWristThreshold = 45.0;
         }
         switch (state){
+            case DEFAULT_STATE:
+                affectorTransition = true;
+                bufferedPos = intake.isHolding() ? Constants.Affector.HOLD_POSITION : Constants.Affector.STOW_POSITION;
+            break;
             case HOME:
                 intake.setWantedState(Intake.WantedIntakeState.STOP);
             break;

@@ -13,17 +13,27 @@
 
 package frc.robot.constants;
 
+import java.nio.file.Path;
+import java.util.function.Function;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.subsystems.vision.FilterStrategy;
 
 public class VisionConstants {
   // AprilTag layout
-  public static AprilTagFieldLayout APRILTAG_LAYOUT =
-      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+  public static AprilTagFieldLayout APRILTAG_LAYOUT(){
+    AprilTagFieldLayout e = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+    try{
+        // e = new AprilTagFieldLayout(Filesystem.getDeployDirectory().getAbsolutePath() + "/test_field.json");
+    } catch(Exception ex){}
+    return e;
+  }
+    //   
 
   // Camera names, must match names configured on coprocessor
   public static String[] CAMERA_NAMES = {
@@ -41,7 +51,7 @@ public class VisionConstants {
         new Rotation3d(
             Units.degreesToRadians(0),
             Units.degreesToRadians(-20),//-pitch
-            Units.degreesToRadians(55-6.22)//yaw
+            Units.degreesToRadians(55-6.22+0.74)//yaw
         )
   );
   public static Transform3d FL_ROBOT_TO_CAM =
@@ -52,7 +62,7 @@ public class VisionConstants {
         new Rotation3d(
             Units.degreesToRadians(0),
             Units.degreesToRadians(-20),//-pitch
-            Units.degreesToRadians(110-6.9)//yaw
+            Units.degreesToRadians(110-6.9+2.51-0.62+0.74)//yaw
         )
   );
   public static Transform3d BR_ROBOT_TO_CAM =

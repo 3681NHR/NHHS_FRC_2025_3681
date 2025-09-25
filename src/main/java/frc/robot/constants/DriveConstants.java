@@ -43,8 +43,8 @@ public class DriveConstants {
     public static final double MAX_ANGLE_SPEED_PP = 10;
     public static final double MAX_ANGLE_ACCEL_PP = MAX_ANGLE_SPEED_PP*3;
     
-    public static final double AUTO_ALIGN_ANGLE_MAX_OFFSET = 0.1;//degrees
-    public static final double AUTO_ALIGN_POS_MAX_OFFSET   = 0.02;//meters
+    public static final double AUTO_ALIGN_ANGLE_MAX_OFFSET = 0.05;//degrees
+    public static final double AUTO_ALIGN_POS_MAX_OFFSET   = 0.01;//meters
 
     public static final PIDGains.PID AUTO_ANGLE_PID = new PIDGains.PID(8, 0.0, 0.0);//TODO tune
     public static final PIDGains.PID AUTO_ANGLE_PID_SIM = new PIDGains.PID(8, 0.5, 0.2);

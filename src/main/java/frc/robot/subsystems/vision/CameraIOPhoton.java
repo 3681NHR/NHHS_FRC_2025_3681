@@ -31,7 +31,7 @@ public class CameraIOPhoton implements CameraIO {
       camera = new PhotonCamera(name);
       this.robotToCamera = robotToCamera;
 
-      this.poseEstimator = new PhotonPoseEstimator(VisionConstants.APRILTAG_LAYOUT, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, robotToCamera);
+      this.poseEstimator = new PhotonPoseEstimator(VisionConstants.APRILTAG_LAYOUT(), PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, robotToCamera);
     }
   
     @Override

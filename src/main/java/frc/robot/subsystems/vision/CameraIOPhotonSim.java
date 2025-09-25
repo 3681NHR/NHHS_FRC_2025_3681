@@ -45,7 +45,7 @@ public class CameraIOPhotonSim extends CameraIOPhoton {
     // Initialize vision sim
     if (visionSim == null) {
       visionSim = new VisionSystemSim("main");
-      visionSim.addAprilTags(APRILTAG_LAYOUT);
+      visionSim.addAprilTags(APRILTAG_LAYOUT());
     }
 
     // Add sim camera

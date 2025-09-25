@@ -69,7 +69,7 @@ public class Vision extends SubsystemBase {
 
       // Add tag poses
       for (int tagId : inputs[cameraIndex].tagIds) {
-        var tagPose = APRILTAG_LAYOUT.getTagPose(tagId);
+        var tagPose = APRILTAG_LAYOUT().getTagPose(tagId);
         if (tagPose.isPresent()) {
           tagPoses.add(tagPose.get());
         }
@@ -86,9 +86,9 @@ public class Vision extends SubsystemBase {
 
                 // Must be within the field boundaries
                 || observation.pose().getX() < -1.0
-                || observation.pose().getX() > APRILTAG_LAYOUT.getFieldLength()+1
+                || observation.pose().getX() > APRILTAG_LAYOUT().getFieldLength()+1
                 || observation.pose().getY() < -1.0
-                || observation.pose().getY() > APRILTAG_LAYOUT.getFieldWidth()+1;
+                || observation.pose().getY() > APRILTAG_LAYOUT().getFieldWidth()+1;
 
         // Add pose to log
         robotPoses.add(observation.pose());

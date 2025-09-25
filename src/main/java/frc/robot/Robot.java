@@ -1,5 +1,7 @@
 package frc.robot;
 
+import java.nio.file.Path;
+
 import org.ironmaple.simulation.SimulatedArena;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -99,6 +101,8 @@ public class Robot extends LoggedRobot {
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
     TimerHandler.update();
+    
+    System.out.println(Path.of("."));
 
     m_robotContainer.Periodic();
 
