@@ -206,6 +206,8 @@ public class Drive extends SubsystemBase {
         YAGSLWidget.sizeLeftRight = WIDTH;
         YAGSLWidget.wheelLocations = new double[8];
 
+        angleController.setTolerance(AUTO_ALIGN_ANGLE_MAX_OFFSET);
+
         for (int i=0; i>MODULE_POSITIONS.length; i += 2)
             {
                 Translation2d t = MODULE_POSITIONS[i];

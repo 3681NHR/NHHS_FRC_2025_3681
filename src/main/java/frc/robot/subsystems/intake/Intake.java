@@ -13,12 +13,14 @@ public class Intake extends SubsystemBase {
 
     public enum WantedIntakeState {
         INTAKE,
+        SCORE,
         OUTTAKE,
         STOP,
         MANUAL
     }
     public enum CurrentIntakeState {
         INTAKING,
+        SCORING,
         OUTAKING,
         STOPPED,
         MANUAL
@@ -67,6 +69,9 @@ public class Intake extends SubsystemBase {
             case INTAKE:
                 currentState = CurrentIntakeState.INTAKING;
                 break;
+            case SCORE:
+                currentState = CurrentIntakeState.SCORING;
+                break;
             case OUTTAKE:
                 currentState = CurrentIntakeState.OUTAKING;
                 break;
@@ -81,10 +86,13 @@ public class Intake extends SubsystemBase {
     public void applyStates(){
         switch (currentState) {
             case INTAKING:
-            io.setVoltage(IntakeConstants.SPEED);
+            io.setVoltage(IntakeConstants.SPEED_INTAKE);
+            break;
+            case SCORING:
+            io.setVoltage(IntakeConstants.SPEED_SCORE);
             break;
             case OUTAKING:
-            io.setVoltage(-IntakeConstants.SPEED);
+            io.setVoltage(-IntakeConstants.SPEED_SCORE);
             break;
             case STOPPED:
                 io.setVoltage(0);

@@ -64,7 +64,7 @@ public class Superstructure extends SubsystemBase{
     // X = side to side, Y = away from tag
     public enum BranchSide{ //? you could consider bringing the tag offsets back and modifying dynamics
         LEFT  (new Translation2d(Units.inchesToMeters(-15.75), Units.inchesToMeters(17))),
-        RIGHT (new Translation2d(Units.inchesToMeters(-4)  , Units.inchesToMeters(17))),
+        RIGHT (new Translation2d(Units.inchesToMeters(-3.5)  , Units.inchesToMeters(17))),
         MIDDLE(new Translation2d());//16.825
 
         public Translation2d tagOffset;
@@ -300,7 +300,7 @@ public class Superstructure extends SubsystemBase{
             if(currentState == CurrentSuperState.L1 || currentState == CurrentSuperState.INTAKE_CORAL){
                 intake.setWantedState(WantedIntakeState.OUTTAKE);
             } else {
-                intake.setWantedState(WantedIntakeState.INTAKE);
+                intake.setWantedState(WantedIntakeState.SCORE);
             }
             if(!intake.isHolding() && currentState != CurrentSuperState.L1){
                 scoring = false;
@@ -346,6 +346,9 @@ public class Superstructure extends SubsystemBase{
                 if(affectorTransition){
                     bufferedPos = Constants.Affector.STOW_POSITION;
                 }
+                if(!scoring){
+                    intake.setWantedState(WantedIntakeState.STOP);
+                }
             break;
             case HOLDING_CORAL_TELEOP:
                 if(affectorTransition){
@@ -355,6 +358,9 @@ public class Superstructure extends SubsystemBase{
             case NO_PIECE_AUTO:
                 if(affectorTransition){
                     bufferedPos = Constants.Affector.STOW_POSITION;
+                }
+                if(!scoring){
+                    intake.setWantedState(WantedIntakeState.STOP);
                 }
             break;
             case HOLDING_CORAL_AUTO:
