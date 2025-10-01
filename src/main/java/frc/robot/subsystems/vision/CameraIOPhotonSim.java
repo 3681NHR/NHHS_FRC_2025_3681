@@ -13,6 +13,8 @@
 
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.apriltag.AprilTagDetector;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -31,6 +33,8 @@ public class CameraIOPhotonSim extends CameraIOPhoton {
   private final Supplier<Pose2d> poseSupplier;
   private final PhotonCameraSim cameraSim;
 
+  private AprilTagFieldLayout layout;
+
   /**
    * Creates a new CameraIOPhotonSim.
    *
@@ -38,14 +42,14 @@ public class CameraIOPhotonSim extends CameraIOPhoton {
    * @param poseSupplier Supplier for the robot pose to use in simulation.
    */
   public CameraIOPhotonSim(
-      String name, Transform3d robotToCamera, Supplier<Pose2d> poseSupplier) {
-    super(name, robotToCamera);
+      AprilTagFieldLayout layout, String name, Transform3d robotToCamera, Supplier<Pose2d> poseSupplier) {
+    super(layout, name, robotToCamera);
     this.poseSupplier = poseSupplier;
 
     // Initialize vision sim
     if (visionSim == null) {
       visionSim = new VisionSystemSim("main");
-      visionSim.addAprilTags(APRILTAG_LAYOUT());
+      visionSim.addAprilTags(layout);
     }
 
     // Add sim camera

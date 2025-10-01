@@ -72,6 +72,8 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -82,6 +84,7 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -124,6 +127,8 @@ public class RobotContainer {
   private VariableLimSLR lyLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
   private VariableLimSLR rxLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
   private VariableLimSLR ryLim = new VariableLimSLR(Double.POSITIVE_INFINITY);
+
+    AprilTagFieldLayout e = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
   
   private final Alert driverDisconnected =
   new Alert("Driver controller disconnected (port 0).", AlertType.kWarning);
@@ -135,6 +140,10 @@ private final Alert operatorDisconnected =
   private duelJoystickAxis driverSticks;
 
   public RobotContainer() {
+    
+    try{
+      e = new AprilTagFieldLayout(Filesystem.getDeployDirectory().getAbsolutePath() + "/test_field.json");//TODO: remove this before comp
+    } catch(Exception ex){}
 
     Logger.recordOutput("AScope/zeroPose", new Pose3d());
 
@@ -169,9 +178,10 @@ private final Alert operatorDisconnected =
       case REAL:
         // Real robot, instantiate hardware IO implementations
         vision = new Vision(
-          new CameraIOPhoton(VisionConstants.CAMERA_NAMES[0], VisionConstants.BL_ROBOT_TO_CAM),
-          new CameraIOPhoton(VisionConstants.CAMERA_NAMES[2], VisionConstants.BR_ROBOT_TO_CAM),
-          new CameraIOPhoton(VisionConstants.CAMERA_NAMES[1], VisionConstants.FL_ROBOT_TO_CAM));
+          e,
+          new CameraIOPhoton(e, VisionConstants.CAMERA_NAMES[0], VisionConstants.BL_ROBOT_TO_CAM),
+          new CameraIOPhoton(e, VisionConstants.CAMERA_NAMES[2], VisionConstants.BR_ROBOT_TO_CAM),
+          new CameraIOPhoton(e, VisionConstants.CAMERA_NAMES[1], VisionConstants.FL_ROBOT_TO_CAM));
         drive =
             new Drive(
                 new GyroIOPigeon2(),
@@ -191,9 +201,10 @@ private final Alert operatorDisconnected =
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         vision = new Vision(
-          new CameraIOPhotonSim(VisionConstants.CAMERA_NAMES[0], VisionConstants.BL_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose),
-          new CameraIOPhotonSim(VisionConstants.CAMERA_NAMES[2], VisionConstants.BR_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose),
-          new CameraIOPhotonSim(VisionConstants.CAMERA_NAMES[1], VisionConstants.FL_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose)
+          e,
+          new CameraIOPhotonSim(e, VisionConstants.CAMERA_NAMES[0], VisionConstants.BL_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose),
+          new CameraIOPhotonSim(e, VisionConstants.CAMERA_NAMES[2], VisionConstants.BR_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose),
+          new CameraIOPhotonSim(e, VisionConstants.CAMERA_NAMES[1], VisionConstants.FL_ROBOT_TO_CAM, driveSim::getSimulatedDriveTrainPose)
           );
         if(driveSim != null){
           drive =
@@ -218,6 +229,7 @@ private final Alert operatorDisconnected =
       default:
         // Replayed robot, disable IO implementations
         vision = new Vision(
+          e,
           new CameraIO() {},
           new CameraIO() {},
           new CameraIO() {}

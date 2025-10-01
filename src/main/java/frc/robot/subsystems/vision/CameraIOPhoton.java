@@ -10,6 +10,7 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import frc.robot.constants.VisionConstants;
@@ -19,6 +20,8 @@ public class CameraIOPhoton implements CameraIO {
     protected final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
 
+    private AprilTagFieldLayout layout;
+
     private final Transform3d robotToCamera;
   
     /**
@@ -27,11 +30,11 @@ public class CameraIOPhoton implements CameraIO {
      * @param name The configured name of the camera.
      * @param rotationSupplier The 3D position of the camera relative to the robot.
      */
-    public CameraIOPhoton(String name, Transform3d robotToCamera) {
+    public CameraIOPhoton(AprilTagFieldLayout layout, String name, Transform3d robotToCamera) {
       camera = new PhotonCamera(name);
       this.robotToCamera = robotToCamera;
 
-      this.poseEstimator = new PhotonPoseEstimator(VisionConstants.APRILTAG_LAYOUT(), PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, robotToCamera);
+      this.poseEstimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, robotToCamera);
     }
   
     @Override

@@ -26,13 +26,7 @@ import frc.robot.subsystems.vision.FilterStrategy;
 
 public class VisionConstants {
   // AprilTag layout
-  public static AprilTagFieldLayout APRILTAG_LAYOUT(){
-    AprilTagFieldLayout e = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
-    try{
-        // e = new AprilTagFieldLayout(Filesystem.getDeployDirectory().getAbsolutePath() + "/test_field.json");
-    } catch(Exception ex){}
-    return e;
-  }
+  public static AprilTagFieldLayout APRILTAG_LAYOUT;
     //   
 
   // Camera names, must match names configured on coprocessor
@@ -45,24 +39,24 @@ public class VisionConstants {
   // Robot to camera transforms
   public static Transform3d BL_ROBOT_TO_CAM =
         new Transform3d(
-            -Units.inchesToMeters(9.75)+0.034,//forward
-            Units.inchesToMeters(9.5),//left 
-            Units.inchesToMeters(9.5), //up
+            0.288,
+            0.22,
+            -0.096,
         new Rotation3d(
-            Units.degreesToRadians(0),
+            0,
             Units.degreesToRadians(-20),//-pitch
-            Units.degreesToRadians(55-6.22+0.74)//yaw
+            -0.733
         )
   );
   public static Transform3d FL_ROBOT_TO_CAM =
         new Transform3d(
-            Units.inchesToMeters(10)-0.002,//forward
-            Units.inchesToMeters(10.5)-0.04,//left 
-            Units.inchesToMeters(9.5), //up
+            0.292,
+            -0.22,
+            -0.1,
         new Rotation3d(
-            Units.degreesToRadians(0),
+            0,
             Units.degreesToRadians(-20),//-pitch
-            Units.degreesToRadians(110-6.9+2.51-0.62+0.74)//yaw
+            0.2189
         )
   );
   public static Transform3d BR_ROBOT_TO_CAM =

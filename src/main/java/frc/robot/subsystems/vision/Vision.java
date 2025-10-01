@@ -1,5 +1,6 @@
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.Alert;
@@ -21,8 +22,11 @@ public class Vision extends SubsystemBase {
   private VisionEstimate[] latestEstimateRaw;
   private VisionEstimate[] latestEstimateFinal = latestEstimateRaw;
 
-  public Vision(CameraIO... io) {
+  private AprilTagFieldLayout layout;
+
+  public Vision(AprilTagFieldLayout layout, CameraIO... io) {
     this.io = io;
+    this.layout = layout;
 
     // Initialize inputs
     this.inputs = new CameraIOInputsAutoLogged[io.length];
@@ -69,7 +73,7 @@ public class Vision extends SubsystemBase {
 
       // Add tag poses
       for (int tagId : inputs[cameraIndex].tagIds) {
-        var tagPose = APRILTAG_LAYOUT().getTagPose(tagId);
+        var tagPose = layout.getTagPose(tagId);
         if (tagPose.isPresent()) {
           tagPoses.add(tagPose.get());
         }
@@ -86,9 +90,9 @@ public class Vision extends SubsystemBase {
 
                 // Must be within the field boundaries
                 || observation.pose().getX() < -1.0
-                || observation.pose().getX() > APRILTAG_LAYOUT().getFieldLength()+1
+                || observation.pose().getX() > layout.getFieldLength()+1
                 || observation.pose().getY() < -1.0
-                || observation.pose().getY() > APRILTAG_LAYOUT().getFieldWidth()+1;
+                || observation.pose().getY() > layout.getFieldWidth()+1;
 
         // Add pose to log
         robotPoses.add(observation.pose());
