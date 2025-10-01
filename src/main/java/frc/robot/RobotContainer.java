@@ -142,7 +142,7 @@ private final Alert operatorDisconnected =
   public RobotContainer() {
     
     try{
-      e = new AprilTagFieldLayout(Filesystem.getDeployDirectory().getAbsolutePath() + "/test_field.json");//TODO: remove this before comp
+    //   e = new AprilTagFieldLayout(Filesystem.getDeployDirectory().getAbsolutePath() + "/test_field.json");//TODO: remove this before comp
     } catch(Exception ex){}
 
     Logger.recordOutput("AScope/zeroPose", new Pose3d());
