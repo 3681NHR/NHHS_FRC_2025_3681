@@ -3,10 +3,7 @@
   "robotLength": 0.9271,
   "holonomicMode": true,
   "pathFolders": [
-    "east station to reef",
-    "middle start",
-    "to east station",
-    "tuning and test"
+    "m"
   ],
   "autoFolders": [],
   "defaultMaxVel": 4.0,

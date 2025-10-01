@@ -142,7 +142,7 @@ private final Alert operatorDisconnected =
   public RobotContainer() {
     
     try{
-      e = new AprilTagFieldLayout(Filesystem.getDeployDirectory().getAbsolutePath() + "/test_field.json");//TODO: remove this before comp
+    //   e = new AprilTagFieldLayout(Filesystem.getDeployDirectory().getAbsolutePath() + "/test_field.json");//TODO: remove this before comp
     } catch(Exception ex){}
 
     Logger.recordOutput("AScope/zeroPose", new Pose3d());
@@ -253,19 +253,27 @@ private final Alert operatorDisconnected =
     }
 
     
-    NamedCommands.registerCommand("station", new StationIntake(affector, intake).withTimeout(5));
+    NamedCommands.registerCommand("station", Commands.runOnce(() -> {
+        superstructure.setWantedState(WantedSuperState.INTAKE_CORAL);
+    }, affector, intake));
     NamedCommands.registerCommand("L2", Commands.runOnce(() -> {
-      superstructure.setWantedState(WantedSuperState.L2);
-      }, affector));
-    NamedCommands.registerCommand("L3", Commands.runOnce(() -> {
-      superstructure.setWantedState(WantedSuperState.L3);
+        superstructure.setWantedState(WantedSuperState.L2);
     }, affector));
-  NamedCommands.registerCommand("L4", Commands.runOnce(() -> {
-    superstructure.setWantedState(WantedSuperState.L4);
-  }, affector));
-  NamedCommands.registerCommand("stow", Commands.runOnce(() -> {
-    affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
-  }, affector));
+    NamedCommands.registerCommand("L3", Commands.runOnce(() -> {
+        superstructure.setWantedState(WantedSuperState.L3);
+    }, affector));
+    NamedCommands.registerCommand("L4", Commands.runOnce(() -> {
+        superstructure.setWantedState(WantedSuperState.L4);
+    }, affector));
+    NamedCommands.registerCommand("stow", Commands.runOnce(() -> {
+        affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
+    }, affector));
+    NamedCommands.registerCommand("alignLeft", Commands.runOnce(() -> {
+        superstructure.autoAlign(BranchSide.LEFT);
+    }, drive));
+    NamedCommands.registerCommand("alignRight", Commands.runOnce(() -> {
+        superstructure.autoAlign(BranchSide.RIGHT);
+    }, drive));
 
 NamedCommands.registerCommand("score", Commands
   .run(() -> intake.setWantedState(WantedIntakeState.INTAKE), intake)

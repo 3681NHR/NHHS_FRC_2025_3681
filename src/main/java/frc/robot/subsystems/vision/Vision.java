@@ -24,6 +24,19 @@ public class Vision extends SubsystemBase {
 
   private AprilTagFieldLayout layout;
 
+
+  List<VisionEstimate> estimates = new LinkedList<>();
+  List<Pose3d> tagPoses = new LinkedList<>();
+  List<Pose3d> robotPoses = new LinkedList<>();
+  List<Pose3d> robotPosesAccepted = new LinkedList<>();
+  List<Pose3d> robotPosesRejected = new LinkedList<>();
+  
+  List<Pose3d> allTagPoses = new LinkedList<>();
+  List<Pose3d> allRobotPoses = new LinkedList<>();
+  List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
+  List<Pose3d> allRobotPosesRejected = new LinkedList<>();
+  List<VisionEstimate> allEstimates = new LinkedList<>();
+
   public Vision(AprilTagFieldLayout layout, CameraIO... io) {
     this.io = io;
     this.layout = layout;
@@ -51,22 +64,12 @@ public class Vision extends SubsystemBase {
     }
 
     // Initialize logging values
-    List<Pose3d> allTagPoses = new LinkedList<>();
-    List<Pose3d> allRobotPoses = new LinkedList<>();
-    List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
-    List<Pose3d> allRobotPosesRejected = new LinkedList<>();
-    List<VisionEstimate> allEstimates = new LinkedList<>();
 
     
     // Loop over cameras
     for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
       
       // Initialize logging values
-      List<VisionEstimate> estimates = new LinkedList<>();
-      List<Pose3d> tagPoses = new LinkedList<>();
-      List<Pose3d> robotPoses = new LinkedList<>();
-      List<Pose3d> robotPosesAccepted = new LinkedList<>();
-      List<Pose3d> robotPosesRejected = new LinkedList<>();
       
       // Update disconnected alert
       disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
