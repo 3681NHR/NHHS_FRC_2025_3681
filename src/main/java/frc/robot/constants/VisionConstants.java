@@ -41,7 +41,7 @@ public class VisionConstants {
         new Transform3d(
             0.288,
             0.22,
-            -0.096,
+            0,
         new Rotation3d(
             0,
             Units.degreesToRadians(-20),//-pitch
@@ -52,7 +52,7 @@ public class VisionConstants {
         new Transform3d(
             0.292,
             -0.22,
-            -0.1,
+            0,
         new Rotation3d(
             0,
             Units.degreesToRadians(-20),//-pitch
