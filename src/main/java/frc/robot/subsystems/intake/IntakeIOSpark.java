@@ -18,7 +18,7 @@ public class IntakeIOSpark implements IntakeIO {
     private final SparkMax motor = new SparkMax(MOTOR_ID, MotorType.kBrushless);
     private final SparkMaxConfig motorConfig = new SparkMaxConfig();
     private DigitalInput holdingSens = new DigitalInput(SENS_ID);
-    private Debouncer holdingDebouncer = new Debouncer(0.1, Debouncer.DebounceType.kBoth);
+    private Debouncer holdingDebouncer = new Debouncer(0.06, Debouncer.DebounceType.kFalling);
     
     private double voltage = 0.0;
     

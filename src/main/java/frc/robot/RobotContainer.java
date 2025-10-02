@@ -407,7 +407,7 @@ NamedCommands.registerCommand("score", Commands
     new Trigger(() -> operatorController.getRawButton(Y)).onTrue(new InstantCommand(() -> {
       intake.setWantedState(WantedIntakeState.OUTTAKE);
     })).onFalse(new InstantCommand(() -> {
-      intake.setWantedState(WantedIntakeState.STOP);;
+      intake.setWantedState(WantedIntakeState.STOP);
     }));
 
     new Trigger(() -> driverController.getRawButton(A)).onTrue(new InstantCommand(() -> {
@@ -422,11 +422,11 @@ NamedCommands.registerCommand("score", Commands
     new Trigger(() -> driverController.getRawButton(Y)).onTrue(new InstantCommand(() -> {
       superstructure.setWantedState(WantedSuperState.L4);
     }));
-    new Trigger(() -> operatorController.getRawButton(LB)).onTrue(new InstantCommand(() -> {
-      if(superstructure.currentState != CurrentSuperState.CLIMB){
-        superstructure.setWantedState(WantedSuperState.INTAKE_CORAL);
-      }
-    }));
+    new Trigger(() -> operatorController.getRawButton(RB)).onTrue(new InstantCommand(() -> {
+        intake.setWantedState(WantedIntakeState.INTAKE);
+      })).onFalse(new InstantCommand(() -> {
+        intake.setWantedState(WantedIntakeState.STOP);
+      }));
     new Trigger(() -> driverController.getRawAxis(LEFT_TRIGGER) > 0.5).onTrue(new InstantCommand(() -> {
       if(superstructure.currentState != CurrentSuperState.CLIMB){
         if(!intake.isHolding()){
@@ -465,8 +465,8 @@ NamedCommands.registerCommand("score", Commands
         superstructure.endScore();
       }
     }));
-    new Trigger(() -> operatorController.getRawButton(RB)).onTrue(new InstantCommand(() -> {
-      superstructure.score();
+    new Trigger(() -> operatorController.getRawButton(LB)).onTrue(new InstantCommand(() -> {
+      affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STATION_POSITION);
     }));
     
     new Trigger(() -> driverController.getPOV() == 180).or(() -> operatorController.getRawButton(LOGO_RIGHT)).onTrue(new InstantCommand(() -> {
