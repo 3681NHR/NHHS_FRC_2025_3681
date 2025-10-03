@@ -62,8 +62,8 @@ public class Affector extends SubsystemBase {
     private WristIOInputsAutoLogged wristInputs = new WristIOInputsAutoLogged();
     private double wristPosSet = 0.0;
 
-    @AutoLogOutput(key="Elevator/IsHomed")
-    private boolean elevHomed = false;
+    @AutoLogOutput(key="Affector/Elevator/Homing/IsHomed")
+    public boolean elevHomed = false;
 
     private ProfiledPID elevPID = new ProfiledPID(RobotBase.isReal() ? ElevatorConstants.POS_PID : ElevatorConstants.POS_PID_SIM);
     private ElevatorFF elevFF = new ElevatorFF(RobotBase.isReal() ? ElevatorConstants.POS_FF : ElevatorConstants.POS_FF_SIM);
@@ -98,6 +98,7 @@ public class Affector extends SubsystemBase {
     private double wristPIDOut = 0.0;
     private double wristFFOut = 0.0;
 
+    @AutoLogOutput(key="Affector/Elevator/Homing/Timestamp")
     private double homingZeroTimeStamp = Double.NaN;
 
     private XboxController operatorController;
@@ -199,12 +200,14 @@ public class Affector extends SubsystemBase {
             elevPID.reset(elevInputs.pos, elevInputs.vel);
             wristPID.reset(wristInputs.pos, wristInputs.vel);
         }
+        if(currentState == CurrentAffectorState.HOME && previousState != CurrentAffectorState.HOME){
+            elevHomed = false;
+            homingZeroTimeStamp = Double.NaN;
+        }
         switch (currentState) {
             case HOME:
-                if(previousState != CurrentAffectorState.HOME){
-                    elevHomed = false;
-                }
                 if(elevHomed){
+                    homingZeroTimeStamp = Double.NaN;
                     elevVout = 0;
                     elevIO.resetPos(ElevatorConstants.HOME_POS);
                     setWantedState(WantedAffectorState.POSITION, new AffectorPosition(ElevatorConstants.HOME_POS, Constants.Affector.STOW_POSITION.wrist));
@@ -214,10 +217,12 @@ public class Affector extends SubsystemBase {
                         if (!Double.isFinite(homingZeroTimeStamp)) {
                             homingZeroTimeStamp = Logger.getTimestamp();
                         } else {
-                            elevHomed = Logger.getTimestamp() - homingZeroTimeStamp >= Units.secondsToMilliseconds(ElevatorConstants.HOME_STOP_TIME);
+                            Logger.recordOutput("Affector/Elevator/Homing/time", (Logger.getTimestamp() - homingZeroTimeStamp)/1000000);
+                            elevHomed = Logger.getTimestamp() - homingZeroTimeStamp >= ElevatorConstants.HOME_STOP_TIME * 1000000;
                         }
                     } else {
                         homingZeroTimeStamp = Double.NaN;
+                        Logger.recordOutput("Affector/Elevator/Homing/time", Double.NaN);
                     }
                 }
             break;

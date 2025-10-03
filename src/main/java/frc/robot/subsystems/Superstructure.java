@@ -63,8 +63,8 @@ public class Superstructure extends SubsystemBase{
     }
     // X = side to side, Y = away from tag
     public enum BranchSide{ //? you could consider bringing the tag offsets back and modifying dynamics
-        LEFT  (new Translation2d(Units.inchesToMeters(-15.75), Units.inchesToMeters(17))),
-        RIGHT (new Translation2d(Units.inchesToMeters(-3.5)  , Units.inchesToMeters(17))),
+        LEFT  (new Translation2d(Units.inchesToMeters(-14.75), Units.inchesToMeters(18))),
+        RIGHT (new Translation2d(Units.inchesToMeters(-2)  , Units.inchesToMeters(17.5))),
         MIDDLE(new Translation2d());//16.825
 
         public Translation2d tagOffset;
@@ -346,7 +346,7 @@ public class Superstructure extends SubsystemBase{
                 if(affectorTransition){
                     bufferedPos = Constants.Affector.STOW_POSITION;
                 }
-                if(!scoring){
+                if(!scoring && currentState != previousState){
                     intake.setWantedState(WantedIntakeState.STOP);
                 }
             break;
@@ -359,7 +359,7 @@ public class Superstructure extends SubsystemBase{
                 if(affectorTransition){
                     bufferedPos = Constants.Affector.STOW_POSITION;
                 }
-                if(!scoring){
+                if(!scoring && currentState != previousState){
                     intake.setWantedState(WantedIntakeState.STOP);
                 }
             break;

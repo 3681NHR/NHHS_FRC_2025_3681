@@ -399,6 +399,7 @@ NamedCommands.registerCommand("score", Commands
 
     //home
     new Trigger(() -> operatorController.getRawButton(A)).onTrue(new InstantCommand(() -> {
+      affector.elevHomed = false;
       superstructure.setWantedState(WantedSuperState.HOME);
     }));
         

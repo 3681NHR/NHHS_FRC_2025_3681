@@ -7,7 +7,7 @@ public class IntakeConstants {
     public static final int SENS_ID = 2;
     
     public static final double SPEED_INTAKE = 4;
-    public static final double SPEED_SCORE = 8;
+    public static final double SPEED_SCORE = 10;
     public static final double MOTOR_RUNNING_THRESHOLD = 1.0;
     
     public static final int CURRENT_LIM = 20;

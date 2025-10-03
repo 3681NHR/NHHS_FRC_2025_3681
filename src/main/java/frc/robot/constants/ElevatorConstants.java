@@ -14,7 +14,7 @@ public final class ElevatorConstants {
     
     public static final double HOME_VOLTAGE = -0.75;
     public static final double HOME_MIN_VEL = 0.01;
-    public static final double HOME_STOP_TIME = 0.5;
+    public static final double HOME_STOP_TIME = 0.25;//seconds
     public static final double HOME_POS = 0;
 
     public static final double MIN_POS = 0.0;
