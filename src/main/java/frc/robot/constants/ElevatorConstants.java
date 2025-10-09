@@ -36,10 +36,11 @@ public final class ElevatorConstants {
     public static final boolean BUILTIN_ENCODER_INVERT = false;
     public static final boolean ENCODER_INVERT = false;
 
-    public static final int CURRENT_LIM = 30;
+    public static final int CURRENT_LIM = 35;
     //5, 0, 2
     public static final PIDGains.ProfiledPID POS_PID = new PIDGains.ProfiledPID(10, 0, 3, 2.5, 5);
-    public static final PIDGains.GravityFF POS_FF = new PIDGains.GravityFF(0.3, 0.6, 5.0, 0.6);
+    // public static final PIDGains.GravityFF POS_FF = new PIDGains.GravityFF(0.3, 0.6, 5.0, 0.6);// w/ spring
+    public static final PIDGains.GravityFF POS_FF = new PIDGains.GravityFF(0.3, 0.55, 5.0, 0.6);// w/ spring
 
     public static final PIDGains.ProfiledPID POS_PID_SIM = new PIDGains.ProfiledPID(10, 0, 3, 2.5, 5);
     public static final PIDGains.GravityFF POS_FF_SIM = new PIDGains.GravityFF(0, 0, 4, 0.6);

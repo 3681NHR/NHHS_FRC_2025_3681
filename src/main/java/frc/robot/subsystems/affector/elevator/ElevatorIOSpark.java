@@ -50,7 +50,6 @@ public class ElevatorIOSpark implements ElevatorIO {
 
     public void updateInputs(ElevatorIOInputs inputs) {
         motor1.setVoltage(voltsOut);
-
         
         vel = (motorEncoder.getVelocity() * builtinfactor/60.0);
         pos = motorEncoder.getPosition()  * builtinfactor;

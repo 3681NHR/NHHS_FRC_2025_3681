@@ -462,9 +462,7 @@ NamedCommands.registerCommand("score", Commands
         superstructure.score();
       }
     })).onFalse(new InstantCommand(() -> {
-      if(superstructure.currentState != CurrentSuperState.CLIMB){
         superstructure.endScore();
-      }
     }));
     new Trigger(() -> operatorController.getRawButton(LB)).onTrue(new InstantCommand(() -> {
       affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STATION_POSITION);

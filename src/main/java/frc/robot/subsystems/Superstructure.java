@@ -7,6 +7,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
+import com.fasterxml.jackson.core.StreamWriteCapability;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -297,14 +299,8 @@ public class Superstructure extends SubsystemBase{
     //apply current state
     private void applyStates(){
         if(scoring){
-            if(currentState == CurrentSuperState.L1 || currentState == CurrentSuperState.INTAKE_CORAL){
-                intake.setWantedState(WantedIntakeState.OUTTAKE);
-            } else {
-                intake.setWantedState(WantedIntakeState.SCORE);
-            }
             if(!intake.isHolding() && currentState != CurrentSuperState.L1){
-                scoring = false;
-                intake.setWantedState(WantedIntakeState.STOP);
+                endScore();
             }
         }
 
@@ -387,17 +383,9 @@ public class Superstructure extends SubsystemBase{
                 }
             break;
             case L1:
-                // if(!intake.isHolding()){
-                //     if(previousState != currentState){
-                //         setWantedState(WantedSuperState.DEFAULT_STATE);
-                //     } else {
-                //         if(affector.getPosition().wrist < 0){
-                //             affector.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(affector.getPosition().elev, Constants.Affector.STOW_POSITION.wrist));
-                //         } else {
-                //             affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
-                //         }
-                //     } 
-                // }
+                if(!intake.isHolding() && !scoring){
+                    setWantedState(WantedSuperState.DEFAULT_STATE);
+                }
                 if(affectorTransition){
                     bufferedPos = Constants.Affector.L1_POSITION;
                 }
@@ -493,10 +481,10 @@ public class Superstructure extends SubsystemBase{
     }
     
   
-    private static Pose2d getBranchFromTag(Pose2d tag, BranchSide side) {
+    private static Pose2d getBranchFromTag(Pose2d tag, BranchSide side, boolean far) {
         var translation = tag.getTranslation().plus(
             new Translation2d(
-                side.tagOffset.getY(),
+                side.tagOffset.getY() + (far ? Units.inchesToMeters(5) : 0),
                 side.tagOffset.getX()
             ).rotateBy(tag.getRotation())
         );    
@@ -542,7 +530,7 @@ public class Superstructure extends SubsystemBase{
     public void autoAlign(BranchSide side){
 
         Pose2d tag = getClosestReefAprilTag(drive.getPose());
-        var branch = getBranchFromTag(tag, side);
+        var branch = getBranchFromTag(tag, side, currentState == CurrentSuperState.L1);
         drive.setTargetPose(branch);
     }
     
@@ -566,9 +554,16 @@ public class Superstructure extends SubsystemBase{
 
     public void score(){
         scoring = true;
+        
+        if(currentState == CurrentSuperState.L1 || currentState == CurrentSuperState.INTAKE_CORAL){
+            intake.setWantedState(WantedIntakeState.OUTTAKE);
+        } else {
+            intake.setWantedState(WantedIntakeState.SCORE);
+        }
     }
     
     public void endScore(){
         scoring = false;
+        intake.setWantedState(WantedIntakeState.STOP);
     }
 }
