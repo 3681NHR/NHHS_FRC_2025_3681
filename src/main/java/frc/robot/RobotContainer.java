@@ -135,6 +135,9 @@ public class RobotContainer {
 private final Alert operatorDisconnected =
   new Alert("Operator controller disconnected (port 1).", AlertType.kWarning);
 
+  private final Alert autoAlert =
+    new Alert("no auto slected!", AlertType.kWarning);
+
   private Superstructure superstructure;
   
   private duelJoystickAxis driverSticks;

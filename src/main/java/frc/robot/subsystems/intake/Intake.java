@@ -1,5 +1,6 @@
 package frc.robot.subsystems.intake;
 
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.IntakeConstants;
@@ -34,8 +35,9 @@ public class Intake extends SubsystemBase {
 
     private boolean wasHolding=false;
     
-    private LoggedNetworkBoolean holdLock = new LoggedNetworkBoolean("overrides/holdLock", true);
-    
+    private LoggedNetworkBoolean holdLock = new LoggedNetworkBoolean("overrides/use intake sensor", true);
+    private final Alert intakeSensorAlert = new Alert("Intake sensor disbled", Alert.AlertType.kError);
+
     public Intake(IntakeIO io) {
         this.io = io;
     }
@@ -43,6 +45,8 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         wasHolding = inputs.holding;
+
+        intakeSensorAlert.set(!holdLock.get());
         
         io.updateInputs(inputs);
         Logger.processInputs("Intake", inputs);
