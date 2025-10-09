@@ -32,7 +32,7 @@ public final class Constants {
   public static final double TELEOP_TIME = 135;//2:15
   public static final double ENDGAME_TIME = 20;//time remaining in teleop when endgame starts
 
-  public static final Pose2d STARTING_POSE = new Pose2d(new Translation2d(2.3, 4), Rotation2d.fromDegrees(0));
+  public static final Pose2d STARTING_POSE = new Pose2d(new Translation2d(8.75, 4), Rotation2d.fromDegrees(0));
   
   public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
   public static final double LOOP_TIME  = 0.13; //s, 20ms + 110ms sprk max velocity lag

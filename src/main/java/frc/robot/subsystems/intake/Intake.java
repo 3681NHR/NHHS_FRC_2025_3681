@@ -111,7 +111,7 @@ public class Intake extends SubsystemBase {
     public void setBrakeMode(boolean enable) {
         io.setNeutralMode(enable);
     }
-    public boolean getHoldLock() {
+    public boolean getSensorEnabled() {
         return holdLock.get();
     }
     public boolean isMoving(){

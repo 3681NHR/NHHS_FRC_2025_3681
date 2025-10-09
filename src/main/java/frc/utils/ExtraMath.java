@@ -4,8 +4,10 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.wpilibj.util.Color;
 
 import java.lang.Math;
+import java.security.cert.CollectionCertStoreParameters;
 import java.util.ArrayList;
 
 public final class ExtraMath {
@@ -87,6 +89,11 @@ public final class ExtraMath {
   
   public static double getDistance(Pose2d a, Pose2d b){
     return a.getTranslation().getDistance(b.getTranslation());
+  }
+
+  public static Color normalizeCol(Color in){
+    double brt = in.red/255.0 + in.green/255.0 + in.blue/255.0;
+    return new Color(in.red/brt, in.green/brt, in.blue/brt);
   }
   
   /**

@@ -5,45 +5,25 @@
     "data": {
       "commands": [
         {
+          "type": "path",
+          "data": {
+            "pathName": "m4"
+          }
+        },
+        {
           "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "sequential",
+                "type": "named",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "m4"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "alignLeft"
-                      }
-                    }
-                  ]
+                  "name": "alignRight"
                 }
               },
               {
-                "type": "sequential",
+                "type": "named",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "wait",
-                      "data": {
-                        "waitTime": 0
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "L4"
-                      }
-                    }
-                  ]
+                  "name": "L4"
                 }
               }
             ]
@@ -52,7 +32,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 0.0
+            "waitTime": 1.0
           }
         },
         {

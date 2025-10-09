@@ -61,8 +61,8 @@ public class IntakeIOSim implements IntakeIO {
                 driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
                 driveSim.getSimulatedDriveTrainPose().getRotation().rotateBy(Rotation2d.kCCW_90deg),
                 Meters.of(affector.getPosition().elev + WristConstants.WRIST_POS.getZ() + Math.sin(affector.getPosition().wrist)*pivotToCoral),
-                MetersPerSecond.of(vel * Units.inchesToMeters(1.5)),
-                Radians.of(affector.getPosition().wrist-Units.degreesToRadians(90))
+                MetersPerSecond.of(vel * -Units.inchesToMeters(1.5)),
+                Radians.of(affector.getPosition().wrist+Units.degreesToRadians(90))
             ));
         }
         if(coralLocation < -Units.inchesToMeters(10) && holding){

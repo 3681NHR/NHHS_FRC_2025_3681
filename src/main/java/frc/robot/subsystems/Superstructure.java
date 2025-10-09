@@ -20,6 +20,8 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.AffectorPosition;
 import frc.robot.constants.Constants;
@@ -33,6 +35,7 @@ import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.WantedIntakeState;
 import frc.robot.subsystems.swerve.Drive;
+import frc.robot.subsystems.swerve.Drive.WantedDriveState;
 import frc.robot.subsystems.vision.Vision;
 import frc.utils.AprilTagRegion;
 import frc.utils.VariableLimSLR;
@@ -128,6 +131,8 @@ public class Superstructure extends SubsystemBase{
     public static  final ArrayList<Pose2d> redReefTagPoses = new ArrayList<>();
     public static  final ArrayList<Pose2d> allReefTagPoses = new ArrayList<>();
 
+    private Pose2d branch = new Pose2d();//silly workaround for auto
+
     static{
         var field = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 
@@ -211,6 +216,8 @@ public class Superstructure extends SubsystemBase{
 
         led.homed = affector.isElevHomed();
 
+        led.intakeSensorFault = !intake.getSensorEnabled();
+
         Logger.recordOutput("Drive/fieldOrientedDrive", getFOD());
 
         DriveConstants.USE_VISION = useVisionOdometry.get();
@@ -258,18 +265,11 @@ public class Superstructure extends SubsystemBase{
                 currentState = CurrentSuperState.STOPPED;
             break;
             case DEFAULT_STATE:
-                if(DriverStation.isAutonomous()){
-                    if(intake.isHolding()){
-                        currentState = CurrentSuperState.HOLDING_CORAL_AUTO;
-                    } else {
-                        currentState = CurrentSuperState.NO_PIECE_AUTO;
-                    }
+                
+                if(intake.isHolding()){
+                    currentState = CurrentSuperState.HOLDING_CORAL_TELEOP;
                 } else {
-                    if(intake.isHolding()){
-                        currentState = CurrentSuperState.HOLDING_CORAL_TELEOP;
-                    } else {
-                        currentState = CurrentSuperState.NO_PIECE_TELEOP;
-                    }
+                    currentState = CurrentSuperState.NO_PIECE_TELEOP;
                 }
             break;
             case INTAKE_CORAL:
@@ -299,7 +299,7 @@ public class Superstructure extends SubsystemBase{
     //apply current state
     private void applyStates(){
         if(scoring){
-            if(!intake.isHolding() && currentState != CurrentSuperState.L1){
+            if(!intake.isHolding() && intake.getSensorEnabled() && currentState != CurrentSuperState.L1){
                 endScore();
             }
         }
@@ -362,28 +362,28 @@ public class Superstructure extends SubsystemBase{
             case HOLDING_CORAL_AUTO:
             break;
             case INTAKE_CORAL:
-                if(intake.isHolding()){
+                if(intake.isHolding() && intake.getSensorEnabled()){
                     setWantedState(WantedSuperState.DEFAULT_STATE);
                     intake.setWantedState(Intake.WantedIntakeState.STOP);
                 }
             break;
             case L4:
-                if(!intake.isHolding()){
+                if(!intake.isHolding() && intake.getSensorEnabled()){
                     setWantedState(WantedSuperState.DEFAULT_STATE);
                 }
             break;
             case L3:
-                if(!intake.isHolding()){
+                if(!intake.isHolding() && intake.getSensorEnabled()){
                     setWantedState(WantedSuperState.DEFAULT_STATE);
                 }
             break;
             case L2:
-                if(!intake.isHolding()){
+                if(!intake.isHolding() && intake.getSensorEnabled()){
                     setWantedState(WantedSuperState.DEFAULT_STATE);
                 }
             break;
             case L1:
-                if(!intake.isHolding() && !scoring){
+                if(!intake.isHolding() && intake.getSensorEnabled() && !scoring){
                     setWantedState(WantedSuperState.DEFAULT_STATE);
                 }
                 if(affectorTransition){
@@ -409,7 +409,11 @@ public class Superstructure extends SubsystemBase{
         switch (state){
             case DEFAULT_STATE:
                 affectorTransition = true;
-                bufferedPos = intake.isHolding() ? Constants.Affector.HOLD_POSITION : Constants.Affector.STOW_POSITION;
+                if(intake.getSensorEnabled()){
+                    bufferedPos = intake.isHolding() ? Constants.Affector.HOLD_POSITION : Constants.Affector.STOW_POSITION;
+                } else {
+                    bufferedPos = Constants.Affector.STOW_POSITION;
+                }
             break;
             case HOME:
                 intake.setWantedState(Intake.WantedIntakeState.STOP);
@@ -419,32 +423,32 @@ public class Superstructure extends SubsystemBase{
                 affector.stop();
             break;
             case INTAKE_CORAL:
-                if(!intake.isHolding() && bufferedPos != Constants.Affector.STATION_POSITION){
+                if((!intake.isHolding() || !intake.getSensorEnabled()) && bufferedPos != Constants.Affector.STATION_POSITION){
                     affectorTransition = true;
                     bufferedPos = Constants.Affector.STATION_POSITION;
                     intake.setWantedState(Intake.WantedIntakeState.INTAKE);
                 }
             break;
             case L1:
-                if(intake.isHolding() && bufferedPos != Constants.Affector.L1_POSITION){
+                if((intake.isHolding() || !intake.getSensorEnabled()) && bufferedPos != Constants.Affector.L1_POSITION){
                     affectorTransition = true;
                     bufferedPos = Constants.Affector.L1_POSITION;
                 }
             break;
             case L2:
-                if(intake.isHolding() && bufferedPos != Constants.Affector.L2_POSITION){
+                if((intake.isHolding() || !intake.getSensorEnabled()) && bufferedPos != Constants.Affector.L2_POSITION){
                     affectorTransition = true;
                     bufferedPos = Constants.Affector.L2_POSITION;
                 }
             break;
             case L3:
-                if(intake.isHolding() && bufferedPos != Constants.Affector.L3_POSITION){
+                if((intake.isHolding() || !intake.getSensorEnabled()) && bufferedPos != Constants.Affector.L3_POSITION){
                     affectorTransition = true;
                     bufferedPos = Constants.Affector.L3_POSITION;
                 }
             break;
             case L4:
-                if(intake.isHolding() && bufferedPos != Constants.Affector.L4_POSITION){
+                if((intake.isHolding() || !intake.getSensorEnabled()) && bufferedPos != Constants.Affector.L4_POSITION){
                     affectorTransition = true;
                     bufferedPos = Constants.Affector.L4_POSITION;
                 }
@@ -519,7 +523,7 @@ public class Superstructure extends SubsystemBase{
     public boolean isReady(){
         return affector.isElevHomed()//elevator homed
             && affector.atSetpoint()//in pos
-            && (isAffectorPosScoring(affector.getPositionSet()) ? intake.isHolding() || !intake.getHoldLock() : true)//holding if in scoring pos or bypass(hold lock override assumes sensor is non functional)
+            && (isAffectorPosScoring(affector.getPositionSet()) ? intake.isHolding() || !intake.getSensorEnabled() : true)//holding if in scoring pos or bypass(hold lock override assumes sensor is non functional)
             && (affector.getPositionSet() == Constants.Affector.STATION_POSITION ? intake.isIntaking() : true);//intaking if in station pos
     }
 
@@ -532,6 +536,12 @@ public class Superstructure extends SubsystemBase{
         Pose2d tag = getClosestReefAprilTag(drive.getPose());
         var branch = getBranchFromTag(tag, side, currentState == CurrentSuperState.L1);
         drive.setTargetPose(branch);
+    }
+    public Command getAutoAlign(BranchSide side){
+        //TODO: align position is calculated at start of code, not on call
+        return new InstantCommand(() -> {
+            branch = getBranchFromTag(getClosestReefAprilTag(drive.getPose()), side, currentState == CurrentSuperState.L1);
+        }).andThen(drive.getAutoAlign(() -> branch));
     }
     
     public void alignWithStation(StationSide side){
@@ -565,5 +575,6 @@ public class Superstructure extends SubsystemBase{
     public void endScore(){
         scoring = false;
         intake.setWantedState(WantedIntakeState.STOP);
+        drive.setWantedState(WantedDriveState.TELEOP_DRIVE);
     }
 }

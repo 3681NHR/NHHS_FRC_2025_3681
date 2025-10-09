@@ -40,6 +40,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.FineTuneAlign;
+import frc.robot.commands.playCommand;
 import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.Constants.RobotMode;
@@ -60,6 +61,8 @@ import frc.utils.Joystick.duelJoystickAxis;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -432,6 +435,15 @@ public class Drive extends SubsystemBase {
             })
         );
     }
+    public Command getAutoAlign(Supplier<Pose2d> p){
+        return
+             driveToPoseAuto(p)
+            .withTimeout(3.5)
+            .finallyDo(() -> {
+                setWantedState(WantedDriveState.TELEOP_DRIVE);
+                led.aligningReef = false;
+            });
+    }
 
     /**
      * Runs the drive at the desired velocity.
@@ -620,8 +632,32 @@ public class Drive extends SubsystemBase {
 
         return AutoBuilder.followPath(path)
         .alongWith(new InstantCommand(() -> {led.aligningReef = true;}))
-        .andThen(new FineTuneAlign(p, this, led)
+        .andThen(new FineTuneAlign(() -> p, this, led)
         .withTimeout(3)); 
+    }
+
+    Command follow = new InstantCommand();
+    Command play = new playCommand(() -> follow);
+
+    private Command driveToPoseAuto(Supplier<Pose2d> p){
+        return new InstantCommand(() -> {
+        Pose2d end   = new Pose2d(p.get().getTranslation(), p.get().getRotation().rotateBy(Rotation2d.kCCW_90deg));
+        Pose2d start = new Pose2d(getPose().getTranslation(), getPathVelocityHeading(getFieldChassisSpeeds(), p.get()));
+
+        List<Waypoint> points = PathPlannerPath.waypointsFromPoses(start, end);
+        
+        
+        PathConstraints constraints = new PathConstraints(DriveConstants.MAX_SPEED_PP, DriveConstants.MAX_ACCEL_PP, DriveConstants.MAX_ANGLE_SPEED_PP, DriveConstants.MAX_ANGLE_ACCEL_PP);
+        PathPlannerPath path = new PathPlannerPath(points, constraints, new IdealStartingState(getSpeed(), getPose().getRotation()), new GoalEndState(0, p.get().getRotation()));
+        path.preventFlipping = true;
+
+        led.alignInPos = false;
+
+        follow = AutoBuilder.followPath(path);
+
+        }).andThen(play)
+        .alongWith(new InstantCommand(() -> {led.aligningReef = true;}))
+        .andThen(new FineTuneAlign(p, this, led).withTimeout(3)); 
     }
 
     /**

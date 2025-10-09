@@ -10,22 +10,29 @@ import java.util.Map;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
+import com.ctre.phoenix.led.Animation;
+import com.ctre.phoenix.led.LarsonAnimation;
+
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.utils.ExtraMath;
+import frc.utils.LEDAnim.LEDAnim;
+import frc.utils.LEDAnim.RainbowAnim;
 
 public class Led extends SubsystemBase {
 
-    public boolean hasCoral      = false;
-    public boolean rotLock       = false;
-    public boolean aligningReef  = false;
-    public boolean homing        = false;
-    public boolean climbMode     = false;
-    public boolean homed         = false;
-    public boolean affectorInPos = false;
-    public boolean alignInPos    = false;
+    public boolean hasCoral          = false;
+    public boolean rotLock           = false;
+    public boolean aligningReef      = false;
+    public boolean homing            = false;
+    public boolean climbMode         = false;
+    public boolean homed             = false;
+    public boolean affectorInPos     = false;
+    public boolean alignInPos        = false;
+    public boolean intakeSensorFault = false;
 
     private boolean intakeRunning = false;
 
@@ -35,6 +42,8 @@ public class Led extends SubsystemBase {
     private LEDPattern pattern = LEDPattern.solid(Color.kBlack);
 
     private LoggedNetworkBoolean rainbow = new LoggedNetworkBoolean("LED override", false);
+
+    private LEDAnim b = new RainbowAnim(50);
 
     public Led() {
         led.setLength(buffer.getLength());
@@ -63,9 +72,13 @@ public class Led extends SubsystemBase {
             state = new Color(255, 100, 0);
             alignInPos = false;
         }
+        if(intakeSensorFault){
+            state = new Color(0, 0, 255);
+        }
         if(intakeRunning){
             state = new Color(255, 255, 0);
         }
+
         if(rotLock){
             status = new Color(255, 255, 255);
             alignInPos = false;
@@ -91,15 +104,14 @@ public class Led extends SubsystemBase {
         // }
 
         if(rainbow.get()){
-            pattern = LEDPattern.rainbow(255, 255).scrollAtRelativeSpeed(Percent.per(Second).of(25));
-            pattern.applyTo(buffer);
-        }
-
-
-        if(!rainbow.get()){
             for(int i=0; i<buffer.getLength(); i++){
-
-                buffer.setLED(i, i < buffer.getLength()/2 ? status : state);//overlayOn is broken, so we use this
+                buffer.setLED(i, ExtraMath.normalizeCol(b.getLEDs()[i]));
+            }
+            pattern = LEDPattern.rainbow(255, 255).scrollAtRelativeSpeed(Percent.per(Second).of(25));
+            // pattern.applyTo(buffer);
+        }else{
+            for(int i=0; i<buffer.getLength(); i++){
+                buffer.setLED(i, i < buffer.getLength()/2 ? ExtraMath.normalizeCol(status) : ExtraMath.normalizeCol(state));//overlayOn is broken, so we use this
             }
         }
 

@@ -1,5 +1,7 @@
 package frc.robot.commands;
 
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.trajectory.PathPlannerTrajectoryState;
@@ -13,7 +15,7 @@ import frc.robot.subsystems.swerve.Drive.CurrentDriveState;
 
 public class FineTuneAlign extends Command {
 
-    private Pose2d target;
+    private Supplier<Pose2d> target;
     private Drive drive;
     private Led led;
 
@@ -21,19 +23,20 @@ public class FineTuneAlign extends Command {
 
     private boolean done = false;
 
-    public FineTuneAlign(Pose2d target, Drive drive, Led led) {
+    public FineTuneAlign(Supplier<Pose2d> target, Drive drive, Led led) {
         this.target = target;
         this.drive = drive;
         this.led = led;
 
-        state = new PathPlannerTrajectoryState();
-        state.pose = target;
         
         addRequirements(drive);
     }
 
     @Override
     public void initialize() {
+
+        state = new PathPlannerTrajectoryState();
+        state.pose = target.get();
     }
 
     @Override
@@ -42,14 +45,15 @@ public class FineTuneAlign extends Command {
         drive.runVelocity(drive.autoController.calculateRobotRelativeSpeeds(drive.getPose(), state));
 
 
-        done = drive.getPose().getTranslation().getDistance(target.getTranslation()) <= DriveConstants.AUTO_ALIGN_POS_MAX_OFFSET &&
-            Math.abs(drive.getPose().getRotation().minus(target.getRotation()).getDegrees()) <= DriveConstants.AUTO_ALIGN_ANGLE_MAX_OFFSET;
+        done = drive.getPose().getTranslation().getDistance(target.get().getTranslation()) <= DriveConstants.AUTO_ALIGN_POS_MAX_OFFSET &&
+            Math.abs(drive.getPose().getRotation().minus(target.get().getRotation()).getDegrees()) <= DriveConstants.AUTO_ALIGN_ANGLE_MAX_OFFSET;
         
         led.alignInPos = done;
         Logger.recordOutput("Drive/Align/Fine tune/good"   , done);
-        Logger.recordOutput("Drive/Align/Fine tune/distance to target", drive.getPose().getTranslation().getDistance(target.getTranslation()));
-        Logger.recordOutput("Drive/Align/Fine tune/angle to target"   , Math.abs(drive.getPose().getRotation().minus(target.getRotation()).getDegrees()));
+        Logger.recordOutput("Drive/Align/Fine tune/distance to target", drive.getPose().getTranslation().getDistance(target.get().getTranslation()));
+        Logger.recordOutput("Drive/Align/Fine tune/angle to target"   , Math.abs(drive.getPose().getRotation().minus(target.get().getRotation()).getDegrees()));
         Logger.recordOutput("Drive/Align/Fine tune/good"   , false);
+        Logger.recordOutput("Drive/Align/Fine tune/target"   , target.get());
     }
 
     @Override

@@ -18,7 +18,7 @@ public class IntakeCommand extends Command {
   public void initialize() {
     //if not holding, stop when holding, otherwise dont stop
     this.stopOnHold = !intake.isHolding();
-    if(!intake.getHoldLock()){
+    if(!intake.getSensorEnabled()){
       this.stopOnHold = false;
     }
   }

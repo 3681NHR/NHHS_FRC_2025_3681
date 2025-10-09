@@ -252,39 +252,6 @@ private final Alert operatorDisconnected =
         break;
     }
 
-    
-    NamedCommands.registerCommand("station", Commands.runOnce(() -> {
-        superstructure.setWantedState(WantedSuperState.INTAKE_CORAL);
-    }, affector, intake));
-    NamedCommands.registerCommand("L2", Commands.runOnce(() -> {
-        superstructure.setWantedState(WantedSuperState.L2);
-    }, affector));
-    NamedCommands.registerCommand("L3", Commands.runOnce(() -> {
-        superstructure.setWantedState(WantedSuperState.L3);
-    }, affector));
-    NamedCommands.registerCommand("L4", Commands.runOnce(() -> {
-        superstructure.setWantedState(WantedSuperState.L4);
-    }, affector));
-    NamedCommands.registerCommand("stow", Commands.runOnce(() -> {
-        affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
-    }, affector));
-    NamedCommands.registerCommand("alignLeft", Commands.runOnce(() -> {
-        superstructure.autoAlign(BranchSide.LEFT);
-    }, drive));
-    NamedCommands.registerCommand("alignRight", Commands.runOnce(() -> {
-        superstructure.autoAlign(BranchSide.RIGHT);
-    }, drive));
-
-NamedCommands.registerCommand("score", Commands
-  .run(() -> intake.setWantedState(WantedIntakeState.INTAKE), intake)
-  .until(() -> !intake.isHolding())
-  .finallyDo(() -> intake.setWantedState(WantedIntakeState.STOP))
-  .withTimeout(2)
-);
-
-
-    // Set up auto routines
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     if(DriverStation.isTest()){
       // Set up SysId routines
@@ -333,6 +300,35 @@ NamedCommands.registerCommand("score", Commands
         rxLim, 
         ryLim
     );
+
+
+    
+    NamedCommands.registerCommand("station", Commands.runOnce(() -> {
+        superstructure.setWantedState(WantedSuperState.INTAKE_CORAL);
+    }));
+    NamedCommands.registerCommand("L2", Commands.runOnce(() -> {
+        superstructure.setWantedState(WantedSuperState.L2);
+    }));
+    NamedCommands.registerCommand("L3", Commands.runOnce(() -> {
+        superstructure.setWantedState(WantedSuperState.L3);
+    }));
+    NamedCommands.registerCommand("L4", Commands.runOnce(() -> {
+        superstructure.setWantedState(WantedSuperState.L4);
+    }));
+    NamedCommands.registerCommand("stow", Commands.runOnce(() -> {
+        affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
+    }));
+    NamedCommands.registerCommand("alignLeft", Commands.runOnce(() -> {
+        superstructure.autoAlign(BranchSide.LEFT);
+    }));
+    NamedCommands.registerCommand("alignRight", superstructure.getAutoAlign(BranchSide.RIGHT));
+    NamedCommands.registerCommand("score", new InstantCommand(() -> {
+            superstructure.score();
+        })
+    );
+
+    // Set up auto routines
+    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
     configureBindings();
 
