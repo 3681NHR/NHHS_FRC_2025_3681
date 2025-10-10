@@ -161,7 +161,7 @@ private final Alert operatorDisconnected =
                   COTS.WHEELS.DEFAULT_NEOPRENE_TREAD.cof,
                   2))
           .withTrackLengthTrackWidth(Meters.of(DriveConstants.LENGTH), Meters.of(DriveConstants.WIDTH))
-          .withBumperSize(Inches.of(33), Inches.of(35));
+          .withBumperSize(Inches.of(31), Inches.of(33));
 
       driveSim = new SwerveDriveSimulation(driveTrainSimulationConfig, Constants.STARTING_POSE);
       // Register the drivetrain simulation to the default simulation world
@@ -306,9 +306,11 @@ private final Alert operatorDisconnected =
 
 
     
-    NamedCommands.registerCommand("station", Commands.runOnce(() -> {
+    NamedCommands.registerCommand("station", Commands.run(() -> {
         superstructure.setWantedState(WantedSuperState.INTAKE_CORAL);
-    }));
+    })
+    .until(() -> intake.isHolding())
+    .withTimeout(3));
     NamedCommands.registerCommand("L2", Commands.runOnce(() -> {
         superstructure.setWantedState(WantedSuperState.L2);
     }));
@@ -321,11 +323,12 @@ private final Alert operatorDisconnected =
     NamedCommands.registerCommand("stow", Commands.runOnce(() -> {
         affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
     }));
-    NamedCommands.registerCommand("alignRight", superstructure.getAutoAlign(BranchSide.RIGHT));
-    NamedCommands.registerCommand("score", new InstantCommand(() -> {
-            superstructure.score();
-        })
-    );
+    NamedCommands.registerCommand("alignRight", superstructure.getAutoAlignRight());
+    NamedCommands.registerCommand("alignLeft", superstructure.getAutoAlignLeft());
+    
+    NamedCommands.registerCommand("score", Commands.runOnce(() -> {
+        superstructure.score();//FIXME
+    }));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());

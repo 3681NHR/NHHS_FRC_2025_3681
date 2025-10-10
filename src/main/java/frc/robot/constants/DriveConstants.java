@@ -159,5 +159,11 @@ public class DriveConstants {
         public static final Rotation2d CLIMB = Rotation2d.fromDegrees(180);
         public static final Pose2d WEST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(36.9));
         public static final Pose2d EAST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(142.9));
+
+        public static final Translation2d RIGHT_BRANCH_OFFSET = new Translation2d(Units.inchesToMeters(-2)  , Units.inchesToMeters(17.5));
+        public static final Translation2d LEFT_BRANCH_OFFSET  = new Translation2d(Units.inchesToMeters(-14.75), Units.inchesToMeters(18));
+
+        public static final Translation2d RIGHT_BRANCH_OFFSET_SIM = new Translation2d(Units.inchesToMeters(-3.5)  , Units.inchesToMeters(17.5));
+        public static final Translation2d LEFT_BRANCH_OFFSET_SIM  = new Translation2d(Units.inchesToMeters(-16.25), Units.inchesToMeters(18));
     }
 }

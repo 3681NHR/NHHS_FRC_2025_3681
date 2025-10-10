@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.AffectorPosition;
 import frc.robot.constants.Constants;
+import frc.robot.constants.Constants.RobotMode;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.ElevatorConstants;
 import frc.robot.constants.IntakeConstants;
@@ -69,8 +70,8 @@ public class Superstructure extends SubsystemBase{
     }
     // X = side to side, Y = away from tag
     public enum BranchSide{
-        LEFT  (new Translation2d(Units.inchesToMeters(-14.75), Units.inchesToMeters(18))),
-        RIGHT (new Translation2d(Units.inchesToMeters(-2)  , Units.inchesToMeters(17.5))),
+        LEFT  (Constants.MODE == RobotMode.SIM ? DriveConstants.presets.LEFT_BRANCH_OFFSET_SIM  : DriveConstants.presets.LEFT_BRANCH_OFFSET),
+        RIGHT (Constants.MODE == RobotMode.SIM ? DriveConstants.presets.RIGHT_BRANCH_OFFSET_SIM : DriveConstants.presets.RIGHT_BRANCH_OFFSET),
         MIDDLE(new Translation2d());
 
         public Translation2d tagOffset;
@@ -115,7 +116,7 @@ public class Superstructure extends SubsystemBase{
     Led led;
     
     @AutoLogOutput(key="Superstructure/is scoring")
-    private boolean scoring = false;
+    public boolean scoring = false;
     
     private VariableLimSLR lxLim;
     private VariableLimSLR lyLim;
@@ -304,8 +305,10 @@ public class Superstructure extends SubsystemBase{
                 if(currentState != CurrentSuperState.L1){
                     endScore();
                 }
-                drive.setWantedState(WantedDriveState.TELEOP_DRIVE);
-                CommandScheduler.getInstance().schedule(new InstantCommand(()->{}, drive));
+                if(DriverStation.isTeleop()){
+                    drive.setWantedState(WantedDriveState.TELEOP_DRIVE);
+                    CommandScheduler.getInstance().schedule(new InstantCommand(()->{}, drive));
+                }
             }
         }
 
@@ -542,10 +545,14 @@ public class Superstructure extends SubsystemBase{
         var branch = getBranchFromTag(tag, side, currentState == CurrentSuperState.L1);
         drive.setTargetPose(branch);
     }
-    public Command getAutoAlign(BranchSide side){
-        //TODO: align position is calculated at start of code, not on call
+    public Command getAutoAlignRight(){
         return new InstantCommand(() -> {
-            branch = getBranchFromTag(getClosestReefAprilTag(drive.getPose()), side, currentState == CurrentSuperState.L1);
+            branch = getBranchFromTag(getClosestReefAprilTag(drive.getPose()), BranchSide.RIGHT, currentState == CurrentSuperState.L1);
+        }).andThen(drive.getAutoAlign(() -> branch));
+    }
+    public Command getAutoAlignLeft(){
+        return new InstantCommand(() -> {
+            branch = getBranchFromTag(getClosestReefAprilTag(drive.getPose()), BranchSide.LEFT, currentState == CurrentSuperState.L1);
         }).andThen(drive.getAutoAlign(() -> branch));
     }
     

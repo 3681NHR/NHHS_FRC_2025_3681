@@ -655,7 +655,7 @@ public class Drive extends SubsystemBase {
 
         follow = AutoBuilder.followPath(path);
 
-        }).andThen(play)
+        }).andThen(new playCommand(() -> follow))
         .alongWith(new InstantCommand(() -> {led.aligningReef = true;}))
         .andThen(new FineTuneAlign(p, this, led).withTimeout(3)); 
     }

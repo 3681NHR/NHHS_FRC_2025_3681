@@ -13,6 +13,8 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.WristConstants;
 import frc.robot.subsystems.affector.Affector;
@@ -28,6 +30,8 @@ public class IntakeIOSim implements IntakeIO {
     private double voltage = 0.0;
     
     private double vel = 0.0;
+
+    private XboxController debugController = new XboxController(2);
 
     public IntakeIOSim(SwerveDriveSimulation driveSim, Affector elevator) {
         this.driveSim = driveSim;
@@ -53,6 +57,10 @@ public class IntakeIOSim implements IntakeIO {
             holding = true;
             coralLocation = 0;
         }
+        // if(debugController.getRawButton(1)){
+        //     holding = true;
+        //     coralLocation = 0;
+        // }
         if(coralLocation > Units.inchesToMeters(10) && holding){
             holding = false;
             SimulatedArena.getInstance().addGamePieceProjectile(new ReefscapeCoralOnFly(
