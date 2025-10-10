@@ -321,9 +321,6 @@ private final Alert operatorDisconnected =
     NamedCommands.registerCommand("stow", Commands.runOnce(() -> {
         affector.setWantedState(WantedAffectorState.POSITION, Constants.Affector.STOW_POSITION);
     }));
-    NamedCommands.registerCommand("alignLeft", Commands.runOnce(() -> {
-        superstructure.autoAlign(BranchSide.LEFT);
-    }));
     NamedCommands.registerCommand("alignRight", superstructure.getAutoAlign(BranchSide.RIGHT));
     NamedCommands.registerCommand("score", new InstantCommand(() -> {
             superstructure.score();

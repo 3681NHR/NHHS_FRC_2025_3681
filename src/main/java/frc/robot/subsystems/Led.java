@@ -69,7 +69,7 @@ public class Led extends SubsystemBase {
         if(hasCoral){
             state = new Color(0, 255, 0);
         } else {
-            state = new Color(255, 100, 0);
+            state = new Color(255, 50, 0);
             alignInPos = false;
         }
         if(intakeSensorFault){
@@ -111,7 +111,7 @@ public class Led extends SubsystemBase {
             // pattern.applyTo(buffer);
         }else{
             for(int i=0; i<buffer.getLength(); i++){
-                buffer.setLED(i, i < buffer.getLength()/2 ? ExtraMath.normalizeCol(status) : ExtraMath.normalizeCol(state));//overlayOn is broken, so we use this
+                buffer.setLED(i, i < buffer.getLength()/2 ? status : state);//overlayOn is broken, so we use this
             }
         }
 
@@ -128,6 +128,8 @@ public class Led extends SubsystemBase {
         Logger.recordOutput("led/homed", homed);
         Logger.recordOutput("led/affectorInPos", affectorInPos);
         Logger.recordOutput("led/alignInPos", alignInPos);
+        Logger.recordOutput("led/intakerunning", intakeRunning);
+        Logger.recordOutput("led/Sensor fault", intakeSensorFault);
 
         for(int i=0; i<buffer.getLength(); i++){
             Logger.recordOutput("leds/"+i , buffer.getLED(i).toHexString());

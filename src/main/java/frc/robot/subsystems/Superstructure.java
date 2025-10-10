@@ -21,6 +21,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.AffectorPosition;
@@ -67,10 +68,10 @@ public class Superstructure extends SubsystemBase{
         CLIMB
     }
     // X = side to side, Y = away from tag
-    public enum BranchSide{ //? you could consider bringing the tag offsets back and modifying dynamics
+    public enum BranchSide{
         LEFT  (new Translation2d(Units.inchesToMeters(-14.75), Units.inchesToMeters(18))),
         RIGHT (new Translation2d(Units.inchesToMeters(-2)  , Units.inchesToMeters(17.5))),
-        MIDDLE(new Translation2d());//16.825
+        MIDDLE(new Translation2d());
 
         public Translation2d tagOffset;
         private BranchSide(Translation2d offsets) {
@@ -85,14 +86,14 @@ public class Superstructure extends SubsystemBase{
             }
         }
     }
-    public enum StationSide{ //? you could consider bringing the tag offsets back and modifying dynamics
-        LEFT  (DriverStation.getAlliance().get() == Alliance.Red ? DriveConstants.presets.WEST_STATION.getRotation() : DriveConstants.presets.EAST_STATION.getRotation()),
-        RIGHT (DriverStation.getAlliance().get() == Alliance.Red ? DriveConstants.presets.EAST_STATION.getRotation() : DriveConstants.presets.WEST_STATION.getRotation()),
-        AUTO  (new Rotation2d());
+    public enum StationSide{
+        LEFT  (DriverStation.getAlliance().get() == Alliance.Blue ? DriveConstants.presets.WEST_STATION : DriveConstants.presets.EAST_STATION),
+        RIGHT (DriverStation.getAlliance().get() == Alliance.Blue ? DriveConstants.presets.EAST_STATION : DriveConstants.presets.WEST_STATION),
+        AUTO  (new Pose2d());
 
-        public Rotation2d angle;
-        private StationSide(Rotation2d angle) {
-            this.angle = angle;
+        public Pose2d pos;
+        private StationSide(Pose2d pos) {
+            this.pos = pos;
         }
 
     }
@@ -299,8 +300,12 @@ public class Superstructure extends SubsystemBase{
     //apply current state
     private void applyStates(){
         if(scoring){
-            if(!intake.isHolding() && intake.getSensorEnabled() && currentState != CurrentSuperState.L1){
-                endScore();
+            if(!intake.isHolding() && intake.getSensorEnabled()){
+                if(currentState != CurrentSuperState.L1){
+                    endScore();
+                }
+                drive.setWantedState(WantedDriveState.TELEOP_DRIVE);
+                CommandScheduler.getInstance().schedule(new InstantCommand(()->{}, drive));
             }
         }
 
@@ -545,20 +550,21 @@ public class Superstructure extends SubsystemBase{
     }
     
     public void alignWithStation(StationSide side){
-        Rotation2d angle;
-        switch (side) {
-            case LEFT:
-                angle = DriveConstants.presets.WEST_STATION.getRotation();
-                break;
-            case RIGHT:
-                angle = DriveConstants.presets.EAST_STATION.getRotation();
-                break;
-            default:
-                angle = stationAngle;
-                break;
+        Rotation2d angle = new Rotation2d(side.pos.getRotation().getRadians());
+
+        if(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red){
+            angle = angle.rotateBy(Rotation2d.k180deg);
         }
-        drive.setTargetRotation(angle.rotateBy(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? Rotation2d.k180deg : new Rotation2d()).getRadians());
+        drive.setTargetRotation(angle.getRadians());
     }
+    // public Command getStationAutoAlign(StationSide side){
+    //     Pose2d p = side.pos.;
+
+    //     if(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red){
+    //         p = p.rotateBy(Rotation2d.k180deg);
+    //     }
+    //     drive.setTargetRotation(p.getRadians());
+    // }
 
     public void toggleFOD(){fod = !fod;}
 
@@ -575,6 +581,5 @@ public class Superstructure extends SubsystemBase{
     public void endScore(){
         scoring = false;
         intake.setWantedState(WantedIntakeState.STOP);
-        drive.setWantedState(WantedDriveState.TELEOP_DRIVE);
     }
 }
