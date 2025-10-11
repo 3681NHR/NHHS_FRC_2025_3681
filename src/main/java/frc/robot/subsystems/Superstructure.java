@@ -88,8 +88,8 @@ public class Superstructure extends SubsystemBase{
         }
     }
     public enum StationSide{
-        LEFT  (DriverStation.getAlliance().get() == Alliance.Blue ? DriveConstants.presets.WEST_STATION : DriveConstants.presets.EAST_STATION),
-        RIGHT (DriverStation.getAlliance().get() == Alliance.Blue ? DriveConstants.presets.EAST_STATION : DriveConstants.presets.WEST_STATION),
+        LEFT  (DriverStation.getAlliance().get() == Alliance.Blue ? DriveConstants.presets.WEST_STATION : DriveConstants.presets.WEST_STATION),
+        RIGHT (DriverStation.getAlliance().get() == Alliance.Blue ? DriveConstants.presets.EAST_STATION : DriveConstants.presets.EAST_STATION),
         AUTO  (new Pose2d());
 
         public Pose2d pos;
