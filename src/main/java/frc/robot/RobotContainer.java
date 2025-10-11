@@ -51,6 +51,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.utils.rumble.*;
 import frc.utils.VariableLimSLR;
 import frc.utils.Joystick.duelJoystickAxis;
+import frc.utils.TimerHandler;
 import frc.utils.BatteryVoltageSim;
 import frc.utils.DisabledInstantCommand;
 import frc.utils.ExtraMath;
@@ -364,9 +365,9 @@ private final Alert operatorDisconnected =
       superstructure.toggleFOD();
     }));
 
-    new Trigger(() -> intake.isHolding() && !intake.wasHolding()).onTrue(new InstantCommand(() -> {
-      rumbler.overrideQue(RumblePreset.RING.load());
-    //   opRumbler.overrideQue(RumblePreset.TAP.load());
+    new Trigger(() -> TimerHandler.getTeleopRemaining() < 25.0).onTrue(new InstantCommand(() -> {
+      rumbler.overrideQue(RumblePreset.TAP.load());
+      opRumbler.overrideQue(RumblePreset.TAP.load());
     }));
     //aim to station
     new Trigger(() -> driverController.getRawButton(LB)).onTrue(new InstantCommand(() -> {
