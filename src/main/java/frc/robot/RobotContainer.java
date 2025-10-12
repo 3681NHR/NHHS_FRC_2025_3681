@@ -532,13 +532,20 @@ private final Alert operatorDisconnected =
   
   // public boolean getDirectAngle(){return directAngle;}
 
-  public void enable(){
+  public void enableTeleop(){
     affector.setElevBrake(true);
     affector.setWristBrake(true);
 
     affector.setWantedState(WantedAffectorState.POSITION);
 
     drive.setWantedState(WantedDriveState.TELEOP_DRIVE);
+  }
+  public void enableAuto(){
+    affector.setElevBrake(true);
+    affector.setWristBrake(true);
+
+    affector.setWantedState(WantedAffectorState.POSITION);
+
   }
 
 
