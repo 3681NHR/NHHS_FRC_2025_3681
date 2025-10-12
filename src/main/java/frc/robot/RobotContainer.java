@@ -390,6 +390,11 @@ private final Alert operatorDisconnected =
         }
       }
     }));
+    new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON)).onTrue(new InstantCommand(() -> {
+      if(superstructure.currentState != CurrentSuperState.CLIMB){
+        superstructure.autoAlign(BranchSide.MIDDLE);
+      }
+  }));
  
     //physical button
     new Trigger(() -> buttons.get(0)).onTrue(new DisabledInstantCommand(() -> {
