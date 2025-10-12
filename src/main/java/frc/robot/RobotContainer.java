@@ -361,9 +361,9 @@ private final Alert operatorDisconnected =
     }));
 
     //fod toggle
-    new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON)).onTrue(new InstantCommand(() -> {
-      superstructure.toggleFOD();
-    }));
+    // new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON)).onTrue(new InstantCommand(() -> {
+    //   superstructure.toggleFOD();
+    // }));
 
     new Trigger(() -> TimerHandler.getTeleopRemaining() < 25.0).onTrue(new InstantCommand(() -> {
       rumbler.overrideQue(RumblePreset.TAP.load());
