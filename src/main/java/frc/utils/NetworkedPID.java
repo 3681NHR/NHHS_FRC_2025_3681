@@ -10,23 +10,23 @@ public class NetworkedPID extends PIDController {
 
     public NetworkedPID(double kP, double kI, double kD, String tunePath) {
         super(kP, kI, kD);
-        nt_kD = new LoggedNetworkNumber(tunePath + "/kD", kD);
-        nt_kI = new LoggedNetworkNumber(tunePath + "/kI", kI);
-        nt_kP = new LoggedNetworkNumber(tunePath + "/kP", kP);
+        nt_kD = new LoggedNetworkNumber("/Tuning" + tunePath + "/kD", kD);
+        nt_kI = new LoggedNetworkNumber("/Tuning" + tunePath + "/kI", kI);
+        nt_kP = new LoggedNetworkNumber("/Tuning" + tunePath + "/kP", kP);
     }
 
     public NetworkedPID(double kP, double kI, double kD, double period, String tunePath) {
         super(kP, kI, kD, period);
-        nt_kD = new LoggedNetworkNumber(tunePath + "/kD", kD);
-        nt_kI = new LoggedNetworkNumber(tunePath + "/kI", kI);
-        nt_kP = new LoggedNetworkNumber(tunePath + "/kP", kP);
+        nt_kD = new LoggedNetworkNumber("/Tuning" + tunePath + "/kD", kD);
+        nt_kI = new LoggedNetworkNumber("/Tuning" + tunePath + "/kI", kI);
+        nt_kP = new LoggedNetworkNumber("/Tuning" + tunePath + "/kP", kP);
     }
 
     public NetworkedPID(PIDGains.PID gains, String tunePath) {
         super(gains.kP(), gains.kI(), gains.kD());
-        nt_kD = new LoggedNetworkNumber(tunePath + "/kD", gains.kD());
-        nt_kI = new LoggedNetworkNumber(tunePath + "/kI", gains.kI());
-        nt_kP = new LoggedNetworkNumber(tunePath + "/kP", gains.kP());
+        nt_kD = new LoggedNetworkNumber("/Tuning" + tunePath + "/kD", gains.kD());
+        nt_kI = new LoggedNetworkNumber("/Tuning" + tunePath + "/kI", gains.kI());
+        nt_kP = new LoggedNetworkNumber("/Tuning" + tunePath + "/kP", gains.kP());
     }
 
     /**

@@ -15,30 +15,30 @@ public class NetworkedProfiledPID extends ProfiledPIDController {
 
     public NetworkedProfiledPID(double kP, double kI, double kD, Constraints constraints, String ntPath) {
         super(kP, kI, kD, constraints);
-        nt_kD = new LoggedNetworkNumber(ntPath + "/kD", kD);
-        nt_kI = new LoggedNetworkNumber(ntPath + "/kI", kI);
-        nt_kP = new LoggedNetworkNumber(ntPath + "/kP", kP);
-        nt_maxSpeed = new LoggedNetworkNumber(ntPath + "/maxSpeed", constraints.maxVelocity);
-        nt_maxAccel = new LoggedNetworkNumber(ntPath + "/maxAccel", constraints.maxAcceleration);
+        nt_kD = new LoggedNetworkNumber("/Tuning" + ntPath + "/kD", kD);
+        nt_kI = new LoggedNetworkNumber("/Tuning" + ntPath + "/kI", kI);
+        nt_kP = new LoggedNetworkNumber("/Tuning" + ntPath + "/kP", kP);
+        nt_maxSpeed = new LoggedNetworkNumber("/Tuning" + ntPath + "/maxSpeed", constraints.maxVelocity);
+        nt_maxAccel = new LoggedNetworkNumber("/Tuning" + ntPath + "/maxAccel", constraints.maxAcceleration);
     }
 
     public NetworkedProfiledPID(double kP, double kI, double kD, Constraints constraints, double period,
             String ntPath) {
         super(kP, kI, kD, constraints, period);
-        nt_kD = new LoggedNetworkNumber(ntPath + "/kD", kD);
-        nt_kI = new LoggedNetworkNumber(ntPath + "/kI", kI);
-        nt_kP = new LoggedNetworkNumber(ntPath + "/kP", kP);
-        nt_maxSpeed = new LoggedNetworkNumber(ntPath + "/maxSpeed", constraints.maxVelocity);
-        nt_maxAccel = new LoggedNetworkNumber(ntPath + "/maxAccel", constraints.maxAcceleration);
+        nt_kD = new LoggedNetworkNumber("/Tuning" + ntPath + "/kD", kD);
+        nt_kI = new LoggedNetworkNumber("/Tuning" + ntPath + "/kI", kI);
+        nt_kP = new LoggedNetworkNumber("/Tuning" + ntPath + "/kP", kP);
+        nt_maxSpeed = new LoggedNetworkNumber("/Tuning" + ntPath + "/maxSpeed", constraints.maxVelocity);
+        nt_maxAccel = new LoggedNetworkNumber("/Tuning" + ntPath + "/maxAccel", constraints.maxAcceleration);
     }
 
     public NetworkedProfiledPID(PIDGains.ProfiledPID gains, String ntPath) {
         super(gains.kP(), gains.kI(), gains.kD(), new Constraints(gains.maxSpeed(), gains.maxAccel()));
-        nt_kD = new LoggedNetworkNumber(ntPath + "/kD", gains.kD());
-        nt_kI = new LoggedNetworkNumber(ntPath + "/kI", gains.kI());
-        nt_kP = new LoggedNetworkNumber(ntPath + "/kP", gains.kP());
-        nt_maxSpeed = new LoggedNetworkNumber(ntPath + "/maxSpeed", gains.maxSpeed());
-        nt_maxAccel = new LoggedNetworkNumber(ntPath + "/maxAccel", gains.maxAccel());
+        nt_kD = new LoggedNetworkNumber("/Tuning" + ntPath + "/kD", gains.kD());
+        nt_kI = new LoggedNetworkNumber("/Tuning" + ntPath + "/kI", gains.kI());
+        nt_kP = new LoggedNetworkNumber("/Tuning" + ntPath + "/kP", gains.kP());
+        nt_maxSpeed = new LoggedNetworkNumber("/Tuning" + ntPath + "/maxSpeed", gains.maxSpeed());
+        nt_maxAccel = new LoggedNetworkNumber("/Tuning" + ntPath + "/maxAccel", gains.maxAccel());
     }
 
     /**

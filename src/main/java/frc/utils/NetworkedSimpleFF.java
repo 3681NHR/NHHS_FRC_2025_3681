@@ -11,23 +11,23 @@ public class NetworkedSimpleFF extends SimpleMotorFeedforward {
 
     public NetworkedSimpleFF(double kS, double kV, double kA, String ntPath) {
         super(kS, kV, kA);
-        nt_kS = new LoggedNetworkNumber(ntPath + "/kS", kS);
-        nt_kV = new LoggedNetworkNumber(ntPath + "/kV", kV);
-        nt_kA = new LoggedNetworkNumber(ntPath + "/kA", kA);
+        nt_kS = new LoggedNetworkNumber("/Tuning" + ntPath + "/kS", kS);
+        nt_kV = new LoggedNetworkNumber("/Tuning" + ntPath + "/kV", kV);
+        nt_kA = new LoggedNetworkNumber("/Tuning" + ntPath + "/kA", kA);
     }
 
     public NetworkedSimpleFF(double kS, double kV, double kA, double dt, String ntPath) {
         super(kS, kV, kA, dt);
-        nt_kS = new LoggedNetworkNumber(ntPath + "/kS", kS);
-        nt_kV = new LoggedNetworkNumber(ntPath + "/kV", kV);
-        nt_kA = new LoggedNetworkNumber(ntPath + "/kA", kA);
+        nt_kS = new LoggedNetworkNumber("/Tuning" + ntPath + "/kS", kS);
+        nt_kV = new LoggedNetworkNumber("/Tuning" + ntPath + "/kV", kV);
+        nt_kA = new LoggedNetworkNumber("/Tuning" + ntPath + "/kA", kA);
     }
 
     public NetworkedSimpleFF(PIDGains.SimpleFF gains, String ntPath) {
         super(gains.kS(), gains.kV(), gains.kA());
-        nt_kS = new LoggedNetworkNumber(ntPath + "/kS", gains.kS());
-        nt_kV = new LoggedNetworkNumber(ntPath + "/kV", gains.kV());
-        nt_kA = new LoggedNetworkNumber(ntPath + "/kA", gains.kA());
+        nt_kS = new LoggedNetworkNumber("/Tuning" + ntPath + "/kS", gains.kS());
+        nt_kV = new LoggedNetworkNumber("/Tuning" + ntPath + "/kV", gains.kV());
+        nt_kA = new LoggedNetworkNumber("/Tuning" + ntPath + "/kA", gains.kA());
     }
 
     /**
