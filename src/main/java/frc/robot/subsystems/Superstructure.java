@@ -136,7 +136,7 @@ public class Superstructure extends SubsystemBase{
     private Pose2d branch = new Pose2d();//silly workaround for auto
 
     static{
-        var field = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
+        var field = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
 
         Arrays.stream(AprilTagRegion.kReef.blue()).forEach((i) -> {
             field.getTagPose(i).ifPresent((p) -> {
