@@ -19,8 +19,8 @@ public class WristConstants {
     public static final PIDGains.ProfiledPID POS_PID = new PIDGains.ProfiledPID(1.5, 0, 0, 8, 17);
     public static final PIDGains.GravityFF POS_FF = new PIDGains.GravityFF(0.2, 0.356, 0.75, 0.25);
 
-    public static final PIDGains.ProfiledPID POS_PID_SIM = new PIDGains.ProfiledPID(1, 0, 1, 10, 20);
-    public static final PIDGains.GravityFF POS_FF_SIM = new PIDGains.GravityFF(0, 0.5, 0.5, 0);
+    public static final PIDGains.ProfiledPID POS_PID_SIM = new PIDGains.ProfiledPID(1.5, 0, 0, 8, 17);
+    public static final PIDGains.GravityFF POS_FF_SIM = new PIDGains.GravityFF(0.2, 0.356, 0.75, 0.25);
 
     public static final int MOTOR_MAX_CURRENT = 20;
 

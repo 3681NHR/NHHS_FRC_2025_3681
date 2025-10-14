@@ -13,6 +13,8 @@
 
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.apriltag.AprilTagDetector;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -31,6 +33,8 @@ public class CameraIOPhotonSim extends CameraIOPhoton {
   private final Supplier<Pose2d> poseSupplier;
   private final PhotonCameraSim cameraSim;
 
+  private AprilTagFieldLayout layout;
+
   /**
    * Creates a new CameraIOPhotonSim.
    *
@@ -38,23 +42,23 @@ public class CameraIOPhotonSim extends CameraIOPhoton {
    * @param poseSupplier Supplier for the robot pose to use in simulation.
    */
   public CameraIOPhotonSim(
-      String name, Transform3d robotToCamera, Supplier<Pose2d> poseSupplier) {
-    super(name, robotToCamera);
+      AprilTagFieldLayout layout, String name, Transform3d robotToCamera, Supplier<Pose2d> poseSupplier) {
+    super(layout, name, robotToCamera);
     this.poseSupplier = poseSupplier;
 
     // Initialize vision sim
     if (visionSim == null) {
       visionSim = new VisionSystemSim("main");
-      visionSim.addAprilTags(APRILTAG_LAYOUT);
+      visionSim.addAprilTags(layout);
     }
 
     // Add sim camera
     var cameraProperties = new SimCameraProperties();
-    cameraProperties.setFPS(100);
-    cameraProperties.setAvgLatencyMs(10);
-    cameraProperties.setLatencyStdDevMs(10);
+    cameraProperties.setFPS(30);
+    cameraProperties.setAvgLatencyMs(15);
+    cameraProperties.setLatencyStdDevMs(20);
     cameraProperties.setCalibration(800, 600, Rotation2d.fromDegrees(105));
-    cameraProperties.setCalibError(.25, 0.08);
+    cameraProperties.setCalibError(0.1, 0.02);
     cameraSim = new PhotonCameraSim(camera, cameraProperties);
     visionSim.addCamera(cameraSim, robotToCamera);
   }

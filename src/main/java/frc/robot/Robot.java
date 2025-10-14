@@ -1,5 +1,7 @@
 package frc.robot;
 
+import java.nio.file.Path;
+
 import org.ironmaple.simulation.SimulatedArena;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -116,6 +118,8 @@ public class Robot extends LoggedRobot {
   public void autonomousInit() {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
+    m_robotContainer.enableTeleop();
+
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
@@ -139,6 +143,7 @@ public class Robot extends LoggedRobot {
     // continue until interrupted by another command, remove
     // this line or comment it out.
     TimerHandler.initTeleop();
+    m_robotContainer.enableTeleop();
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
@@ -149,7 +154,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void teleopPeriodic() {
     
-    m_robotContainer.Periodic();
+    // m_robotContainer.Periodic();
 
     TimerHandler.updateTeleop();
   }

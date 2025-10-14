@@ -1,8 +1,8 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.constants.IntakeConstants;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.Intake.WantedIntakeState;
 
 public class IntakeCommand extends Command {
 
@@ -18,19 +18,19 @@ public class IntakeCommand extends Command {
   public void initialize() {
     //if not holding, stop when holding, otherwise dont stop
     this.stopOnHold = !intake.isHolding();
-    if(!intake.getHoldLock()){
+    if(!intake.getSensorEnabled()){
       this.stopOnHold = false;
     }
   }
 
   @Override
   public void execute() {
-    intake.setVoltage(IntakeConstants.SPEED);
+    intake.setWantedState(WantedIntakeState.INTAKE);
   }
 
   @Override
   public void end(boolean interrupted) {
-    intake.stop();
+    intake.setWantedState(WantedIntakeState.STOP);
   }
 
   @Override
