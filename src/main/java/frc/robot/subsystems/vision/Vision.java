@@ -1,27 +1,17 @@
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.filter.LinearFilter;
-import edu.wpi.first.math.filter.MedianFilter;
-import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.vision.CameraIO.TargetObservation;
-import frc.utils.ExtraMath.MovingAverageFilter;
-
 import static frc.robot.constants.VisionConstants.*;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
-
 import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
@@ -32,24 +22,24 @@ public class Vision extends SubsystemBase {
   private VisionEstimate[] latestEstimateRaw;
   private VisionEstimate[] latestEstimateFinal = latestEstimateRaw;
 
-  private LinearFilter xFilterSP = LinearFilter.singlePoleIIR(0.2, 0.02);
-  private LinearFilter yFilterSP = LinearFilter.singlePoleIIR(0.2, 0.02);
-  private LinearFilter tFilterSP = LinearFilter.singlePoleIIR(0.2, 0.02);
+  private AprilTagFieldLayout layout;
 
-  private MovingAverageFilter xFilterMean = new MovingAverageFilter(10);
-  private MovingAverageFilter yFilterMean = new MovingAverageFilter(10);
-  private MovingAverageFilter tFilterMean = new MovingAverageFilter(10);
 
-  private MedianFilter xFilterMedian = new MedianFilter(15);
-  private MedianFilter yFilterMedian = new MedianFilter(15);
-  private MedianFilter tFilterMedian = new MedianFilter(15);
+  List<VisionEstimate> estimates = new LinkedList<>();
+  List<Pose3d> tagPoses = new LinkedList<>();
+  List<Pose3d> robotPoses = new LinkedList<>();
+  List<Pose3d> robotPosesAccepted = new LinkedList<>();
+  List<Pose3d> robotPosesRejected = new LinkedList<>();
+  
+  List<Pose3d> allTagPoses = new LinkedList<>();
+  List<Pose3d> allRobotPoses = new LinkedList<>();
+  List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
+  List<Pose3d> allRobotPosesRejected = new LinkedList<>();
+  List<VisionEstimate> allEstimates = new LinkedList<>();
 
-  private SlewRateLimiter xFilterRate = new SlewRateLimiter(10);
-  private SlewRateLimiter yFilterRate = new SlewRateLimiter(10);
-  private SlewRateLimiter tFilterRate = new SlewRateLimiter(20);
-
-  public Vision(CameraIO... io) {
+  public Vision(AprilTagFieldLayout layout, CameraIO... io) {
     this.io = io;
+    this.layout = layout;
 
     // Initialize inputs
     this.inputs = new CameraIOInputsAutoLogged[io.length];
@@ -62,7 +52,7 @@ public class Vision extends SubsystemBase {
     for (int i = 0; i < inputs.length; i++) {
       disconnectedAlerts[i] =
           new Alert(
-              "Camera: " + io[i].getName() == null ? Integer.toString(i) : io[i].getName() + " is disconnected.", AlertType.kWarning);
+              "Camera: " + io[i].getName() == null ? Integer.toString(i) : io[i].getName() + " is disconnected.", AlertType.kError);
     }
   }
 
@@ -70,33 +60,23 @@ public class Vision extends SubsystemBase {
   public void periodic() {
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
-      Logger.processInputs(CAMERA_NAMES[i], inputs[i]);
+      Logger.processInputs("Vision/" + CAMERA_NAMES[i], inputs[i]);
     }
 
     // Initialize logging values
-    List<Pose3d> allTagPoses = new LinkedList<>();
-    List<Pose3d> allRobotPoses = new LinkedList<>();
-    List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
-    List<Pose3d> allRobotPosesRejected = new LinkedList<>();
-    List<VisionEstimate> allEstimates = new LinkedList<>();
 
     
     // Loop over cameras
     for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
       
       // Initialize logging values
-      List<VisionEstimate> estimates = new LinkedList<>();
-      List<Pose3d> tagPoses = new LinkedList<>();
-      List<Pose3d> robotPoses = new LinkedList<>();
-      List<Pose3d> robotPosesAccepted = new LinkedList<>();
-      List<Pose3d> robotPosesRejected = new LinkedList<>();
       
       // Update disconnected alert
       disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
 
       // Add tag poses
       for (int tagId : inputs[cameraIndex].tagIds) {
-        var tagPose = APRILTAG_LAYOUT.getTagPose(tagId);
+        var tagPose = layout.getTagPose(tagId);
         if (tagPose.isPresent()) {
           tagPoses.add(tagPose.get());
         }
@@ -107,15 +87,15 @@ public class Vision extends SubsystemBase {
         // Check whether to reject pose
         boolean rejectPose =
             observation.tagCount() == 0 // Must have at least one tag
-                || observation.ambiguity() > MAX_AMBIGUITY // Cannot be too high ambiguity
-                || Math.abs(observation.pose().getZ())
-                    > MAX_Z_ERROR // Must have realistic Z coordinate
+                || observation.ambiguity() > MAX_AMBIGUITY; // Cannot be too high ambiguity
+                // || Math.abs(observation.pose().getZ())
+                //     > MAX_Z_ERROR // Must have realistic Z coordinate
 
-                // Must be within the field boundaries
-                || observation.pose().getX() < 0.0
-                || observation.pose().getX() > APRILTAG_LAYOUT.getFieldLength()
-                || observation.pose().getY() < 0.0
-                || observation.pose().getY() > APRILTAG_LAYOUT.getFieldWidth();
+                // // Must be within the field boundaries
+                // || observation.pose().getX() < -1.0
+                // || observation.pose().getX() > layout.getFieldLength()+1
+                // || observation.pose().getY() < -1.0
+                // || observation.pose().getY() > layout.getFieldWidth()+1;
 
         // Add pose to log
         robotPoses.add(observation.pose());
@@ -151,22 +131,22 @@ public class Vision extends SubsystemBase {
       // Log camera data
       if (tagPoses.size() > 0) {
         Logger.recordOutput(
-            "Vision/Camera: " + io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName() + "/TagPoses",
+            "Vision/Camera: " + (io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName()) + "/TagPoses",
             tagPoses.toArray(new Pose3d[0]));
       }
       if (robotPoses.size() > 0) {
         Logger.recordOutput(
-            "Vision/Camera: " + io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName() + "/AllRobotPoses",
+            "Vision/Camera: " + (io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName()) + "/AllRobotPoses",
             robotPoses.toArray(new Pose3d[0]));
       }
       if (robotPosesAccepted.size() > 0) {
         Logger.recordOutput(
-            "Vision/Camera: " + io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName() + "/RobotPosesAccepted",
+            "Vision/Camera: " + (io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName()) + "/RobotPosesAccepted",
             robotPosesAccepted.toArray(new Pose3d[0]));
       }
       if (robotPosesRejected.size() > 0) {
         Logger.recordOutput(
-            "Vision/Camera: " + io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName() + "/RobotPosesRejected",
+            "Vision/Camera: " + (io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName()) + "/RobotPosesRejected",
             robotPosesRejected.toArray(new Pose3d[0]));
       }
       double[][] stdDevs = new double[estimates.size()][3];
@@ -174,7 +154,7 @@ public class Vision extends SubsystemBase {
         stdDevs[i] = estimates.get(i).visionMeasurementStdDevs.getData();
       }
       Logger.recordOutput(
-        "Vision/Camera: " + io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName() + "/stdDevs",
+        "Vision/Camera: " + (io[cameraIndex].getName() == null ? Integer.toString(cameraIndex) : io[cameraIndex].getName()) + "/stdDevs",
         stdDevs);
 
       allTagPoses.addAll(tagPoses);
@@ -194,6 +174,8 @@ public class Vision extends SubsystemBase {
     Logger.recordOutput(
         "Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[allTagPoses.size()]));
     Logger.recordOutput(
+      "Vision/Summary/tags", allTagPoses.size());
+    Logger.recordOutput(
         "Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[allRobotPoses.size()]));
     Logger.recordOutput(
         "Vision/Summary/RobotPosesAccepted",
@@ -208,28 +190,7 @@ public class Vision extends SubsystemBase {
     Logger.recordOutput("Vision/Summary/stdDevs", stdDevs);
 
     latestEstimateRaw = allEstimates.stream().toArray(VisionEstimate[]::new);
-
-    latestEstimateFinal = new VisionEstimate[latestEstimateRaw.length];
-
-    if(latestEstimateRaw.length <= 0){
-      clearFilters();
-    }
-    for (int i=0; i<latestEstimateRaw.length; i++) {
-      latestEstimateFinal[i] = new VisionEstimate(
-        FilterPose(latestEstimateRaw[i].pose, VisionConstants.POSE_FILTER),
-        latestEstimateRaw[i].timestampSeconds,
-        latestEstimateRaw[i].visionMeasurementStdDevs
-      );
-    }
-
-    Logger.recordOutput("Vision/Summary/ProssesedPose", Stream.of(latestEstimateFinal).map(t -> t.pose).toArray(Pose2d[]::new));
-
-    Logger.recordOutput("Vision/Summary/RawPose", Stream.of(latestEstimateRaw).map(t -> t.pose).toArray(Pose2d[]::new));
-    Logger.recordOutput("Vision/Summary/SPFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.SINGLE_POLE_IIR)).toArray(Pose2d[]::new));
-    Logger.recordOutput("Vision/Summary/MeanFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.MEAN)).toArray(Pose2d[]::new));
-    Logger.recordOutput("Vision/Summary/MedianFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.MEDIAN)).toArray(Pose2d[]::new));
-    Logger.recordOutput("Vision/Summary/RateLimFilteredPose", Stream.of(latestEstimateRaw).map(t -> FilterPose(t.pose, FilterStrategy.RATE_LIM)).toArray(Pose2d[]::new));
-    
+    latestEstimateFinal = latestEstimateRaw;
 
     allTagPoses.clear();
     allRobotPoses.clear();
@@ -263,62 +224,4 @@ public class Vision extends SubsystemBase {
     return yaw;
   }
 
-  private Pose2d FilterPose(Pose2d p, FilterStrategy strat){
-    switch (strat) {      
-      case RATE_LIM:
-      return new Pose2d(
-        new Translation2d(
-          xFilterRate.calculate(p.getTranslation().getX()),
-          yFilterRate.calculate(p.getTranslation().getY())
-        ),
-        new Rotation2d(tFilterRate.calculate(p.getRotation().getRadians()))
-      );
-
-      case SINGLE_POLE_IIR:
-        return new Pose2d(
-        new Translation2d(
-          xFilterSP.calculate(p.getTranslation().getX()),
-          yFilterSP.calculate(p.getTranslation().getY())
-        ),
-        new Rotation2d(tFilterSP.calculate(p.getRotation().getRadians()))
-      );
-
-      case MEAN:
-      return new Pose2d(
-        new Translation2d(
-          xFilterMean.calculate(p.getTranslation().getX()),
-          yFilterMean.calculate(p.getTranslation().getY())
-        ),
-        new Rotation2d(tFilterMean.calculate(p.getRotation().getRadians()))
-      );
-
-      case MEDIAN:
-      return new Pose2d(
-        new Translation2d(
-          xFilterMedian.calculate(p.getTranslation().getX()),
-          yFilterMedian.calculate(p.getTranslation().getY())
-        ),
-        new Rotation2d(tFilterMedian.calculate(p.getRotation().getRadians()))
-      );
-    
-      default:
-        return p;
-    }
-    
-  }
-
-  private void clearFilters(){
-    xFilterMean.reset();
-    yFilterMean.reset();
-    tFilterMean.reset();
-
-    xFilterMedian.reset();
-    yFilterMedian.reset();
-    tFilterMedian.reset();
-
-    xFilterSP.reset();
-    yFilterSP.reset();
-    tFilterSP.reset();
-
-  }
 }

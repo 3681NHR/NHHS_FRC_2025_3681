@@ -7,6 +7,7 @@ package frc.robot.constants;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -24,17 +25,28 @@ public final class Constants {
     SIM,
     REPLAY
   }
-  public static RobotMode SIM_MODE = RobotMode.REPLAY;
+  public static RobotMode SIM_MODE = RobotMode.SIM;
   public static RobotMode MODE = RobotBase.isReal() ? RobotMode.REAL : SIM_MODE;
 
   public static final double AUTO_TIME = 15;
-  public static final double TELEOP_TIME = 150;//2:15
+  public static final double TELEOP_TIME = 135;//2:15
   public static final double ENDGAME_TIME = 20;//time remaining in teleop when endgame starts
 
-  public static final Pose2d STARTING_POSE = new Pose2d(new Translation2d(2.3, 4), Rotation2d.fromDegrees(0));
+  public static final Pose2d STARTING_POSE = new Pose2d(new Translation2d(8.75, 4), Rotation2d.fromDegrees(0));
   
   public static final double ROBOT_MASS = (148 - 20.3) * 0.453592; // 32lbs * kg per pound
   public static final double LOOP_TIME  = 0.13; //s, 20ms + 110ms sprk max velocity lag
+
+  public static class Affector{
+
+    public static final AffectorPosition HOLD_POSITION = new AffectorPosition(0.15, Units.degreesToRadians(90));
+    public static final AffectorPosition STOW_POSITION = new AffectorPosition(0.0, Units.degreesToRadians(90));
+    public static final AffectorPosition L1_POSITION = new AffectorPosition(0.08, -0.977);
+    public static final AffectorPosition L2_POSITION = new AffectorPosition(0.177, 0.942);
+    public static final AffectorPosition L3_POSITION = new AffectorPosition(0.618, 0.942);
+    public static final AffectorPosition L4_POSITION = new AffectorPosition(1.6, 0.165);
+    public static final AffectorPosition STATION_POSITION  = new AffectorPosition(0.48, -0.873);
+  }
 
   public static class OperatorConstants
   {
@@ -46,18 +58,9 @@ public final class Constants {
 
     public static final double ELEVATOR_MAN_SENS = 0.05;
     
-    //Curvature (rotation curve only applies when using anguler velocity)
+    //Curvature
     public static final double TRANSLATION_CURVE = 1.5;
     public static final double ROTATION_CURVE = 1.5;
-
-    public static final Rotation2d[] REEF_ROTS = {
-      Rotation2d.fromDegrees(270),//closest to ds
-      Rotation2d.fromDegrees(330),//cw
-      Rotation2d.fromDegrees(30),//cw
-      Rotation2d.fromDegrees(90),//cw
-      Rotation2d.fromDegrees(150),//cw
-      Rotation2d.fromDegrees(210),//cw
-    };
 
     //usb port of driver controller, remember to assign controller to port in driverstation
     public static final int DRIVER_CONTROLLER_PORT = 0;
@@ -66,47 +69,5 @@ public final class Constants {
   public static class drive {
     public static final boolean STARTING_FOD = true;
     public static final boolean STARTING_DIRECT_ANGLE = false;
-  }
-  public static class positions{
-    public static final Pose2d[] REEFS = {
-      new Pose2d(3.101, 4.425, Rotation2d.fromDegrees(270)),//TODO A
-      new Pose2d(3.101, 4.093, Rotation2d.fromDegrees(270)),//TODO B
-
-      new Pose2d(3.451, 3.030, Rotation2d.fromDegrees(330)),//TODO C
-      new Pose2d(3.725, 2.874, Rotation2d.fromDegrees(330)),//TODO D
-
-      new Pose2d(4.816, 2.650, Rotation2d.fromDegrees(30)),//TODO E
-      new Pose2d(5.109, 2.787, Rotation2d.fromDegrees(30)),//TODO F
-
-      new Pose2d(5.109, 5.109, Rotation2d.fromDegrees(90)),//TODO G
-      new Pose2d(5.879, 3.957, Rotation2d.fromDegrees(90)),//TODO H
-
-      new Pose2d(5.548, 5.010, Rotation2d.fromDegrees(150)),//TODO I
-      new Pose2d(5.236, 5.205, Rotation2d.fromDegrees(150)),//TODO J
-
-      new Pose2d(4.115, 5.429, Rotation2d.fromDegrees(210)),//TODO K
-      new Pose2d(3.851, 5.273, Rotation2d.fromDegrees(210)),//TODO L
-    };
-
-    
-    public static final Pose2d[] RED_REEFS = {
-      new Pose2d(3.101, 4.425, Rotation2d.fromDegrees(270)),//TODO A
-      new Pose2d(3.101, 4.093, Rotation2d.fromDegrees(270)),//TODO B
-
-      new Pose2d(3.451, 3.030, Rotation2d.fromDegrees(330)),//TODO C
-      new Pose2d(3.725, 2.874, Rotation2d.fromDegrees(330)),//TODO D
-
-      new Pose2d(0, 0, Rotation2d.fromDegrees(30)),//TODO
-      new Pose2d(0, 0, Rotation2d.fromDegrees(30)),//TODO
-
-      new Pose2d(0, 0, Rotation2d.fromDegrees(90)),//TODO
-      new Pose2d(0, 0, Rotation2d.fromDegrees(90)),//TODO
-
-      new Pose2d(0, 0, Rotation2d.fromDegrees(150)),//TODO
-      new Pose2d(0, 0, Rotation2d.fromDegrees(150)),//TODO
-
-      new Pose2d(0, 0, Rotation2d.fromDegrees(210)),//TODO
-      new Pose2d(0, 0, Rotation2d.fromDegrees(210)),//TODO
-    };
   }
 }

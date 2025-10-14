@@ -41,38 +41,24 @@
       "axisCount": 6,
       "buttonCount": 6,
       "buttonKeys": [
-        90,
-        88,
-        67,
-        86,
-        82,
-        84
+        49,
+        50,
+        51,
+        52,
+        53,
+        54
       ],
       "povConfig": [
         {
-          "key0": 328,
-          "key135": 323,
-          "key180": 322,
-          "key225": 321,
-          "key270": 324,
-          "key315": 327,
-          "key45": 329,
-          "key90": 326
+          "key0": 73,
+          "key180": 75,
+          "key270": 76,
+          "key90": 74
         }
       ],
       "povCount": 1
     },
     {
-      "axisConfig": [
-        {
-          "decKey": 74,
-          "incKey": 76
-        },
-        {
-          "decKey": 73,
-          "incKey": 75
-        }
-      ],
       "axisCount": 2,
       "buttonCount": 4,
       "buttonKeys": [
@@ -103,6 +89,13 @@
     }
   ],
   "robotJoysticks": [
+    {
+      "guid": "78696e70757401000000000000000000",
+      "useGamepad": true
+    },
+    {
+      "useGamepad": true
+    },
     {
       "guid": "Keyboard0"
     }

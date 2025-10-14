@@ -3,7 +3,11 @@ package frc.utils;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.wpilibj.util.Color;
+
 import java.lang.Math;
+import java.security.cert.CollectionCertStoreParameters;
 import java.util.ArrayList;
 
 public final class ExtraMath {
@@ -15,6 +19,20 @@ public final class ExtraMath {
 
   public static double getMagnitude(double x, double y) {
     return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+  }
+
+  /**
+   * get tilt of robot
+   * @param angle 
+   * @return double[2], 0 is yaw angle(-pi to pi), 1 is tilt angle
+   */
+  public static double[] getTip(Rotation3d angle){
+    double[] out = new double[2];
+
+    out[0] = Math.atan2(-angle.getX(), -angle.getY());
+    out[1] = Math.hypot(angle.getX(), angle.getY());
+
+    return out;
   }
 
   /**
@@ -71,6 +89,11 @@ public final class ExtraMath {
   
   public static double getDistance(Pose2d a, Pose2d b){
     return a.getTranslation().getDistance(b.getTranslation());
+  }
+
+  public static Color normalizeCol(Color in){
+    double brt = in.red/255.0 + in.green/255.0 + in.blue/255.0;
+    return new Color(in.red/brt, in.green/brt, in.blue/brt);
   }
   
   /**

@@ -4,43 +4,53 @@ import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.AffectorPosition;
-import frc.robot.subsystems.elevator.Elevator;
-import frc.robot.subsystems.wrist.Wrist;
+import frc.robot.constants.Constants;
+import frc.robot.constants.ElevatorConstants;
+import frc.robot.subsystems.affector.Affector;
+import frc.robot.subsystems.affector.Affector.WantedAffectorState;
 
 public class MoveAffector extends Command {
 
-  private Elevator elevator;
-  private Wrist wrist;
+  private Affector elevator;
 
-  private Supplier<AffectorPosition> pos;
+  private boolean done = false;
 
-  public MoveAffector(Elevator elevator, Wrist wrist, Supplier<AffectorPosition> pos) {
+  private AffectorPosition pos;
+  private Supplier<AffectorPosition> posSup;
+
+  public MoveAffector(Affector elevator, Supplier<AffectorPosition> pos) {
     this.elevator = elevator;
-    this.wrist = wrist;
-    this.pos = pos;
-    addRequirements(elevator, wrist);
+    this.posSup = pos;
+    addRequirements(elevator);
   }
   @Override
   public String getName(){return "move affector";}
 
   @Override
   public void initialize() {
+    pos = posSup.get();
+
+    elevator.setWantedState(WantedAffectorState.POSITION, new AffectorPosition(pos.elev, Constants.Affector.STOW_POSITION.wrist));
+
+    done = false;
   }
 
   @Override
   public void execute() {
-    elevator.setTargetPos(pos.get().elev);
-    wrist.setPosSet(pos.get().wrist);
+    if(Math.abs(elevator.getPosition().elev - elevator.getPositionSet().elev) < ElevatorConstants.NEAR_POS_TOLERANCE){
+      elevator.setWantedState(WantedAffectorState.POSITION, pos);
+      done = elevator.atSetpoint();
+    }
   }
 
   @Override
   public void end(boolean interrupted) {
-    //elevator.setTargetPos(AffectorPosition.STOW.elev);
-    //wrist.setPosSet(AffectorPosition.STOW.wrist);
+    //elevator.setTargetPos(elevator.getPosition());
+    //wrist.setPosSet(wrist.getPos());;
   }
 
   @Override
   public boolean isFinished() {
-    return false;
+    return done;//TODO: end on signifacant operator input
   }
 }

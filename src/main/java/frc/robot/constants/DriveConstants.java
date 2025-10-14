@@ -32,21 +32,30 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.utils.PIDGains; 
 
 public class DriveConstants {
-    public static final PIDGains.PID ANGLE_PID = new PIDGains.PID(0.5, 0.0, 0.025);
-    public static final PIDGains.PID ANGLE_PID_SIM = new PIDGains.PID(0.5, 0.0, 0.025);
+    public static final PIDGains.PID ANGLE_PID = new PIDGains.PID(6, 0.0, 0.4);
+    public static final PIDGains.PID ANGLE_PID_SIM = new PIDGains.PID(4, 0.0, 0.1);
+
     public static final double ANGLE_MAX_VELOCITY = 11.2;
     public static boolean USE_VISION = true;
 
-    public static final PIDGains.PID AUTO_ANGLE_PID = new PIDGains.PID(8, 0.0, 0.0);//TODO tune
-    public static final PIDGains.PID AUTO_ANGLE_PID_SIM = new PIDGains.PID(5, 0.0, 0.0);
+    public static final double MAX_SPEED_PP = 5;
+    public static final double MAX_ACCEL_PP = 2;
+    public static final double MAX_ANGLE_SPEED_PP = 10;
+    public static final double MAX_ANGLE_ACCEL_PP = MAX_ANGLE_SPEED_PP*3;
     
-    public static final PIDGains.PID TRANS_PID = new PIDGains.PID(10, 0.0, 0.0);//TODO tune
-    public static final PIDGains.PID TRANS_PID_SIM = new PIDGains.PID(6, 0.0, 0.0);
+    public static final double AUTO_ALIGN_ANGLE_MAX_OFFSET = 0.05;//degrees
+    public static final double AUTO_ALIGN_POS_MAX_OFFSET   = 0.01;//meters
+
+    public static final PIDGains.PID AUTO_ANGLE_PID = new PIDGains.PID(8, 0.0, 0.0);//TODO tune
+    public static final PIDGains.PID AUTO_ANGLE_PID_SIM = new PIDGains.PID(8, 0.5, 0.2);
+    
+    public static final PIDGains.PID TRANS_PID = new PIDGains.PID(5, 0.0, 0.0);//TODO tune
+    public static final PIDGains.PID TRANS_PID_SIM = new PIDGains.PID(7, 1, 0.2);
     public static final double MAX_SPEED = 4.7;//TODO tune
 
     public static final double ODOMETRY_FREQ = 100.0; // Hz
-    public static final double WIDTH = Units.inchesToMeters(22);
-    public static final double LENGTH = Units.inchesToMeters(25);
+    public static final double WIDTH = Units.inchesToMeters(22); // size between wheels
+    public static final double LENGTH = Units.inchesToMeters(25);// size between wheels
     public static final double RADIUS = Math.hypot(WIDTH / 2.0, LENGTH / 2.0);
   public static final Translation2d[] MODULE_POSITIONS =
       new Translation2d[] {
@@ -142,12 +151,19 @@ public class DriveConstants {
     public static final Velocity<VoltageUnit> TURN_SYSID_VRAMP = Volts.of(.5).per(Second);
     public static final Time TURN_SYSID_TIMEOUT = Seconds.of(10);
 
-    public static final double ANGULAR_VELOCITY_COEFFICIENT = 0.1;
+    public static final double ANGULAR_VELOCITY_COEFFICIENT = 0.02;
+
+    public static final double TIP_RECOVERY_THRESHOLD = Units.degreesToRadians(10);
 
     public static class presets{
         public static final Rotation2d CLIMB = Rotation2d.fromDegrees(180);
-        public static final Pose2d WEST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(30));
-        public static final Pose2d EAST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(142));
-        public static final Pose2d PROSSESOR = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(270));
+        public static final Pose2d WEST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(36.9));
+        public static final Pose2d EAST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(142.9));
+
+        public static final Translation2d RIGHT_BRANCH_OFFSET = new Translation2d(Units.inchesToMeters(-2)  , Units.inchesToMeters(17.5));
+        public static final Translation2d LEFT_BRANCH_OFFSET  = new Translation2d(Units.inchesToMeters(-14.75), Units.inchesToMeters(18));
+
+        public static final Translation2d RIGHT_BRANCH_OFFSET_SIM = new Translation2d(Units.inchesToMeters(-3.5)  , Units.inchesToMeters(17.5));
+        public static final Translation2d LEFT_BRANCH_OFFSET_SIM  = new Translation2d(Units.inchesToMeters(-16.25), Units.inchesToMeters(18));
     }
 }
