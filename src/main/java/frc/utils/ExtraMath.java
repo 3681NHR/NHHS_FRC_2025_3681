@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj.util.Color;
 
 import java.lang.Math;
-import java.security.cert.CollectionCertStoreParameters;
 import java.util.ArrayList;
 
 public final class ExtraMath {

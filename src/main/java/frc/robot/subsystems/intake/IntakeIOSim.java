@@ -13,7 +13,6 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.WristConstants;
@@ -31,6 +30,7 @@ public class IntakeIOSim implements IntakeIO {
     
     private double vel = 0.0;
 
+    @SuppressWarnings("unused")
     private XboxController debugController = new XboxController(2);
 
     public IntakeIOSim(SwerveDriveSimulation driveSim, Affector elevator) {

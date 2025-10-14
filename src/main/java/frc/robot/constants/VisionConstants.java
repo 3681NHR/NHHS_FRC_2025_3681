@@ -13,15 +13,10 @@
 
 package frc.robot.constants;
 
-import java.nio.file.Path;
-import java.util.function.Function;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Filesystem;
 import frc.robot.subsystems.vision.FilterStrategy;
 
 public class VisionConstants {

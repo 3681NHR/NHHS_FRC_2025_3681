@@ -1,24 +1,12 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Hertz;
-import static edu.wpi.first.units.Units.Percent;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
-
-import java.util.Map;
-
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
-import com.ctre.phoenix.led.Animation;
-import com.ctre.phoenix.led.LarsonAnimation;
-
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.utils.ExtraMath;
 import frc.utils.LEDAnim.LEDAnim;
 import frc.utils.LEDAnim.RainbowAnim;
 
@@ -39,8 +27,6 @@ public class Led extends SubsystemBase {
     private AddressableLED led = new AddressableLED(0);
     private AddressableLEDBuffer buffer = new AddressableLEDBuffer(50);
 
-    private LEDPattern pattern = LEDPattern.solid(Color.kBlack);
-
     private LoggedNetworkBoolean rainbow = new LoggedNetworkBoolean("LED override", false);
 
     private LEDAnim b = new RainbowAnim(50);
@@ -55,9 +41,7 @@ public class Led extends SubsystemBase {
     public void periodic() {
         Color status = Color.kBlack;
         Color state  = Color.kBlack;
-        LEDPattern stateMask = LEDPattern.steps(Map.of(0, Color.kBlack, 0.5, Color.kWhite));
-        LEDPattern statusMask  = LEDPattern.steps(Map.of(0, Color.kWhite, 0.5, Color.kBlack));
-        
+
         // if(affectorInPos){
         //     status = Color.kBlack;
         // }
@@ -105,10 +89,8 @@ public class Led extends SubsystemBase {
 
         if(rainbow.get()){
             for(int i=0; i<buffer.getLength(); i++){
-                buffer.setLED(i, ExtraMath.normalizeCol(b.getLEDs()[i]));
+                buffer.setLED(i, b.getLEDs()[i]);
             }
-            pattern = LEDPattern.rainbow(255, 255).scrollAtRelativeSpeed(Percent.per(Second).of(25));
-            // pattern.applyTo(buffer);
         }else{
             for(int i=0; i<buffer.getLength(); i++){
                 buffer.setLED(i, i < buffer.getLength()/2 ? status : state);//overlayOn is broken, so we use this

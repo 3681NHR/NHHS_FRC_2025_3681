@@ -7,8 +7,6 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
-import com.fasterxml.jackson.core.StreamWriteCapability;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -125,8 +123,6 @@ public class Superstructure extends SubsystemBase{
     
     private boolean fod = Constants.drive.STARTING_FOD;
 
-    private Rotation2d stationAngle = new Rotation2d();
-
     private LoggedNetworkBoolean useVisionOdometry = new LoggedNetworkBoolean("overrides/useVisionOdometry", DriveConstants.USE_VISION);
     
     public static  final ArrayList<Pose2d> blueReefTagPoses = new ArrayList<>();
@@ -223,23 +219,6 @@ public class Superstructure extends SubsystemBase{
         Logger.recordOutput("Drive/fieldOrientedDrive", getFOD());
 
         DriveConstants.USE_VISION = useVisionOdometry.get();
-
-        if(DriverStation.getAlliance().isPresent()){
-            if(DriverStation.getAlliance().get() == Alliance.Red){
-                if(drive.getPose().getTranslation().getY() > 4){
-                    stationAngle = DriveConstants.presets.EAST_STATION.getRotation();
-                } else {
-                    stationAngle = DriveConstants.presets.WEST_STATION.getRotation();
-                }
-            } else {
-                if(drive.getPose().getTranslation().getY() > 4){
-                    stationAngle = DriveConstants.presets.WEST_STATION.getRotation();
-                } else {
-                    stationAngle = DriveConstants.presets.EAST_STATION.getRotation();
-                }
-            }
-        }
-
 
         updateAScopePoses();
 

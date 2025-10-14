@@ -13,13 +13,10 @@
 
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.apriltag.AprilTagDetector;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
-
-import static frc.robot.constants.VisionConstants.APRILTAG_LAYOUT;
 
 import java.util.function.Supplier;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -32,9 +29,6 @@ public class CameraIOPhotonSim extends CameraIOPhoton {
 
   private final Supplier<Pose2d> poseSupplier;
   private final PhotonCameraSim cameraSim;
-
-  private AprilTagFieldLayout layout;
-
   /**
    * Creates a new CameraIOPhotonSim.
    *

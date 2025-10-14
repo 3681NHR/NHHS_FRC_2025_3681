@@ -13,14 +13,11 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import frc.robot.constants.VisionConstants;
 
 public class CameraIOPhoton implements CameraIO {
 
     protected final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
-
-    private AprilTagFieldLayout layout;
 
     private final Transform3d robotToCamera;
   
