@@ -440,7 +440,7 @@ public class Drive extends SubsystemBase {
              driveToPoseAuto(p)
             .withTimeout(3.5)
             .finallyDo(() -> {
-                setWantedState(WantedDriveState.TELEOP_DRIVE);
+                // setWantedState(WantedDriveState.TELEOP_DRIVE);
                 led.aligningReef = false;
             });
     }
@@ -646,6 +646,7 @@ public class Drive extends SubsystemBase {
 
         List<Waypoint> points = PathPlannerPath.waypointsFromPoses(start, end);
         
+        setWantedState(WantedDriveState.DRIVE_TO_POINT);
         
         PathConstraints constraints = new PathConstraints(DriveConstants.MAX_SPEED_PP, DriveConstants.MAX_ACCEL_PP, DriveConstants.MAX_ANGLE_SPEED_PP, DriveConstants.MAX_ANGLE_ACCEL_PP);
         PathPlannerPath path = new PathPlannerPath(points, constraints, new IdealStartingState(getSpeed(), getPose().getRotation()), new GoalEndState(0, p.get().getRotation()));
@@ -656,8 +657,8 @@ public class Drive extends SubsystemBase {
         follow = AutoBuilder.followPath(path);
 
         }).andThen(new playCommand(() -> follow))
-        .alongWith(new InstantCommand(() -> {led.aligningReef = true;}))
-        .andThen(new FineTuneAlign(p, this, led).withTimeout(3)); 
+        .andThen(new FineTuneAlign(p, this, led).withTimeout(3))
+        .alongWith(new InstantCommand(() -> {led.aligningReef = true;}));
     }
 
     /**

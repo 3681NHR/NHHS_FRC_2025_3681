@@ -72,7 +72,7 @@ public class Superstructure extends SubsystemBase{
     public enum BranchSide{
         LEFT  (Constants.MODE == RobotMode.SIM ? DriveConstants.presets.LEFT_BRANCH_OFFSET_SIM  : DriveConstants.presets.LEFT_BRANCH_OFFSET),
         RIGHT (Constants.MODE == RobotMode.SIM ? DriveConstants.presets.RIGHT_BRANCH_OFFSET_SIM : DriveConstants.presets.RIGHT_BRANCH_OFFSET),
-        MIDDLE(new Translation2d());
+        MIDDLE(new Translation2d(Units.inchesToMeters(-8.375), Units.inchesToMeters(20)));
 
         public Translation2d tagOffset;
         private BranchSide(Translation2d offsets) {
@@ -88,8 +88,8 @@ public class Superstructure extends SubsystemBase{
         }
     }
     public enum StationSide{
-        LEFT  (DriverStation.getAlliance().get() == Alliance.Blue ? DriveConstants.presets.WEST_STATION : DriveConstants.presets.EAST_STATION),
-        RIGHT (DriverStation.getAlliance().get() == Alliance.Blue ? DriveConstants.presets.EAST_STATION : DriveConstants.presets.WEST_STATION),
+        LEFT  (DriverStation.getAlliance().get() == Alliance.Blue ? DriveConstants.presets.WEST_STATION : DriveConstants.presets.WEST_STATION),
+        RIGHT (DriverStation.getAlliance().get() == Alliance.Blue ? DriveConstants.presets.EAST_STATION : DriveConstants.presets.EAST_STATION),
         AUTO  (new Pose2d());
 
         public Pose2d pos;

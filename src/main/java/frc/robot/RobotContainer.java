@@ -51,6 +51,7 @@ import frc.robot.subsystems.vision.Vision;
 import frc.utils.rumble.*;
 import frc.utils.VariableLimSLR;
 import frc.utils.Joystick.duelJoystickAxis;
+import frc.utils.TimerHandler;
 import frc.utils.BatteryVoltageSim;
 import frc.utils.DisabledInstantCommand;
 import frc.utils.ExtraMath;
@@ -360,13 +361,13 @@ private final Alert operatorDisconnected =
     }));
 
     //fod toggle
-    new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON)).onTrue(new InstantCommand(() -> {
-      superstructure.toggleFOD();
-    }));
+    // new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON)).onTrue(new InstantCommand(() -> {
+    //   superstructure.toggleFOD();
+    // }));
 
-    new Trigger(() -> intake.isHolding() && !intake.wasHolding()).onTrue(new InstantCommand(() -> {
-      rumbler.overrideQue(RumblePreset.RING.load());
-    //   opRumbler.overrideQue(RumblePreset.TAP.load());
+    new Trigger(() -> TimerHandler.getTeleopRemaining() < 25.0).onTrue(new InstantCommand(() -> {
+      rumbler.overrideQue(RumblePreset.TAP.load());
+      opRumbler.overrideQue(RumblePreset.TAP.load());
     }));
     //aim to station
     new Trigger(() -> driverController.getRawButton(LB)).onTrue(new InstantCommand(() -> {
@@ -389,6 +390,11 @@ private final Alert operatorDisconnected =
         }
       }
     }));
+    new Trigger(() -> driverController.getRawButton(LEFT_STICK_BUTTON)).onTrue(new InstantCommand(() -> {
+      if(superstructure.currentState != CurrentSuperState.CLIMB){
+        superstructure.autoAlign(BranchSide.MIDDLE);
+      }
+  }));
  
     //physical button
     new Trigger(() -> buttons.get(0)).onTrue(new DisabledInstantCommand(() -> {
@@ -531,13 +537,20 @@ private final Alert operatorDisconnected =
   
   // public boolean getDirectAngle(){return directAngle;}
 
-  public void enable(){
+  public void enableTeleop(){
     affector.setElevBrake(true);
     affector.setWristBrake(true);
 
     affector.setWantedState(WantedAffectorState.POSITION);
 
     drive.setWantedState(WantedDriveState.TELEOP_DRIVE);
+  }
+  public void enableAuto(){
+    affector.setElevBrake(true);
+    affector.setWristBrake(true);
+
+    affector.setWantedState(WantedAffectorState.POSITION);
+
   }
 
 

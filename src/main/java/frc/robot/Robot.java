@@ -118,7 +118,7 @@ public class Robot extends LoggedRobot {
   public void autonomousInit() {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-    m_robotContainer.enable();
+    m_robotContainer.enableTeleop();
 
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
@@ -143,7 +143,7 @@ public class Robot extends LoggedRobot {
     // continue until interrupted by another command, remove
     // this line or comment it out.
     TimerHandler.initTeleop();
-    m_robotContainer.enable();
+    m_robotContainer.enableTeleop();
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
