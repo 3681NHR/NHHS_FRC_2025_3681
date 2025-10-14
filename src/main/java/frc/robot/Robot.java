@@ -1,7 +1,5 @@
 package frc.robot;
 
-import java.nio.file.Path;
-
 import org.ironmaple.simulation.SimulatedArena;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -34,9 +32,6 @@ public class Robot extends LoggedRobot {
    */
   @Override
   public void robotInit() {
-    // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
-    // autonomous chooser on the dashboard.
-
     // Record metadata
     Logger.recordMetadata("ProjectName", BuildConstants.MAVEN_NAME);
     Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE);
@@ -58,13 +53,13 @@ public class Robot extends LoggedRobot {
     // Set up data receivers & replay source
     switch (Constants.MODE) {
       case REAL:
-        // Running on a real robot, log to a USB stick ("/U/logs")
+        // Running on a real robot, log to a USB stick ("/U/logs") and NT
         Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
         break;
 
       case SIM:
-        // Running a physics simulator, log to NT
+        // Running a simulator, log to NT
         
         //Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
@@ -81,8 +76,10 @@ public class Robot extends LoggedRobot {
 
     // Start AdvantageKit logger
     Logger.start();
+    // initalize robot container
     m_robotContainer = new RobotContainer();
 
+    //start timerhandler
     TimerHandler.init();
   }
 

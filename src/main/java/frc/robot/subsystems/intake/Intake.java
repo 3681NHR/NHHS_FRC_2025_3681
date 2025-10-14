@@ -16,6 +16,7 @@ public class Intake extends SubsystemBase {
         INTAKE,
         SCORE,
         OUTTAKE,
+        OUTTAKE_SLOW,
         STOP,
         MANUAL
     }
@@ -23,6 +24,7 @@ public class Intake extends SubsystemBase {
         INTAKING,
         SCORING,
         OUTAKING,
+        OUTAKING_SLOW,
         STOPPED,
         MANUAL
     }
@@ -79,6 +81,9 @@ public class Intake extends SubsystemBase {
             case OUTTAKE:
                 currentState = CurrentIntakeState.OUTAKING;
                 break;
+            case OUTTAKE_SLOW:
+                currentState = CurrentIntakeState.OUTAKING_SLOW;
+                break;
             case STOP:
                 currentState = CurrentIntakeState.STOPPED;
                 break;
@@ -97,6 +102,9 @@ public class Intake extends SubsystemBase {
             break;
             case OUTAKING:
             io.setVoltage(-IntakeConstants.SPEED_SCORE);
+            break;
+            case OUTAKING_SLOW:
+            io.setVoltage(-IntakeConstants.SPEED_INTAKE);
             break;
             case STOPPED:
                 io.setVoltage(0);
@@ -132,5 +140,10 @@ public class Intake extends SubsystemBase {
         if(state == WantedIntakeState.MANUAL){
             io.setVoltage(volt);
         }
+    }
+
+    public void setHolding(boolean b) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setHolding'");
     }
 }
