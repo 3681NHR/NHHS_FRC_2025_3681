@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
-import frc.robot.constants.AffectorPosition;
 import frc.robot.constants.Constants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.constants.ElevatorConstants;
@@ -35,6 +34,15 @@ import frc.utils.ExtraMath;
 import frc.utils.ProfiledPID;
 
 public class Affector extends SubsystemBase {
+
+    public static class AffectorPosition{
+        public double elev;
+        public double wrist;
+        public AffectorPosition(double elev, double wrist){
+            this.elev = elev;
+            this.wrist = wrist;
+        }
+    }
 
     public enum WantedAffectorState{
         HOME,

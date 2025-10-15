@@ -5,7 +5,7 @@ public final class ClimberConstants {
 
     public static final int CURRENT_LIM = 30;
 
-    public static final boolean INVERT = false;
+    public static final boolean INVERTED = false;
 
     public static final double EXTEND_VOLTAGE = -8;
     public static final double RETRACT_VOLTAGE = 8;

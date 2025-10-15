@@ -24,7 +24,7 @@ public class ClimberIOSpark implements ClimberIO {
             .idleMode(IdleMode.kBrake)
             .smartCurrentLimit(CURRENT_LIM)
             .voltageCompensation(12.0)
-            .inverted(INVERT);
+            .inverted(INVERTED);
         config
             .signals
             .appliedOutputPeriodMs(20)
