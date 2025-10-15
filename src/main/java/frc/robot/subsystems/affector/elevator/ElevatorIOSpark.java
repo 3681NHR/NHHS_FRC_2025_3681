@@ -12,6 +12,9 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import static frc.robot.constants.ElevatorConstants.*;
 import static frc.utils.SparkUtil.*;
 
+/**
+ * elevator IO that interfaces with Spark Max motor controllers
+ */
 public class ElevatorIOSpark implements ElevatorIO {
 
     private SparkMax motor1 = new SparkMax(MOTOR_1_ID, MotorType.kBrushless);
@@ -28,31 +31,34 @@ public class ElevatorIOSpark implements ElevatorIO {
     private double voltsOut = 0.0;
 
     public ElevatorIOSpark(){
-        
-    motor1Config
-        .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(CURRENT_LIM)
-        .voltageCompensation(12.0)
-        .inverted(MOTOR_INVERT);
-    motor1Config
-        .signals
-        .appliedOutputPeriodMs(20)
-        .busVoltagePeriodMs(20)
-        .outputCurrentPeriodMs(20);
+        //configure motor 1
+        motor1Config
+            .idleMode(IdleMode.kBrake)
+            .smartCurrentLimit(CURRENT_LIM)
+            .voltageCompensation(12.0)
+            .inverted(MOTOR_INVERT);
+        motor1Config
+            .signals
+            .appliedOutputPeriodMs(20)
+            .busVoltagePeriodMs(20)
+            .outputCurrentPeriodMs(20);
+        //set motor 2 to follow motor 1 with the same config
+        motor2Config.apply(motor1Config).follow(motor1, true);
 
-    motor2Config.apply(motor1Config).follow(motor1, true);
+        configure();
 
-    configure();
-
-    motorEncoder.setPosition(0);
-    
+        //reset sensor on boot
+        motorEncoder.setPosition(0);
     }
 
+    /**
+     * update all inputs from the hardware, functions as a periodic method
+     */
     public void updateInputs(ElevatorIOInputs inputs) {
         motor1.setVoltage(voltsOut);
         
-        vel = (motorEncoder.getVelocity() * builtinfactor/60.0);
-        pos = motorEncoder.getPosition()  * builtinfactor;
+        vel = (motorEncoder.getVelocity() * builtinfactor/60.0);//convert to m/s
+        pos = motorEncoder.getPosition()  * builtinfactor;//convert to meters
 
         inputs.pos = pos;
         inputs.vel = vel;
@@ -66,11 +72,18 @@ public class ElevatorIOSpark implements ElevatorIO {
         inputs.motor2TempC = motor2.getMotorTemperature();
     }
 
+    /**
+     * send voltage command to drive both motors
+     */
     public void setVoltage(double voltage) {
         voltsOut = voltage;
+        //motor 2 will follow motor 1 so it doesnt need to be set
         motor1.setVoltage(voltage);
     }
-    
+    /**
+     * set brake mode for both motors
+     * <p>when brake is enabled, motors will have much more resistance to being moved when not driven
+     */
     public void setBrake(boolean brake) {
         
         if(brake){
@@ -83,10 +96,16 @@ public class ElevatorIOSpark implements ElevatorIO {
         configure();
     }
     
+    /**
+     * reset calculated position of the elevator to a given position in meters
+     */
     public void resetPos(double posMeters) {
         motorEncoder.setPosition(posMeters/builtinfactor);
     }
 
+    /**
+     * configure both motors with the current configuration
+     */
     private void configure(){
         
         tryUntilOk(

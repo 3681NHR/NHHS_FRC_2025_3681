@@ -4,6 +4,10 @@ import static frc.robot.constants.ElevatorConstants.*;
 
 import edu.wpi.first.math.MathUtil;
 
+/**
+ * elevator IO simulation
+ * <p>this class generates realistic inputs for the elevator based on given outputs from the subsystem
+ */
 public class ElevatorIOSim implements ElevatorIO{
 
     private double pos = 0.0;
@@ -14,16 +18,20 @@ public class ElevatorIOSim implements ElevatorIO{
     public ElevatorIOSim(){
     }
     
-    
+    /**
+     * update all inputs from the hardware, functions as a periodic method
+     */
     public void updateInputs(ElevatorIOInputs inputs) {
-        double f = (MathUtil.clamp(voltsOut, -12, 12)*24);
-        f -= (vel*100);
-        double a = f/(4);//f/m
-        vel += a * 0.02;
-        pos += vel * 0.02;
-        pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);
+
+        //simple physics simulation, there are classes builtin that are better, but this allows fine tuning for closer response without needing a full model
+        double f = (MathUtil.clamp(voltsOut, -12, 12)*24);//applied motor force
+        f -= (vel*100);   //friction
+        double a = f/(4); //acceleraton
+        vel += a * 0.02;  //velocity
+        pos += vel * 0.02;//position
+        pos = MathUtil.clamp(pos, MIN_POS, MAX_POS);//hard limits
         if(pos == MIN_POS || pos == MAX_POS){
-            vel = 0;
+            vel = 0;//simulate hitting hard stop
         }
 
         inputs.pos = pos;
@@ -37,16 +45,23 @@ public class ElevatorIOSim implements ElevatorIO{
         inputs.motor2TempC = inputs.motor1TempC;
 
     }
-    
-    
+    /**
+     * set voltage for both motors
+     */
     public void setVoltage(double voltage) {
         voltsOut = voltage;
+        //voltage is calculated in update inputs
     }
-    
+    /**
+     * set brake mode for both motors
+     * <p>when brake is enabled, motors will have much more resistance to being moved when not driven
+     */
     public void setBrake(boolean brake) {
         //not used with sim
     }
-    
+    /**
+     * reset calculated position of the elevator to a given position in meters
+     */
     public void resetPos(double posMeters) {
         //not used
     }
