@@ -32,7 +32,6 @@ import java.util.function.DoubleSupplier;
  * and duty cycle absolute encoder.
  */
 public class ModuleIOSpark implements ModuleIO {
-  private final Rotation2d zeroRotation;
 
   // Hardware objects
   private final SparkBase driveSpark;
@@ -68,14 +67,6 @@ public class ModuleIOSpark implements ModuleIO {
   private double turnVelocityRadPerSecond = 0.0;
 
   public ModuleIOSpark(int module) {
-    zeroRotation =
-        switch (module) {
-          case 0 -> FL_ZERO;
-          case 1 -> FR_ZERO;
-          case 2 -> BL_ZERO;
-          case 3 -> BR_ZERO;
-          default -> new Rotation2d();
-        };
     driveSpark =
         new SparkMax(
             switch (module) {
@@ -181,8 +172,7 @@ public class ModuleIOSpark implements ModuleIO {
   @Override
   public void updateInputs(ModuleIOInputs inputs) {
     drivePositionRad = driveEncoder.getPosition();
-    turnPositionRad = turnEncoder.getPosition() - zeroRotation.getRadians();
-
+    
     driveVelocityRadPerSecond = driveEncoder.getVelocity();
     turnVelocityRadPerSecond = turnEncoder.getVelocity();
 
@@ -221,7 +211,7 @@ public class ModuleIOSpark implements ModuleIO {
         drivePositionQueue.stream().mapToDouble((Double value) -> value).toArray();
     inputs.odometryTurnPositionsRad =
         turnPositionQueue.stream()
-            .mapToDouble((Double value) -> value - zeroRotation.getRadians())
+            .mapToDouble((Double value) -> value)
             .toArray();
     timestampQueue.clear();
     drivePositionQueue.clear();
@@ -266,8 +256,7 @@ public class ModuleIOSpark implements ModuleIO {
   @Override
   public void setTurnPosition(Rotation2d rotation) {
     turnGoal =
-        MathUtil.inputModulus(
-            rotation.plus(zeroRotation).getRadians(), TURN_MIN_POS, TURN_MAX_POS);
+        MathUtil.inputModulus(rotation.getRadians(), TURN_MIN_POS, TURN_MAX_POS);
     turnClosedLoop = true;
   }
 }
