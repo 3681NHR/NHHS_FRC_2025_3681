@@ -14,9 +14,7 @@ import frc.utils.ExtraMath.Derrivitive;
 
 import static frc.robot.constants.WristConstants.*;
 
-import org.littletonrobotics.junction.Logger;
-
-public class WristIOSpark implements WristIO{
+public class WristIOSpark implements WristIO {
 
     private double pos;
     private double vel;
@@ -29,49 +27,49 @@ public class WristIOSpark implements WristIO{
 
     private double vout = 0.0;
 
-    public WristIOSpark(){
+    public WristIOSpark() {
+        // configure motor
         config
-            .idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(MOTOR_MAX_CURRENT)
-            .voltageCompensation(12.0)
-            .inverted(MOTOR_INVERT);
-        config
-            .signals
-            .appliedOutputPeriodMs(20)
-            .busVoltagePeriodMs(20)
-            .outputCurrentPeriodMs(20);
+                .idleMode(IdleMode.kBrake)
+                .smartCurrentLimit(MOTOR_MAX_CURRENT)
+                .voltageCompensation(12.0)
+                .inverted(MOTOR_INVERT);
+        config.signals
+                .appliedOutputPeriodMs(20)
+                .busVoltagePeriodMs(20)
+                .outputCurrentPeriodMs(20);
 
-        SparkUtil.tryUntilOk(motor, 
-        5, 
-        () -> motor.configure(
-            config, 
-            ResetMode.kResetSafeParameters, 
-            PersistMode.kPersistParameters
-        ));
+        SparkUtil.tryUntilOk(motor,
+                5,
+                () -> motor.configure(
+                        config,
+                        ResetMode.kResetSafeParameters,
+                        PersistMode.kPersistParameters));
     }
 
     @Override
-    public void setBrake(boolean brake){
-        Logger.recordOutput("test", "e");
+    public void setBrake(boolean brake) {
+        // reconfigure motor brake mode
         config.idleMode(IdleMode.kBrake);
-        SparkUtil.tryUntilOk(motor, 
-        5, 
-        () -> motor.configure(
-            config, 
-            ResetMode.kResetSafeParameters, 
-            PersistMode.kPersistParameters
-        ));
+        SparkUtil.tryUntilOk(motor,
+                5,
+                () -> motor.configure(
+                        config,
+                        ResetMode.kResetSafeParameters,
+                        PersistMode.kPersistParameters));
     }
 
     @Override
-    public void updateInputs(WristIOInputs in){
-        pos = MathUtil.inputModulus(((encoder.get()*POS_FACTOR) + POS_OFFSET), -Math.PI, Math.PI);
+    public void updateInputs(WristIOInputs in) {
+        // read the encoder
+        pos = MathUtil.inputModulus(((encoder.get() * POS_FACTOR) + POS_OFFSET), -Math.PI, Math.PI);
+        // encoder doesnt have velocity so we have to derive it
         vel = velDeriv.calculate(pos, 0.02);
 
         motor.setVoltage(vout);
 
         in.motorCurrentAmps = motor.getOutputCurrent();
-        in.motoroutVolts = motor.getBusVoltage()*motor.getAppliedOutput();
+        in.motoroutVolts = motor.getBusVoltage() * motor.getAppliedOutput();
         in.motorTemp = motor.getMotorTemperature();
 
         in.pos = pos;

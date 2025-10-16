@@ -11,45 +11,36 @@ public class VisionConstants {
 
     // Camera names, must match names configured on coprocessor
     public static String[] CAMERA_NAMES = {
-        "bl",
-        "fl",
-        "br"
+            "bl",
+            "fl",
+            "br"
     };
 
     // Robot to camera transforms
-    public static Transform3d BL_ROBOT_TO_CAM =
-        new Transform3d(
+    public static Transform3d BL_ROBOT_TO_CAM = new Transform3d(
             -0.2135,
             0.287,
             0,
-        new Rotation3d(
-            0,
-            Units.degreesToRadians(-20),//-pitch
-            -2.289 + 3.1415926535897932384626433832
-        )
-    );
-    public static Transform3d FL_ROBOT_TO_CAM =
-        new Transform3d(
+            new Rotation3d(
+                    0,
+                    Units.degreesToRadians(-20), // -pitch
+                    -2.289 + 3.1415926535897932384626433832));
+    public static Transform3d FL_ROBOT_TO_CAM = new Transform3d(
             0.235,
             0.301,
             0,
-        new Rotation3d(
-            0,
-            Units.degreesToRadians(-20),//-pitch
-            -1.333 + 3.1415926535897932384626433832
-        )
-    );
-    public static Transform3d BR_ROBOT_TO_CAM =
-        new Transform3d(
+            new Rotation3d(
+                    0,
+                    Units.degreesToRadians(-20), // -pitch
+                    -1.333 + 3.1415926535897932384626433832));
+    public static Transform3d BR_ROBOT_TO_CAM = new Transform3d(
             -0.113,
             -0.3208,
             0,
-        new Rotation3d(
-            Units.degreesToRadians(0),
-            Units.degreesToRadians(-20),//-pitch
-            1.6315 + 3.1415926535897932384626433832
-        )
-    );
+            new Rotation3d(
+                    Units.degreesToRadians(0),
+                    Units.degreesToRadians(-20), // -pitch
+                    1.6315 + 3.1415926535897932384626433832));
 
     // Basic filtering thresholds
     public static double MAX_AMBIGUITY = 0.75;
@@ -63,8 +54,8 @@ public class VisionConstants {
     // Standard deviation multipliers for each camera
     // (Adjust to trust some cameras more than others)
     public static double[] CAM_STD_DEV_FACTORS = new double[] {
-        1.0, // bl
-        1.0, // fl
-        0.8, // br
+            1.0, // bl
+            1.0, // fl
+            0.8, // br
     };
 }

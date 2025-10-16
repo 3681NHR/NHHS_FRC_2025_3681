@@ -10,16 +10,23 @@ import static frc.robot.constants.IntakeConstants.MOTOR_RUNNING_THRESHOLD;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
+/**
+ * Intake subsystem using a state machine and IO abstraction.
+ * <p>
+ * voltage is linearly related to speed, and there is no position control, so
+ * the intake is controlled by voltage only
+ */
 public class Intake extends SubsystemBase {
 
     public enum WantedIntakeState {
-        INTAKE,
-        SCORE,
-        OUTTAKE,
+        INTAKE, // same dir as score, but slower to account for sensor lag
+        SCORE, // same dir as intake, but faster
+        OUTTAKE, // opposite dir as intake and score, used only for L1
         OUTTAKE_SLOW,
         STOP,
-        MANUAL
+        MANUAL// set voltage manually
     }
+
     public enum CurrentIntakeState {
         INTAKING,
         SCORING,
@@ -28,6 +35,7 @@ public class Intake extends SubsystemBase {
         STOPPED,
         MANUAL
     }
+
     private WantedIntakeState wantedState = WantedIntakeState.STOP;
     private CurrentIntakeState currentState = CurrentIntakeState.STOPPED;
     private CurrentIntakeState previousState = CurrentIntakeState.STOPPED;
@@ -35,21 +43,23 @@ public class Intake extends SubsystemBase {
     private final IntakeIO io;
     private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
 
-    private boolean wasHolding=false;
-    
+    private boolean wasHolding = false;
+
     private LoggedNetworkBoolean holdLock = new LoggedNetworkBoolean("overrides/use intake sensor", true);
     private final Alert intakeSensorAlert = new Alert("Intake sensor disbled", Alert.AlertType.kError);
 
     public Intake(IntakeIO io) {
         this.io = io;
     }
-    
+
     @Override
     public void periodic() {
         wasHolding = inputs.holding;
 
+        // update alert
         intakeSensorAlert.set(!holdLock.get());
-        
+
+        // update and log IO inputs
         io.updateInputs(inputs);
         Logger.processInputs("Intake", inputs);
 
@@ -58,20 +68,25 @@ public class Intake extends SubsystemBase {
         stateTransition();
         applyStates();
 
+        // logging
         Logger.recordOutput("Intake/previousState", previousState);
         Logger.recordOutput("Intake/currentState", currentState);
         Logger.recordOutput("Intake/wantedState", wantedState);
 
-
-        Logger.recordOutput("Intake/CurrentCommand", getCurrentCommand() != null ? getCurrentCommand().getName() : "none");
+        Logger.recordOutput("Intake/CurrentCommand",
+                getCurrentCommand() != null ? getCurrentCommand().getName() : "none");
 
         if (DriverStation.isDisabled()) {
+            // stop intake if robot is disabled
             setWantedState(WantedIntakeState.STOP);
         }
     }
 
-    public void stateTransition(){
-        switch(wantedState){
+    /**
+     * handles state transitions based on wanted state
+     */
+    public void stateTransition() {
+        switch (wantedState) {
             case INTAKE:
                 currentState = CurrentIntakeState.INTAKING;
                 break;
@@ -92,58 +107,102 @@ public class Intake extends SubsystemBase {
                 break;
         }
     }
-    public void applyStates(){
+
+    /**
+     * do logic based on current state
+     */
+    public void applyStates() {
+        // set motor voltage to presets based on current state
         switch (currentState) {
             case INTAKING:
-            io.setVoltage(IntakeConstants.SPEED_INTAKE);
-            break;
+                io.setVoltage(IntakeConstants.SPEED_INTAKE);
+                break;
             case SCORING:
-            io.setVoltage(IntakeConstants.SPEED_SCORE);
-            break;
+                io.setVoltage(IntakeConstants.SPEED_SCORE);
+                break;
             case OUTAKING:
-            io.setVoltage(-IntakeConstants.SPEED_SCORE);
-            break;
+                io.setVoltage(-IntakeConstants.SPEED_SCORE);
+                break;
             case OUTAKING_SLOW:
-            io.setVoltage(-IntakeConstants.SPEED_INTAKE);
-            break;
+                io.setVoltage(-IntakeConstants.SPEED_INTAKE);
+                break;
             case STOPPED:
                 io.setVoltage(0);
-            break;
+                break;
             case MANUAL:
-            break;
+                break;
         }
     }
 
     public boolean isHolding() {
         return inputs.holding;
     }
+
+    /**
+     * get if the intake was holding a game piece last update
+     */
     public boolean wasHolding() {
         return wasHolding;
     }
+
+    /**
+     * sets the motor brake mode, when brake mode is enabled, the motor will have
+     * more resistance to being moved when no power is applied
+     * 
+     * @param enable if true, brake mode is enabled
+     */
     public void setBrakeMode(boolean enable) {
-        io.setNeutralMode(enable);
+        io.setBrakeMode(enable);
     }
+
+    /**
+     * get if the sensor is overriden
+     * 
+     * @return true if the sensor is enabled, false if it is overriden
+     */
     public boolean getSensorEnabled() {
         return holdLock.get();
     }
-    public boolean isMoving(){
+
+    /**
+     * get if the intake voltage is higher than a threshold
+     * 
+     * @return true if the intake is moving, false if it is not
+     */
+    public boolean isMoving() {
         return Math.abs(inputs.motorVoltage) > MOTOR_RUNNING_THRESHOLD;
     }
-    public boolean isIntaking(){
+
+    /**
+     * get if the intake is intaking
+     * 
+     * @return true if the intake is intaking, false if it is not moving or if it is
+     *         outtaking
+     */
+    public boolean isIntaking() {
         return inputs.motorVoltage > MOTOR_RUNNING_THRESHOLD;
     }
-    public void setWantedState(WantedIntakeState state){
+
+    /**
+     * set wanted state of the intake
+     * 
+     * @param state wanted state
+     */
+    public void setWantedState(WantedIntakeState state) {
         wantedState = state;
     }
-    public void setWantedState(WantedIntakeState state, double volt){
+
+    /**
+     * set wanted state of the intake and set voltage if manual
+     * 
+     * @param state
+     * @param volt
+     */
+    public void setWantedState(WantedIntakeState state, double volt) {
         wantedState = state;
-        if(state == WantedIntakeState.MANUAL){
+        if (state == WantedIntakeState.MANUAL) {
             io.setVoltage(volt);
         }
     }
 
-    public void setHolding(boolean b) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'setHolding'");
-    }
 }

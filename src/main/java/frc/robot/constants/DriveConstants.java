@@ -29,45 +29,44 @@ import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
 import edu.wpi.first.units.measure.Voltage;
-import frc.utils.PIDGains; 
+import frc.utils.PIDGains;
 
 public class DriveConstants {
-    //station align PIDs
+    // station align PIDs
     public static final PIDGains.PID ANGLE_PID = new PIDGains.PID(6, 0.0, 0.4);
     public static final PIDGains.PID ANGLE_PID_SIM = new PIDGains.PID(4, 0.0, 0.1);
     public static final double ANGLE_MAX_VELOCITY = 11.2;
 
-    //auto align tolerance
-    public static final double AUTO_ALIGN_ANGLE_MAX_OFFSET = 0.05;//degrees
-    public static final double AUTO_ALIGN_POS_MAX_OFFSET   = 0.01;//meters
+    // auto align tolerance
+    public static final double AUTO_ALIGN_ANGLE_MAX_OFFSET = 0.05;// degrees
+    public static final double AUTO_ALIGN_POS_MAX_OFFSET = 0.01;// meters
 
-    //vision odometry enabled
+    // vision odometry enabled
     public static boolean USE_VISION = true;
 
-    //pathplanner limits
+    // pathplanner limits
     public static final double MAX_SPEED_PP = 5;
     public static final double MAX_ACCEL_PP = 2;
     public static final double MAX_ANGLE_SPEED_PP = 10;
-    public static final double MAX_ANGLE_ACCEL_PP = MAX_ANGLE_SPEED_PP*3;
+    public static final double MAX_ANGLE_ACCEL_PP = MAX_ANGLE_SPEED_PP * 3;
 
-
-    //pathplanner PIDs
-    public static final PIDGains.PID AUTO_ANGLE_PID = new PIDGains.PID(8, 0.0, 0.0);//TODO tune
+    // pathplanner PIDs
+    public static final PIDGains.PID AUTO_ANGLE_PID = new PIDGains.PID(8, 0.0, 0.0);// TODO tune
     public static final PIDGains.PID AUTO_ANGLE_PID_SIM = new PIDGains.PID(8, 0.5, 0.2);
-    public static final PIDGains.PID TRANS_PID = new PIDGains.PID(5, 0.0, 0.0);//TODO tune
+    public static final PIDGains.PID TRANS_PID = new PIDGains.PID(5, 0.0, 0.0);// TODO tune
     public static final PIDGains.PID TRANS_PID_SIM = new PIDGains.PID(7, 1, 0.2);
 
-    //kinematics
-    public static final double MAX_SPEED = 4.7;//TODO tune
+    // kinematics
+    public static final double MAX_SPEED = 4.7;// TODO tune
     public static final double ODOMETRY_FREQ = 100.0; // Hz
     public static final double WIDTH = Units.inchesToMeters(22); // size between wheels
     public static final double LENGTH = Units.inchesToMeters(25);// size between wheels
     public static final double RADIUS = Math.hypot(WIDTH / 2.0, LENGTH / 2.0);
     public static final Translation2d[] MODULE_POSITIONS = new Translation2d[] {
-        new Translation2d(WIDTH / 2.0, LENGTH / 2.0),
-        new Translation2d(WIDTH / 2.0, -LENGTH / 2.0),
-        new Translation2d(-WIDTH / 2.0, LENGTH / 2.0),
-        new Translation2d(-WIDTH / 2.0, -LENGTH / 2.0)
+            new Translation2d(WIDTH / 2.0, LENGTH / 2.0),
+            new Translation2d(WIDTH / 2.0, -LENGTH / 2.0),
+            new Translation2d(-WIDTH / 2.0, LENGTH / 2.0),
+            new Translation2d(-WIDTH / 2.0, -LENGTH / 2.0)
     };
 
     // Device CAN IDs
@@ -91,15 +90,15 @@ public class DriveConstants {
     public static final DCMotor DRIVE_GEARBOX = DCMotor.getNEO(1);
 
     // Drive encoder configuration
-    public static final double DRIVE_ENCODER_POS_FACTOR =
-        2 * Math.PI / DRIVE_REDUCTION; // Rotor Rotations -> Wheel Radians
-    public static final double DRIVE_ENCODER_VEL_FACTOR =
-        (2 * Math.PI) / 60.0 / DRIVE_REDUCTION; // Rotor RPM -> Wheel Rad/Sec
+    public static final double DRIVE_ENCODER_POS_FACTOR = 2 * Math.PI / DRIVE_REDUCTION; // Rotor Rotations -> Wheel
+                                                                                         // Radians
+    public static final double DRIVE_ENCODER_VEL_FACTOR = (2 * Math.PI) / 60.0 / DRIVE_REDUCTION; // Rotor RPM -> Wheel
+                                                                                                  // Rad/Sec
 
     // Drive PID configuration
-    public static final PIDGains.PID DRIVE_PID = new PIDGains.PID(0.01, 0.0, 0.0);//TODO should tune
-    public static final PIDGains.SimpleFF DRIVE_FF = new PIDGains.SimpleFF(0.11, 0.13, 0.1);//TODO needs sysid
-    
+    public static final PIDGains.PID DRIVE_PID = new PIDGains.PID(0.01, 0.0, 0.0);// TODO should tune
+    public static final PIDGains.SimpleFF DRIVE_FF = new PIDGains.SimpleFF(0.11, 0.13, 0.1);// TODO needs sysid
+
     public static final PIDGains.PID DRIVE_PID_SIM = new PIDGains.PID(0.01, 0.0, 0.0);
     public static final PIDGains.SimpleFF DRIVE_FF_SIM = new PIDGains.SimpleFF(0.11, 0.13, 0.1);
 
@@ -115,10 +114,13 @@ public class DriveConstants {
     public static final double TURN_ENCODER_VEL_FACTOR = (2 * Math.PI) / 60.0; // RPM -> Rad/Sec
 
     // Turn PID configuration
-    public static final PIDGains.ProfiledPID TURN_PID = new PIDGains.ProfiledPID(7.5, 0.0, 0.0, Math.PI*8, Math.PI*80);//TODO needs tuning
-    public static final PIDGains.SimpleFF TURN_FF = new PIDGains.SimpleFF(0.125, 0.0, 0.0);//TODO needs tuning and sysid
-    
-    public static final PIDGains.ProfiledPID TURN_PID_SIM = new PIDGains.ProfiledPID(12.5, 0.0, 0.5, Math.PI*8, Math.PI*80);
+    public static final PIDGains.ProfiledPID TURN_PID = new PIDGains.ProfiledPID(7.5, 0.0, 0.0, Math.PI * 8,
+            Math.PI * 80);// TODO needs tuning
+    public static final PIDGains.SimpleFF TURN_FF = new PIDGains.SimpleFF(0.125, 0.0, 0.0);// TODO needs tuning and
+                                                                                           // sysid
+
+    public static final PIDGains.ProfiledPID TURN_PID_SIM = new PIDGains.ProfiledPID(12.5, 0.0, 0.5, Math.PI * 8,
+            Math.PI * 80);
     public static final PIDGains.SimpleFF TURN_FF_SIM = new PIDGains.SimpleFF(0.015, 0.0, 0.0);
     public static final double TURN_MIN_POS = 0; // Radians
     public static final double TURN_MAX_POS = 2 * Math.PI; // Radians
@@ -128,20 +130,18 @@ public class DriveConstants {
     public static final double MOI = 6;
     public static final double COF = 2.31421199;
     public static final RobotConfig PP_CONFIG = new RobotConfig(
-        MASS,
-        MOI,
-        new ModuleConfig(
-            WHEEL_RAD,
-            MAX_SPEED,
-            COF,
-            DRIVE_GEARBOX.withReduction(DRIVE_REDUCTION),
-            DRIVE_MAX_CURRENT,
-            1
-        ),
-        MODULE_POSITIONS
-    );
+            MASS,
+            MOI,
+            new ModuleConfig(
+                    WHEEL_RAD,
+                    MAX_SPEED,
+                    COF,
+                    DRIVE_GEARBOX.withReduction(DRIVE_REDUCTION),
+                    DRIVE_MAX_CURRENT,
+                    1),
+            MODULE_POSITIONS);
 
-    //sysid
+    // sysid
     public static final Voltage DRIVE_SYSID_VSTEP = Volts.of(4);
     public static final Velocity<VoltageUnit> DRIVE_SYSID_VRAMP = Volts.of(.5).per(Second);
     public static final Time DRIVE_SYSID_TIMEOUT = Seconds.of(10);
@@ -150,19 +150,23 @@ public class DriveConstants {
     public static final Velocity<VoltageUnit> TURN_SYSID_VRAMP = Volts.of(.5).per(Second);
     public static final Time TURN_SYSID_TIMEOUT = Seconds.of(10);
 
-    //prevents drift when translating and rotation at the same time
+    // prevents drift when translating and rotation at the same time
     public static final double ANGULAR_VELOCITY_COEFFICIENT = 0.02;
 
-    public static class presets{
-        //station angles, position alignment not implemented
+    public static class presets {
+        // station angles, position alignment not implemented
         public static final Pose2d WEST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(36.9));
         public static final Pose2d EAST_STATION = new Pose2d(new Translation2d(), Rotation2d.fromDegrees(142.9));
 
-        //auto align offsets
-        public static final Translation2d RIGHT_BRANCH_OFFSET = new Translation2d(Units.inchesToMeters(-2)  , Units.inchesToMeters(17.5));
-        public static final Translation2d LEFT_BRANCH_OFFSET  = new Translation2d(Units.inchesToMeters(-14.75), Units.inchesToMeters(18));
+        // auto align offsets
+        public static final Translation2d RIGHT_BRANCH_OFFSET = new Translation2d(Units.inchesToMeters(-2),
+                Units.inchesToMeters(17.5));
+        public static final Translation2d LEFT_BRANCH_OFFSET = new Translation2d(Units.inchesToMeters(-14.75),
+                Units.inchesToMeters(18));
 
-        public static final Translation2d RIGHT_BRANCH_OFFSET_SIM = new Translation2d(Units.inchesToMeters(-3.5)  , Units.inchesToMeters(17.5));
-        public static final Translation2d LEFT_BRANCH_OFFSET_SIM  = new Translation2d(Units.inchesToMeters(-16.25), Units.inchesToMeters(18));
+        public static final Translation2d RIGHT_BRANCH_OFFSET_SIM = new Translation2d(Units.inchesToMeters(-3.5),
+                Units.inchesToMeters(17.5));
+        public static final Translation2d LEFT_BRANCH_OFFSET_SIM = new Translation2d(Units.inchesToMeters(-16.25),
+                Units.inchesToMeters(18));
     }
 }

@@ -1,6 +1,5 @@
 package frc.robot.subsystems.intake;
 
-
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
@@ -18,8 +17,14 @@ import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.WristConstants;
 import frc.robot.subsystems.affector.Affector;
 
+/**
+ * simulated intake IO, uses outputs to generate inputs
+ * <p>
+ * tracks coral position and adds a coral projectile to the field when coral
+ * leaves the intake
+ */
 public class IntakeIOSim implements IntakeIO {
-    
+
     private boolean holding = false;
     @AutoLogOutput
     private double coralLocation = 0;
@@ -27,7 +32,7 @@ public class IntakeIOSim implements IntakeIO {
     private Affector affector;
 
     private double voltage = 0.0;
-    
+
     private double vel = 0.0;
 
     @SuppressWarnings("unused")
@@ -37,10 +42,10 @@ public class IntakeIOSim implements IntakeIO {
         this.driveSim = driveSim;
         this.affector = elevator;
     }
-    
+
     @Override
     public void updateInputs(IntakeIOInputs inputs) {
-        vel = voltage * Units.rotationsPerMinuteToRadiansPerSecond(2348.9/12.0);
+        vel = voltage * Units.rotationsPerMinuteToRadiansPerSecond(2348.9 / 12.0);
 
         // Update input values
         inputs.motorVoltage = voltage;
@@ -50,51 +55,57 @@ public class IntakeIOSim implements IntakeIO {
 
         inputs.holding = holding;
 
-        if(holding){
+        if (holding) {
+            // move coral
             coralLocation += vel * Units.inchesToMeters(1.5) * 0.02;
         }
-        if(!holding && affector.getPosition().wrist < 0 && voltage > 1){
+        if (!holding && affector.getPosition().wrist < 0 && voltage > 1) {
+            // auto intake coral
             holding = true;
             coralLocation = 0;
         }
         // if(debugController.getRawButton(1)){
-        //     holding = true;
-        //     coralLocation = 0;
+        // //debug intake coral using controller
+        // holding = true;
+        // coralLocation = 0;
         // }
-        if(coralLocation > Units.inchesToMeters(10) && holding){
+        if (coralLocation > Units.inchesToMeters(10) && holding) {
+            // simulate launching forward
             holding = false;
             SimulatedArena.getInstance().addGamePieceProjectile(new ReefscapeCoralOnFly(
-                driveSim.getSimulatedDriveTrainPose().getTranslation(),
-                IntakeConstants.WRIST_POS.toTranslation2d().plus(new Translation2d(Math.cos(affector.getPosition().wrist)*pivotToCoral, 0)),
-                driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
-                driveSim.getSimulatedDriveTrainPose().getRotation().rotateBy(Rotation2d.kCCW_90deg),
-                Meters.of(affector.getPosition().elev + WristConstants.WRIST_POS.getZ() + Math.sin(affector.getPosition().wrist)*pivotToCoral),
-                MetersPerSecond.of(vel * -Units.inchesToMeters(1.5)),
-                Radians.of(affector.getPosition().wrist+Units.degreesToRadians(90))
-            ));
+                    driveSim.getSimulatedDriveTrainPose().getTranslation(),
+                    IntakeConstants.WRIST_POS.toTranslation2d()
+                            .plus(new Translation2d(Math.cos(affector.getPosition().wrist) * pivotToCoral, 0)),
+                    driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                    driveSim.getSimulatedDriveTrainPose().getRotation().rotateBy(Rotation2d.kCCW_90deg),
+                    Meters.of(affector.getPosition().elev + WristConstants.WRIST_POS.getZ()
+                            + Math.sin(affector.getPosition().wrist) * pivotToCoral),
+                    MetersPerSecond.of(vel * -Units.inchesToMeters(1.5)),
+                    Radians.of(affector.getPosition().wrist + Units.degreesToRadians(90))));
         }
-        if(coralLocation < -Units.inchesToMeters(10) && holding){
+        if (coralLocation < -Units.inchesToMeters(10) && holding) {
+            // simulate launching backward
             holding = false;
             SimulatedArena.getInstance().addGamePieceProjectile(new ReefscapeCoralOnFly(
-                driveSim.getSimulatedDriveTrainPose().getTranslation(),
-                IntakeConstants.WRIST_POS.toTranslation2d().plus(new Translation2d(Math.cos(affector.getPosition().wrist)*pivotToCoral, 0)),
-                driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
-                driveSim.getSimulatedDriveTrainPose().getRotation().rotateBy(Rotation2d.kCCW_90deg),
-                Meters.of(affector.getPosition().elev + WristConstants.WRIST_POS.getZ() + Math.sin(affector.getPosition().wrist)*pivotToCoral),
-                MetersPerSecond.of(vel * Units.inchesToMeters(0.5)),
-                Radians.of(affector.getPosition().wrist+Units.degreesToRadians(270))
-            ));
+                    driveSim.getSimulatedDriveTrainPose().getTranslation(),
+                    IntakeConstants.WRIST_POS.toTranslation2d()
+                            .plus(new Translation2d(Math.cos(affector.getPosition().wrist) * pivotToCoral, 0)),
+                    driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                    driveSim.getSimulatedDriveTrainPose().getRotation().rotateBy(Rotation2d.kCCW_90deg),
+                    Meters.of(affector.getPosition().elev + WristConstants.WRIST_POS.getZ()
+                            + Math.sin(affector.getPosition().wrist) * pivotToCoral),
+                    MetersPerSecond.of(vel * Units.inchesToMeters(0.5)),
+                    Radians.of(affector.getPosition().wrist + Units.degreesToRadians(270))));
         }
     }
-    
+
     @Override
     public void setVoltage(double voltage) {
         this.voltage = voltage;
     }
-    
-    
+
     @Override
-    public void setNeutralMode(boolean brake) {
+    public void setBrakeMode(boolean brake) {
     }
-    
+
 }

@@ -30,63 +30,55 @@ public class ElevatorIOSpark implements ElevatorIO {
 
     private double voltsOut = 0.0;
 
-    public ElevatorIOSpark(){
-        //configure motor 1
+    public ElevatorIOSpark() {
+        // configure motor 1
         motor1Config
-            .idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(CURRENT_LIM)
-            .voltageCompensation(12.0)
-            .inverted(MOTOR_INVERT);
-        motor1Config
-            .signals
-            .appliedOutputPeriodMs(20)
-            .busVoltagePeriodMs(20)
-            .outputCurrentPeriodMs(20);
-        //set motor 2 to follow motor 1 with the same config
+                .idleMode(IdleMode.kBrake)
+                .smartCurrentLimit(CURRENT_LIM)
+                .voltageCompensation(12.0)
+                .inverted(MOTOR_INVERT);
+        motor1Config.signals
+                .appliedOutputPeriodMs(20)
+                .busVoltagePeriodMs(20)
+                .outputCurrentPeriodMs(20);
+        // set motor 2 to follow motor 1 with the same config
         motor2Config.apply(motor1Config).follow(motor1, true);
 
         configure();
 
-        //reset sensor on boot
+        // reset sensor on boot
         motorEncoder.setPosition(0);
     }
 
-    /**
-     * update all inputs from the hardware, functions as a periodic method
-     */
     public void updateInputs(ElevatorIOInputs inputs) {
         motor1.setVoltage(voltsOut);
-        
-        vel = (motorEncoder.getVelocity() * builtinfactor/60.0);//convert to m/s
-        pos = motorEncoder.getPosition()  * builtinfactor;//convert to meters
+
+        // convert to m/s
+        vel = (motorEncoder.getVelocity() * builtinfactor / 60.0);
+        // convert to meters
+        pos = motorEncoder.getPosition() * builtinfactor;
 
         inputs.pos = pos;
         inputs.vel = vel;
 
         inputs.motor1CurrentAmps = motor1.getOutputCurrent();
-        inputs.motor1Voltage = motor1.getBusVoltage()*motor1.getAppliedOutput();
+        inputs.motor1Voltage = motor1.getBusVoltage() * motor1.getAppliedOutput();
         inputs.motor1TempC = motor1.getMotorTemperature();
 
         inputs.motor2CurrentAmps = motor2.getOutputCurrent();
-        inputs.motor2Voltage = motor2.getBusVoltage()*motor2.getAppliedOutput();
+        inputs.motor2Voltage = motor2.getBusVoltage() * motor2.getAppliedOutput();
         inputs.motor2TempC = motor2.getMotorTemperature();
     }
 
-    /**
-     * send voltage command to drive both motors
-     */
     public void setVoltage(double voltage) {
         voltsOut = voltage;
-        //motor 2 will follow motor 1 so it doesnt need to be set
+        // motor 2 will follow motor 1 so it doesnt need to be set
         motor1.setVoltage(voltage);
     }
-    /**
-     * set brake mode for both motors
-     * <p>when brake is enabled, motors will have much more resistance to being moved when not driven
-     */
+
     public void setBrake(boolean brake) {
-        
-        if(brake){
+        // configure both motors' brake mode
+        if (brake) {
             motor1Config.idleMode(IdleMode.kBrake);
             motor2Config.idleMode(IdleMode.kBrake);
         } else {
@@ -95,30 +87,25 @@ public class ElevatorIOSpark implements ElevatorIO {
         }
         configure();
     }
-    
-    /**
-     * reset calculated position of the elevator to a given position in meters
-     */
+
     public void resetPos(double posMeters) {
-        motorEncoder.setPosition(posMeters/builtinfactor);
+        motorEncoder.setPosition(posMeters / builtinfactor);
     }
 
     /**
      * configure both motors with the current configuration
      */
-    private void configure(){
-        
+    private void configure() {
+
         tryUntilOk(
-            motor1,
-            5,
-            () ->
-                motor1.configure(
-                    motor1Config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+                motor1,
+                5,
+                () -> motor1.configure(
+                        motor1Config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
         tryUntilOk(
-            motor2,
-            5,
-            () ->
-            motor2.configure(
-                motor2Config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+                motor2,
+                5,
+                () -> motor2.configure(
+                        motor2Config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
     }
 }
