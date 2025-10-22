@@ -20,6 +20,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
+import frc.robot.constants.DriveConstants.module;
 import frc.utils.ProfiledPID;
 import frc.utils.SimpleFF;
 import frc.utils.SparkOdometryThread;
@@ -42,9 +43,9 @@ public class ModuleIOSpark implements ModuleIO {
 
     // Closed loop controllers
     private final SparkClosedLoopController driveController;
-    private final ProfiledPID turnPID = new ProfiledPID(TURN_PID);
-    private final SimpleFF turnFF = new SimpleFF(TURN_FF);
-    private final SimpleFF driveFF = new SimpleFF(DRIVE_FF);
+    private final ProfiledPID turnPID = new ProfiledPID(module.TURN_PID);
+    private final SimpleFF turnFF = new SimpleFF(module.TURN_FF);
+    private final SimpleFF driveFF = new SimpleFF(module.DRIVE_FF);
 
     // Queue inputs from odometry thread
     private final Queue<Double> timestampQueue;
@@ -67,22 +68,22 @@ public class ModuleIOSpark implements ModuleIO {
     private double driveVelocityRadPerSecond = 0.0;
     private double turnVelocityRadPerSecond = 0.0;
 
-    public ModuleIOSpark(int module) {
+    public ModuleIOSpark(int IO) {
         driveSpark = new SparkMax(
-                switch (module) {
-                    case 0 -> FL_DRIVE_ID;
-                    case 1 -> FR_DRIVE_ID;
-                    case 2 -> BL_DRIVE_ID;
-                    case 3 -> BR_DRIVE_ID;
+                switch (IO) {
+                    case 0 -> module.FL_DRIVE_ID;
+                    case 1 -> module.FR_DRIVE_ID;
+                    case 2 -> module.BL_DRIVE_ID;
+                    case 3 -> module.BR_DRIVE_ID;
                     default -> 0;
                 },
                 MotorType.kBrushless);
         turnSpark = new SparkMax(
-                switch (module) {
-                    case 0 -> FL_TURN_ID;
-                    case 1 -> FR_TURN_ID;
-                    case 2 -> BL_TURN_ID;
-                    case 3 -> BR_TURN_ID;
+                switch (IO) {
+                    case 0 -> module.FL_TURN_ID;
+                    case 1 -> module.FR_TURN_ID;
+                    case 2 -> module.BL_TURN_ID;
+                    case 3 -> module.BR_TURN_ID;
                     default -> 0;
                 },
                 MotorType.kBrushless);
@@ -94,20 +95,20 @@ public class ModuleIOSpark implements ModuleIO {
         var driveConfig = new SparkMaxConfig();
         driveConfig
                 .idleMode(IdleMode.kBrake)
-                .smartCurrentLimit(DRIVE_MAX_CURRENT)
+                .smartCurrentLimit(module.DRIVE_MAX_CURRENT)
                 .voltageCompensation(12.0)
-                .inverted(DRIVE_INVERT);
+                .inverted(module.DRIVE_INVERT);
         driveConfig.encoder
-                .positionConversionFactor(DRIVE_ENCODER_POS_FACTOR)
-                .velocityConversionFactor(DRIVE_ENCODER_VEL_FACTOR)
+                .positionConversionFactor(module.DRIVE_ENCODER_POS_FACTOR)
+                .velocityConversionFactor(module.DRIVE_ENCODER_VEL_FACTOR)
                 .uvwMeasurementPeriod(10)
                 .uvwAverageDepth(4);
         driveConfig.closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pidf(
-                        DRIVE_PID.kP(),
-                        DRIVE_PID.kI(),
-                        DRIVE_PID.kD(), 0.0);
+                        module.DRIVE_PID.kP(),
+                        module.DRIVE_PID.kI(),
+                        module.DRIVE_PID.kD(), 0.0);
         driveConfig.signals
                 .primaryEncoderPositionAlwaysOn(true)
                 .primaryEncoderPositionPeriodMs((int) (1000.0 / ODOMETRY_FREQ))
@@ -126,14 +127,14 @@ public class ModuleIOSpark implements ModuleIO {
         // Configure turn motor
         var turnConfig = new SparkMaxConfig();
         turnConfig
-                .inverted(TURN_INVERT)
+                .inverted(module.TURN_INVERT)
                 .idleMode(IdleMode.kBrake)
-                .smartCurrentLimit(TURN_CURRENT_LIM)
+                .smartCurrentLimit(module.TURN_CURRENT_LIM)
                 .voltageCompensation(12.0);
         turnConfig.absoluteEncoder
-                .inverted(TURN_ENCODER_INVERT)
-                .positionConversionFactor(TURN_ENCODER_POS_FACTOR)
-                .velocityConversionFactor(TURN_ENCODER_VEL_FACTOR)
+                .inverted(module.TURN_ENCODER_INVERT)
+                .positionConversionFactor(module.TURN_ENCODER_POS_FACTOR)
+                .velocityConversionFactor(module.TURN_ENCODER_VEL_FACTOR)
                 .averageDepth(8);
         turnConfig.closedLoop
                 .feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
@@ -151,7 +152,7 @@ public class ModuleIOSpark implements ModuleIO {
                 () -> turnSpark.configure(
                         turnConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
 
-        turnPID.enableContinuousInput(TURN_MIN_POS, TURN_MAX_POS);
+        turnPID.enableContinuousInput(module.TURN_MIN_POS, module.TURN_MAX_POS);
         // Create odometry queues
         timestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
         drivePositionQueue = SparkOdometryThread.getInstance().registerSignal(driveSpark, driveEncoder::getPosition);
@@ -207,7 +208,7 @@ public class ModuleIOSpark implements ModuleIO {
             // drivesetpoint.position is actually velocity
             double ffVolts = driveFF.calculate(driveGoal);
             driveController.setReference(
-                    driveGoal,
+                    driveGoal + getDriveOffsetVelocity(),
                     ControlType.kVelocity,
                     ClosedLoopSlot.kSlot0,
                     ffVolts,
@@ -219,6 +220,9 @@ public class ModuleIOSpark implements ModuleIO {
             turnSpark.setVoltage(ffVolts + turnPID.calculate(turnEncoder.getPosition()));
         }
 
+    }
+    public double getDriveOffsetVelocity() {
+        return turnEncoder.getVelocity() * module.DRIVE_OFFSET_VEL_FACTOR;
     }
 
     @Override
@@ -241,7 +245,7 @@ public class ModuleIOSpark implements ModuleIO {
 
     @Override
     public void setTurnPosition(Rotation2d rotation) {
-        turnGoal = MathUtil.inputModulus(rotation.getRadians(), TURN_MIN_POS, TURN_MAX_POS);
+        turnGoal = MathUtil.inputModulus(rotation.getRadians(), module.TURN_MIN_POS, module.TURN_MAX_POS);
         turnClosedLoop = true;
     }
 }

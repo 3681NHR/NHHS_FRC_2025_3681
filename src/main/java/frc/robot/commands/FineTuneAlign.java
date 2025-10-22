@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.DriveConstants;
 import frc.robot.subsystems.Led;
 import frc.robot.subsystems.swerve.Drive;
-import frc.robot.subsystems.swerve.Drive.CurrentDriveState;
 
 /**
  * use pathplanner PID to continue driving to target after the main path is
@@ -78,6 +77,6 @@ public class FineTuneAlign extends Command {
     public boolean isFinished() {
         // interupt if drive is not in drive to point mode
         // otherwise, end when within tolerance
-        return done || drive.currentState != CurrentDriveState.DRIVE_TO_POINT;
+        return done;
     }
 }

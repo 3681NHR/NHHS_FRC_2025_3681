@@ -16,6 +16,7 @@ public class RainbowAnim extends LEDAnim {
             int hue = ((i * 180) / leds.length) % 180;
             leds[i] = Color.fromHSV(hue, 255, 255);
         }
+        initLeds = leds.clone();
     }
     
 }

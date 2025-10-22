@@ -1,9 +1,11 @@
 package frc.utils.LEDAnim;
 
 import edu.wpi.first.wpilibj.util.Color;
+import frc.utils.ExtraMath;
 
 public class LEDAnim {
     public Color[] leds;
+    public Color[] initLeds;
 
     private double scroll = 0;
     private double scrollShift;
@@ -22,6 +24,7 @@ public class LEDAnim {
     }
     public LEDAnim(Color[] c){
         leds = c;
+        initLeds = c.clone();
     }
 
     public Color[] getLEDs(){
@@ -30,7 +33,7 @@ public class LEDAnim {
     public void update(){
         if(scroll != 0){
             scrollShift += scroll * 0.02;
-            leds = offset(this, (int)scrollShift, true).getLEDs();
+            leds = offset(new LEDAnim(initLeds), scrollShift, true).getLEDs();
         }
     }
 
@@ -59,16 +62,18 @@ public class LEDAnim {
         return new LEDAnim(result);
     }
 
-    public static LEDAnim offset(LEDAnim in, int offset, boolean wrap){
+    public static LEDAnim offset(LEDAnim in, double offset, boolean wrap){
         Color[] result = new Color[in.leds.length];
         for(int i=0; i<in.leds.length; i++){
             if(wrap){
-                result[i] = in.leds[(i - (int)offset + in.leds.length) % in.leds.length];
+                double a = (i + offset) % in.leds.length;
+                
+                result[i] = ExtraMath.colLerp(in.leds[(int)a], in.leds[(int)(a+1)%in.leds.length], a - (int)a);
             } else {
                 if(offset < 0 || offset >= in.leds.length){
                     result[i] = Color.kBlack;
                 } else {
-                    result[i] = in.leds[i+offset];
+                    result[i] = ExtraMath.colLerp(in.leds[(int)(i - offset)], in.leds[(int)(i - offset + 1) % in.leds.length], (i - offset) - (int)(i - offset));
                 }
             }
         }

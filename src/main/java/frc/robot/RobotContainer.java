@@ -34,8 +34,7 @@ import frc.robot.subsystems.physButtons.ButtonIO;
 import frc.robot.subsystems.physButtons.ButtonIODIO;
 import frc.robot.subsystems.physButtons.ButtonIOSim;
 import frc.robot.subsystems.physButtons.Buttons;
-import frc.robot.subsystems.swerve.*;
-import frc.robot.subsystems.swerve.Drive.WantedDriveState;
+import frc.robot.subsystems.swerve.Drive;
 import frc.robot.subsystems.swerve.gyro.GyroIO;
 import frc.robot.subsystems.swerve.gyro.GyroIOPigeon2;
 import frc.robot.subsystems.swerve.gyro.GyroIOSim;
@@ -491,9 +490,7 @@ public class RobotContainer {
         }));
 
         // override auto drive
-        new Trigger(() -> driverController.getPOV() == 0).onTrue(new InstantCommand(() -> {
-            drive.setWantedState(WantedDriveState.TELEOP_DRIVE);
-        }, drive));
+        new Trigger(() -> driverController.getPOV() == 0).onTrue(drive.TeleopDrive());
 
         // state override
         new Trigger(() -> driverController.getPOV() == 180).or(() -> operatorController.getRawButton(LOGO_RIGHT))
@@ -595,7 +592,7 @@ public class RobotContainer {
 
         affector.setWantedState(WantedAffectorState.POSITION);
 
-        drive.setWantedState(WantedDriveState.TELEOP_DRIVE);
+        drive.TeleopDrive().schedule();
     }
 
     public void enableAuto() {
@@ -603,5 +600,9 @@ public class RobotContainer {
         affector.setWristBrake(true);
 
         affector.setWantedState(WantedAffectorState.POSITION);
+    }
+
+    public Drive getDrive() {
+        return drive;
     }
 }

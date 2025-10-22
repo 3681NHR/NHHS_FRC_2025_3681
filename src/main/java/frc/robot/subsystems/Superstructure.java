@@ -35,7 +35,6 @@ import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.WantedIntakeState;
 import frc.robot.subsystems.swerve.Drive;
-import frc.robot.subsystems.swerve.Drive.WantedDriveState;
 import frc.robot.subsystems.vision.Vision;
 import frc.utils.AprilTagRegion;
 import frc.utils.VariableLimSLR;
@@ -292,7 +291,7 @@ public class Superstructure extends SubsystemBase {
                     endScore();
                 }
                 if (DriverStation.isTeleop()) {
-                    drive.setWantedState(WantedDriveState.TELEOP_DRIVE);
+                    drive.TeleopDrive().schedule();
                     CommandScheduler.getInstance().schedule(new InstantCommand(() -> {
                     }, drive));
                 }
@@ -545,21 +544,21 @@ public class Superstructure extends SubsystemBase {
 
         Pose2d tag = getClosestReefAprilTag(drive.getPose());
         var branch = getBranchFromTag(tag, side, currentState == CurrentSuperState.L1);
-        drive.setTargetPose(branch);
+        drive.driveToPose(() -> branch).schedule();
     }
 
     public Command getAutoAlignRight() {
         return new InstantCommand(() -> {
             branch = getBranchFromTag(getClosestReefAprilTag(drive.getPose()), BranchSide.RIGHT,
                     currentState == CurrentSuperState.L1);
-        }).andThen(drive.getAutoAlign(() -> branch));
+        }).andThen(drive.driveToPose(() -> branch));
     }
 
     public Command getAutoAlignLeft() {
         return new InstantCommand(() -> {
             branch = getBranchFromTag(getClosestReefAprilTag(drive.getPose()), BranchSide.LEFT,
                     currentState == CurrentSuperState.L1);
-        }).andThen(drive.getAutoAlign(() -> branch));
+        }).andThen(drive.driveToPose(() -> branch));
     }
 
     public void alignWithStation(StationSide side) {
@@ -568,7 +567,7 @@ public class Superstructure extends SubsystemBase {
         if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
             angle = angle.rotateBy(Rotation2d.k180deg);
         }
-        drive.setTargetRotation(angle.getRadians());
+        drive.rotationLock(angle::getRadians).schedule();
     }
     // public Command getStationAutoAlign(StationSide side){
     // Pose2d p = side.pos.;
