@@ -2,6 +2,7 @@
 
 package frc.robot;
 
+import frc.robot.autos.AutoChooser;
 import frc.robot.constants.ClimberConstants;
 import frc.robot.constants.Constants;
 import frc.robot.constants.DriveConstants;
@@ -75,8 +76,8 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
+import frc.utils.Alert;
+import frc.utils.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -108,7 +109,7 @@ public class RobotContainer {
     private final XboxController operatorController = new XboxController(OperatorConstants.OPERATOR_CONTROLLER_PORT);
 
     private LoggedNetworkBoolean resetOdometry = new LoggedNetworkBoolean("resetOdometry", false);
-    private LoggedDashboardChooser<Command> autoChooser;
+    private AutoChooser autoChooser;
 
     private RumbleHandler rumbler = new RumbleHandler(driverController);
     private RumbleHandler opRumbler = new RumbleHandler(operatorController);
@@ -286,54 +287,55 @@ public class RobotContainer {
                 });
                 break;
         }
+        autoChooser = new AutoChooser(this);
 
-        if (DriverStation.isTest()) {
-            // Set up SysId routines as autos if in test mode
-            autoChooser.addOption(
-                    "Drive SysId (Quasistatic Forward/Reverse)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
-                            .andThen(drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse)));
-            autoChooser.addOption(
-                    "Drive SysId (Dynamic Forward/Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward)
-                            .andThen(drive.sysIdDynamic(SysIdRoutine.Direction.kReverse)));
-            autoChooser.addOption(
-                    "Steer SysId (Quasistatic Forward/Reverse)",
-                    drive.steerSysIdQuasistatic(SysIdRoutine.Direction.kForward)
-                            .andThen(drive.steerSysIdQuasistatic(SysIdRoutine.Direction.kReverse)));
-            autoChooser.addOption(
-                    "Steer SysId (Dynamic Forward/Reverse)", drive.steerSysIdDynamic(SysIdRoutine.Direction.kForward)
-                            .andThen(drive.steerSysIdDynamic(SysIdRoutine.Direction.kReverse)));
-            autoChooser.addOption(
-                    "Angle SysId (Quasistatic Forward/Reverse)",
-                    drive.angleSysIdQuasistatic(SysIdRoutine.Direction.kForward)
-                            .andThen(drive.angleSysIdQuasistatic(SysIdRoutine.Direction.kReverse)));
-            autoChooser.addOption(
-                    "Angle SysId (Dynamic Forward/Reverse)", drive.angleSysIdDynamic(SysIdRoutine.Direction.kForward)
-                            .andThen(drive.angleSysIdDynamic(SysIdRoutine.Direction.kReverse)));
-            autoChooser.addOption(
-                    "Elevator SysId (Quasistatic Forward)",
-                    affector.elevSysIdQuasistatic(SysIdRoutine.Direction.kForward).withName("sysid eqf"));
-            autoChooser.addOption(
-                    "Elevator SysId (Quasistatic Reverse)",
-                    affector.elevSysIdQuasistatic(SysIdRoutine.Direction.kReverse).withName("sysid eqr"));
-            autoChooser.addOption(
-                    "Elevator SysId (Dynamic Forward)",
-                    affector.elevSysIdDynamic(SysIdRoutine.Direction.kForward).withName("sysid edf"));
-            autoChooser.addOption(
-                    "Elevator SysId (Dynamic Reverse)",
-                    affector.elevSysIdDynamic(SysIdRoutine.Direction.kReverse).withName("sysid edr"));
-            autoChooser.addOption(
-                    "Wrist SysId (Quasistatic Forward)",
-                    affector.wristSysIdQuasistatic(SysIdRoutine.Direction.kForward).withName("sysid wqf"));
-            autoChooser.addOption(
-                    "Wrist SysId (Quasistatic Reverse)",
-                    affector.wristSysIdQuasistatic(SysIdRoutine.Direction.kReverse).withName("sysid wqr"));
-            autoChooser.addOption(
-                    "Wrist SysId (Dynamic Forward)",
-                    affector.wristSysIdDynamic(SysIdRoutine.Direction.kForward).withName("sysid wdf"));
-            autoChooser.addOption(
-                    "Wrist SysId (Dynamic Reverse)",
-                    affector.wristSysIdDynamic(SysIdRoutine.Direction.kReverse).withName("sysid wdr"));
-        }
+        // if (DriverStation.isTest()) {
+        //     // Set up SysId routines as autos if in test mode
+        //     autoChooser.addOption(
+        //             "Drive SysId (Quasistatic Forward/Reverse)", drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
+        //                     .andThen(drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse)));
+        //     autoChooser.addOption(
+        //             "Drive SysId (Dynamic Forward/Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward)
+        //                     .andThen(drive.sysIdDynamic(SysIdRoutine.Direction.kReverse)));
+        //     autoChooser.addOption(
+        //             "Steer SysId (Quasistatic Forward/Reverse)",
+        //             drive.steerSysIdQuasistatic(SysIdRoutine.Direction.kForward)
+        //                     .andThen(drive.steerSysIdQuasistatic(SysIdRoutine.Direction.kReverse)));
+        //     autoChooser.addOption(
+        //             "Steer SysId (Dynamic Forward/Reverse)", drive.steerSysIdDynamic(SysIdRoutine.Direction.kForward)
+        //                     .andThen(drive.steerSysIdDynamic(SysIdRoutine.Direction.kReverse)));
+        //     autoChooser.addOption(
+        //             "Angle SysId (Quasistatic Forward/Reverse)",
+        //             drive.angleSysIdQuasistatic(SysIdRoutine.Direction.kForward)
+        //                     .andThen(drive.angleSysIdQuasistatic(SysIdRoutine.Direction.kReverse)));
+        //     autoChooser.addOption(
+        //             "Angle SysId (Dynamic Forward/Reverse)", drive.angleSysIdDynamic(SysIdRoutine.Direction.kForward)
+        //                     .andThen(drive.angleSysIdDynamic(SysIdRoutine.Direction.kReverse)));
+        //     autoChooser.addOption(
+        //             "Elevator SysId (Quasistatic Forward)",
+        //             affector.elevSysIdQuasistatic(SysIdRoutine.Direction.kForward).withName("sysid eqf"));
+        //     autoChooser.addOption(
+        //             "Elevator SysId (Quasistatic Reverse)",
+        //             affector.elevSysIdQuasistatic(SysIdRoutine.Direction.kReverse).withName("sysid eqr"));
+        //     autoChooser.addOption(
+        //             "Elevator SysId (Dynamic Forward)",
+        //             affector.elevSysIdDynamic(SysIdRoutine.Direction.kForward).withName("sysid edf"));
+        //     autoChooser.addOption(
+        //             "Elevator SysId (Dynamic Reverse)",
+        //             affector.elevSysIdDynamic(SysIdRoutine.Direction.kReverse).withName("sysid edr"));
+        //     autoChooser.addOption(
+        //             "Wrist SysId (Quasistatic Forward)",
+        //             affector.wristSysIdQuasistatic(SysIdRoutine.Direction.kForward).withName("sysid wqf"));
+        //     autoChooser.addOption(
+        //             "Wrist SysId (Quasistatic Reverse)",
+        //             affector.wristSysIdQuasistatic(SysIdRoutine.Direction.kReverse).withName("sysid wqr"));
+        //     autoChooser.addOption(
+        //             "Wrist SysId (Dynamic Forward)",
+        //             affector.wristSysIdDynamic(SysIdRoutine.Direction.kForward).withName("sysid wdf"));
+        //     autoChooser.addOption(
+        //             "Wrist SysId (Dynamic Reverse)",
+        //             affector.wristSysIdDynamic(SysIdRoutine.Direction.kReverse).withName("sysid wdr"));
+        // }
 
         superstructure = new Superstructure(
                 drive,
@@ -376,7 +378,7 @@ public class RobotContainer {
         }));
 
         // build pathplanner autos and put in dashboard
-        autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+        // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
         configureBindings();
 
@@ -562,6 +564,8 @@ public class RobotContainer {
         rumbler.update(0.02);
         driverDisconnected.set(!driverController.isConnected());
         operatorDisconnected.set(!operatorController.isConnected());
+
+        autoChooser.update();
     }
 
     public void SimPeriodic() {
@@ -578,7 +582,7 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        Command auto = autoChooser.get();
+        Command auto = autoChooser.getSelected();
         return auto;
     }
 

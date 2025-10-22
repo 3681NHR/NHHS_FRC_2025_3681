@@ -97,34 +97,6 @@ public class AutoFactory {
         }
     }
     
-    Pair<PathPlannerTrajectory, Command> createEAuto() {
-        try{
-            PathPlannerPath[] paths = {
-                PathPlannerPath.fromPathFile("New Path")
-            };
-
-            List<PathPlannerTrajectoryState> traj = new LinkedList<PathPlannerTrajectoryState>();
-
-            double timeOffset = 0.0;
-            for(int i = 0; i < paths.length; i++){
-                PathPlannerPath path = paths[i];
-                PathPlannerTrajectoryState[] states = (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? path.flipPath() : path).getIdealTrajectory(DriveConstants.PP_CONFIG).get().getStates().toArray(new PathPlannerTrajectoryState[0]);
-                double nextoffset= states[states.length - 1].timeSeconds;
-                for(PathPlannerTrajectoryState s : states){
-                    s.timeSeconds += timeOffset;
-                    traj.add(s);
-                }
-                timeOffset += nextoffset;
-            }
-        return Pair.of(
-                new PathPlannerTrajectory(traj),
-                Commands.sequence(
-                    robotContainer.getDrive().followPath(paths[0])
-                ));
-        } catch (Exception e){
-            throw new RuntimeException("Failed to create Test Auto", e);
-        }
-    }
 
     private PathPlannerTrajectory mergeTrajectories(PathPlannerTrajectory... in){
         List<PathPlannerTrajectoryState> traj = new LinkedList<PathPlannerTrajectoryState>();

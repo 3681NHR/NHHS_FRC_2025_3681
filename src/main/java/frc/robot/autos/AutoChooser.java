@@ -53,8 +53,7 @@ public class AutoChooser {
         // new AutoProgram("example", AutoFactory::createExampleAuto),
             new AutoProgram("idle",  AutoFactory::createIdleAuto),
             new AutoProgram("test",  AutoFactory::createTestAuto),
-            new AutoProgram("right 5", AutoFactory::createR5Auto),
-            new AutoProgram("E", AutoFactory::createEAuto)
+            new AutoProgram("right 5", AutoFactory::createR5Auto)
     );
 
 
