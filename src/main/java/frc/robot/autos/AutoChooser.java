@@ -52,16 +52,16 @@ public class AutoChooser {
 
     private LoggedNetworkBoolean regenerate = new LoggedNetworkBoolean("recalculate autos", false);
 
-    private final List<AutoProgram> AUTO_PROGRAMS = List.of(
-        // new AutoProgram("example", AutoFactory::createExampleAuto),
+    private List<AutoProgram> AUTO_PROGRAMS = List.of(
             new AutoProgram("idle",  AutoFactory::createIdleAuto),
-            new AutoProgram("test",  AutoFactory::createTestAuto),
-            new AutoProgram("right 5", AutoFactory::createR5Auto)
+            new AutoProgram("right 5", AutoFactory::createR5Auto),
+            new AutoProgram("anti-jack(silly)", AutoFactory::createExampleChoreoAuto)
     );
 
 
     public AutoChooser(RobotContainer container){
         chooser = new LoggedDashboardChooser<>("Auto Program");
+
         for (int i=0; i<AUTO_PROGRAMS.size(); i++){
             if(i == 0){
                 chooser.addDefaultOption(AUTO_PROGRAMS.get(i).getLabel(), AUTO_PROGRAMS.get(i));
@@ -75,7 +75,7 @@ public class AutoChooser {
         for(AutoProgram program : AUTO_PROGRAMS){
             program.update(factory);
         }
-        
+
         SmartDashboard.putData("auto/autoPath", field);
     }
 
@@ -90,6 +90,7 @@ public class AutoChooser {
             }
             regenerate.set(false);
         }
+        if(chooser.get() != null){
         // if(!DriverStation.isEnabled()){
             double time = timeSelector.get() * chooser.get().getPathLength(factory);
 
@@ -103,6 +104,7 @@ public class AutoChooser {
 
         Logger.recordOutput("auto/list/Auto selected", chooser.get() != null);
         Logger.recordOutput("auto/list/Robot in position", ExtraMath.PoseWithinTolerance(container.getDrive().getPose(), chooser.get().getStartingPose(factory), 0.5, Math.toRadians(20)));
+        }
         Logger.recordOutput("auto/list/FMS connected", DriverStation.isFMSAttached());
         Logger.recordOutput("auto/list/Joysticks connected", DriverStation.isJoystickConnected(0) && DriverStation.isJoystickConnected(1));
         Logger.recordOutput("auto/list/No alerts", 

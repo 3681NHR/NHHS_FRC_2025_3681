@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.constants.Constants;
 import frc.utils.BatteryVoltageSim;
+import frc.utils.Elastic;
 import frc.utils.TimerHandler;
 
 /**
@@ -141,6 +142,7 @@ public class Robot extends LoggedRobot {
         if (RobotBase.isSimulation()) {
             SimulatedArena.getInstance().resetFieldForAuto();
         }
+        Elastic.selectTab(0);
     }
 
     /** This function is called periodically during autonomous. */
@@ -157,6 +159,7 @@ public class Robot extends LoggedRobot {
         // this line or comment it out.
         TimerHandler.initTeleop();
         m_robotContainer.enableTeleop();
+        Elastic.selectTab(0);
 
         if (m_autonomousCommand != null) {
             m_autonomousCommand.cancel();

@@ -43,30 +43,40 @@ public class AutoFactory {
         return Pair.of(null, IDLE_COMMAND);
     }
 
-    Pair<PathPlannerTrajectory, Command> createExampleAuto() {
-        return Pair.of(
-                null,
-                Commands.sequence());
-    }
-    
-    Pair<PathPlannerTrajectory, Command> createTestAuto() {
+    Pair<PathPlannerTrajectory, Command> createExamplePPAuto() {
+        
         try{
-            PathPlannerPath path = PathPlannerPath.fromPathFile("m4");
+            PathPlannerPath[] paths = {
+                PathPlannerPath.fromPathFile("m4")
+            };
 
-            List<PathPlannerTrajectoryState> traj = new LinkedList<PathPlannerTrajectoryState>();
-
-            traj.addAll((DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? path : path).getIdealTrajectory(DriveConstants.PP_CONFIG).get().getStates());
-
-            for(int i=0; i<20-traj.size(); i++){
-                traj.add(traj.get(traj.size()-1));
-            }
         return Pair.of(
-                new PathPlannerTrajectory(traj),
+                mergeTrajectories(
+                    getTraj(paths)
+                ),
                 Commands.sequence(
-                    robotContainer.getDrive().followPath(path)
+                    robotContainer.getDrive().followPath(paths[0])
                 ));
         } catch (Exception e){
-            throw new RuntimeException("Failed to create Test Auto", e);
+            throw new RuntimeException("Failed to create Example Auto", e);
+        }
+    }
+    Pair<PathPlannerTrajectory, Command> createExampleChoreoAuto() {
+        
+        try{
+            PathPlannerPath[] paths = {
+                PathPlannerPath.fromChoreoTrajectory("2910", 0)
+            };
+
+        return Pair.of(
+                mergeTrajectories(
+                    getTraj(paths)
+                ),
+                Commands.sequence(
+                    robotContainer.getDrive().followPath(paths[0])
+                ));
+        } catch (Exception e){
+            throw new RuntimeException("Failed to create Example Auto", e);
         }
     }
     
@@ -100,11 +110,9 @@ public class AutoFactory {
                     robotContainer.getDrive().followPath(paths[8]) 
                 ));
         } catch (Exception e){
-            throw new RuntimeException("Failed to create Test Auto", e);
+            throw new RuntimeException("Failed to create R5 Auto", e);
         }
     }
-    
-
     private PathPlannerTrajectory mergeTrajectories(PathPlannerTrajectory... in){
         List<PathPlannerTrajectoryState> traj = new LinkedList<PathPlannerTrajectoryState>();
 

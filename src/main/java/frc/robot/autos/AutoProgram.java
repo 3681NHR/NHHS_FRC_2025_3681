@@ -30,8 +30,12 @@ public class AutoProgram {
     public AutoProgram(final String label, final Function<AutoFactory, Pair<PathPlannerTrajectory, Command>> commandFactory) {
         this.label = label;
         this.commandFactory = commandFactory;
-
     }
+    public AutoProgram(String name, Command c){
+        this.label = name;
+        this.commandFactory = (factory) -> Pair.of(null, c);
+    }
+
     public void update(AutoFactory factory){
         this.commandPair = commandFactory.apply(factory);
     }

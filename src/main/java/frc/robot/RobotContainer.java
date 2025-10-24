@@ -287,7 +287,6 @@ public class RobotContainer {
                 });
                 break;
         }
-        autoChooser = new AutoChooser(this);
 
         // if (DriverStation.isTest()) {
         //     // Set up SysId routines as autos if in test mode
@@ -380,6 +379,9 @@ public class RobotContainer {
         // build pathplanner autos and put in dashboard
         // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
+
+        autoChooser = new AutoChooser(this);
+        
         drive.setDefaultCommand(drive.TeleopDrive());
 
         configureBindings();

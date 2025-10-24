@@ -157,6 +157,7 @@ public class Drive extends SubsystemBase {
                             "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
                     field.getObject("PP/activePath").setPoses(activePath);
                 });
+        setCallback();
 
         // Configure SysId
         driveSysId = new SysIdRoutine(
