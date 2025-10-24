@@ -380,6 +380,8 @@ public class RobotContainer {
         // build pathplanner autos and put in dashboard
         // autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
+        drive.setDefaultCommand(drive.TeleopDrive());
+
         configureBindings();
 
         LoggedPowerDistribution.getInstance(pdp.getModule(), ModuleType.kRev);

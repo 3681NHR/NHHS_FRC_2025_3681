@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -49,6 +50,8 @@ public class AutoChooser {
     private LoggedDashboardChooser<AutoProgram> chooser;
     private LoggedNetworkNumber timeSelector = new LoggedNetworkNumber("auto/time", 0.0);
 
+    private LoggedNetworkBoolean regenerate = new LoggedNetworkBoolean("recalculate autos", false);
+
     private final List<AutoProgram> AUTO_PROGRAMS = List.of(
         // new AutoProgram("example", AutoFactory::createExampleAuto),
             new AutoProgram("idle",  AutoFactory::createIdleAuto),
@@ -81,7 +84,13 @@ public class AutoChooser {
     }
 
     public void update(){
-        if(!DriverStation.isEnabled()){
+        if(regenerate.get()){
+            for(AutoProgram program : AUTO_PROGRAMS){
+                program.update(factory);
+            }
+            regenerate.set(false);
+        }
+        // if(!DriverStation.isEnabled()){
             double time = timeSelector.get() * chooser.get().getPathLength(factory);
 
             field.getObject("traj").setPoses(chooser.get().getPoses(factory));
@@ -90,7 +99,7 @@ public class AutoChooser {
             
             Logger.recordOutput("auto/selected time", ExtraMath.roundToPoint(time, 3));
             Logger.recordOutput("auto/total time"   , ExtraMath.roundToPoint(chooser.get().getPathLength(factory), 3));
-        }
+        // }
 
         Logger.recordOutput("auto/list/Auto selected", chooser.get() != null);
         Logger.recordOutput("auto/list/Robot in position", ExtraMath.PoseWithinTolerance(container.getDrive().getPose(), chooser.get().getStartingPose(factory), 0.5, Math.toRadians(20)));

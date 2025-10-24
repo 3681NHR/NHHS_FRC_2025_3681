@@ -55,7 +55,7 @@ public class AutoFactory {
 
             List<PathPlannerTrajectoryState> traj = new LinkedList<PathPlannerTrajectoryState>();
 
-            traj.addAll((DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? path.flipPath() : path).getIdealTrajectory(DriveConstants.PP_CONFIG).get().getStates());
+            traj.addAll((DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? path : path).getIdealTrajectory(DriveConstants.PP_CONFIG).get().getStates());
 
             for(int i=0; i<20-traj.size(); i++){
                 traj.add(traj.get(traj.size()-1));
@@ -77,20 +77,27 @@ public class AutoFactory {
                 PathPlannerPath.fromPathFile("3 rs"),
                 PathPlannerPath.fromPathFile("rs 2"),
                 PathPlannerPath.fromPathFile("2 rs"),
+                PathPlannerPath.fromPathFile("rs 2"),
+                PathPlannerPath.fromPathFile("2 rs"),
+                PathPlannerPath.fromPathFile("rs 2"),
+                PathPlannerPath.fromPathFile("2 rs"),
+                PathPlannerPath.fromPathFile("rs 2")
             };
 
         return Pair.of(
                 mergeTrajectories(
-                    getTraj(paths[0]),
-                    getTraj(paths[1]),
-                    getTraj(paths[2]),
-                    getTraj(paths[3])
+                    getTraj(paths)
                 ),
                 Commands.sequence(
                     robotContainer.getDrive().followPath(paths[0]),
                     robotContainer.getDrive().followPath(paths[1]),
                     robotContainer.getDrive().followPath(paths[2]),
-                    robotContainer.getDrive().followPath(paths[3])
+                    robotContainer.getDrive().followPath(paths[3]),
+                    robotContainer.getDrive().followPath(paths[4]),
+                    robotContainer.getDrive().followPath(paths[5]),
+                    robotContainer.getDrive().followPath(paths[6]),
+                    robotContainer.getDrive().followPath(paths[7]),
+                    robotContainer.getDrive().followPath(paths[8]) 
                 ));
         } catch (Exception e){
             throw new RuntimeException("Failed to create Test Auto", e);
@@ -104,17 +111,23 @@ public class AutoFactory {
         double timeOffset = 0.0;
         for(int i = 0; i < in.length; i++){
             PathPlannerTrajectory trajectory = in[i];
-            PathPlannerTrajectoryState[] states = trajectory.getStates().toArray(new PathPlannerTrajectoryState[0]);
+            PathPlannerTrajectoryState[] states = trajectory.getStates().toArray(new PathPlannerTrajectoryState[0]).clone();
             double nextoffset= states[states.length - 1].timeSeconds;
-            for(PathPlannerTrajectoryState s : states){
-                s.timeSeconds += timeOffset;
-                traj.add(s);
+            for(PathPlannerTrajectoryState s1 : states){
+                traj.add(s1.copyWithTime(timeOffset + s1.timeSeconds));
             }
             timeOffset += nextoffset;
         }
         return new PathPlannerTrajectory(traj);
     }
     private PathPlannerTrajectory getTraj(PathPlannerPath path){
-        return (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? path.flipPath() : path).getIdealTrajectory(DriveConstants.PP_CONFIG).get();
+        return (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? path : path).getIdealTrajectory(DriveConstants.PP_CONFIG).get();
+    }
+    private PathPlannerTrajectory[] getTraj(PathPlannerPath... paths){
+        PathPlannerTrajectory[] traj = new PathPlannerTrajectory[paths.length];
+        for(int i=0; i<paths.length; i++){
+            traj[i] = getTraj(paths[i]);
+        }
+        return traj;
     }
 }
