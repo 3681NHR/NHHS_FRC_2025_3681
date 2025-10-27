@@ -13,6 +13,10 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.RobotContainer;
 import frc.robot.constants.DriveConstants;
+import frc.robot.subsystems.Superstructure.BranchSide;
+import frc.robot.subsystems.Superstructure.WantedSuperState;
+import frc.robot.subsystems.affector.Affector.AffectorPosition;
+import frc.robot.subsystems.affector.Affector.WantedAffectorState;
 
 /**
  * A factory for creating autonomous programs for a given {@link Auto}
@@ -41,6 +45,13 @@ public class AutoFactory {
 
     Pair<PathPlannerTrajectory, Command> createIdleAuto() {
         return Pair.of(null, IDLE_COMMAND);
+    }
+
+    public enum ReefLevel{
+        L1,
+        L2,
+        L3,
+        L4
     }
 
     Pair<PathPlannerTrajectory, Command> createExamplePPAuto() {
@@ -73,8 +84,16 @@ public class AutoFactory {
                     getTraj(paths)
                 ),
                 Commands.sequence(
-                    robotContainer.getDrive().followPath(paths[0])
-                ));
+                    robotContainer.getDrive().followPath(paths[0]),
+                    new InstantCommand(() -> {
+                        robotContainer.getAffector().setWantedState(WantedAffectorState.POSITION, new AffectorPosition(1.0, 0));
+                        robotContainer.getLed().override = true;
+                    })
+                )
+                .finallyDo(() -> {
+                    robotContainer.getLed().override = false;
+                })
+        );
         } catch (Exception e){
             throw new RuntimeException("Failed to create Example Auto", e);
         }
@@ -113,6 +132,56 @@ public class AutoFactory {
             throw new RuntimeException("Failed to create R5 Auto", e);
         }
     }
+
+    // --------------------------------------------
+    // seasonal compositions
+    // --------------------------------------------
+    /**
+     * creates a command that follows a path, begins intaking after a delay, and ends after the intake is holding or the timeout is reached
+     * @param path path to follow, usualy a path to the station
+     * @param delay start intaking after delay(seconds)
+     * @param timeout end command if intake isnt holding for this long(seconds)
+     * @return
+     */
+    private Command station(Command path, double delay, double timeout){
+        return Commands.deadline(Commands.sequence(
+            new WaitCommand(delay),
+            new InstantCommand(() -> {
+                robotContainer.getSuperstructure().setWantedState(WantedSuperState.INTAKE_CORAL);
+            }).withTimeout(timeout)
+        ), path);
+    }
+    private Command alignThenScore(BranchSide side, ReefLevel level){
+        return Commands.sequence(
+            Commands.parallel(
+                Commands.either(
+                    robotContainer.getSuperstructure().getAutoAlignLeft(),
+                    robotContainer.getSuperstructure().getAutoAlignRight(),
+                    () -> side == BranchSide.LEFT
+                ),
+                new InstantCommand(() -> {
+                    switch(level){
+                        case L1:
+                            robotContainer.getSuperstructure().setWantedState(WantedSuperState.L1);
+                        break;
+                        case L2:
+                            robotContainer.getSuperstructure().setWantedState(WantedSuperState.L2);
+                        break;
+                        case L3:
+                            robotContainer.getSuperstructure().setWantedState(WantedSuperState.L3);
+                        break;
+                        case L4:
+                            robotContainer.getSuperstructure().setWantedState(WantedSuperState.L4);
+                        break;
+                    }
+                })
+            )
+
+        );
+    }
+    // --------------------------------------------
+    // helper functions
+    // --------------------------------------------
     private PathPlannerTrajectory mergeTrajectories(PathPlannerTrajectory... in){
         List<PathPlannerTrajectoryState> traj = new LinkedList<PathPlannerTrajectoryState>();
 

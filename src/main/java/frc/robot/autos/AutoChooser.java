@@ -7,7 +7,11 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotContainer;
@@ -91,11 +95,12 @@ public class AutoChooser {
             regenerate.set(false);
         }
         if(chooser.get() != null){
+            Pose2d pose = container.getDrive().getPose().rotateAround(new Translation2d(17.548/2.0, 8.052/2.0), DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red ? Rotation2d.k180deg : Rotation2d.kZero);
         // if(!DriverStation.isEnabled()){
             double time = timeSelector.get() * chooser.get().getPathLength(factory);
 
             field.getObject("traj").setPoses(chooser.get().getPoses(factory));
-            field.setRobotPose(container.getDrive().getPose());
+            field.setRobotPose(pose);
             field.getObject("start").setPose(chooser.get().getPoseAtTime(factory, time));
             
             Logger.recordOutput("auto/selected time", ExtraMath.roundToPoint(time, 3));
@@ -103,7 +108,7 @@ public class AutoChooser {
         // }
 
         Logger.recordOutput("auto/list/Auto selected", chooser.get() != null);
-        Logger.recordOutput("auto/list/Robot in position", ExtraMath.PoseWithinTolerance(container.getDrive().getPose(), chooser.get().getStartingPose(factory), 0.5, Math.toRadians(20)));
+        Logger.recordOutput("auto/list/Robot in position", ExtraMath.PoseWithinTolerance(pose, chooser.get().getStartingPose(factory), 0.5, Math.toRadians(20)));
         }
         Logger.recordOutput("auto/list/FMS connected", DriverStation.isFMSAttached());
         Logger.recordOutput("auto/list/Joysticks connected", DriverStation.isJoystickConnected(0) && DriverStation.isJoystickConnected(1));

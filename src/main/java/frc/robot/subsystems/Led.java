@@ -21,12 +21,14 @@ public class Led extends SubsystemBase {
     public boolean affectorInPos = false;
     public boolean alignInPos = false;
     public boolean intakeSensorFault = false;
-
+    public boolean override = false;
+    
     private boolean intakeRunning = false;
-
+    
     private AddressableLED led = new AddressableLED(0);
     private AddressableLEDBuffer buffer = new AddressableLEDBuffer(50);
-
+    
+    private boolean lastRainbow = false;
     private LoggedNetworkBoolean rainbow = new LoggedNetworkBoolean("LED override", false);
 
     private LEDAnim b = new RainbowAnim(50);
@@ -41,6 +43,10 @@ public class Led extends SubsystemBase {
     public void periodic() {
         Color status = Color.kBlack;
         Color state = Color.kBlack;
+
+        if(rainbow.get() != lastRainbow ) {
+            override = rainbow.get();
+        }
 
         // if(affectorInPos){
         // status = Color.kBlack;
@@ -88,7 +94,7 @@ public class Led extends SubsystemBase {
         // pattern = pattern.blink(Seconds.of(.125));
         // }
 
-        if (rainbow.get()) {
+        if (override) {
             for (int i = 0; i < buffer.getLength(); i++) {
                 buffer.setLED(i, b.getLEDs()[i]);
             }
@@ -117,6 +123,7 @@ public class Led extends SubsystemBase {
         for (int i = 0; i < buffer.getLength(); i++) {
             Logger.recordOutput("leds/" + i, buffer.getLED(i).toHexString());
         }
+        lastRainbow = rainbow.get();
     }
 
     public void setRunning(boolean in) {

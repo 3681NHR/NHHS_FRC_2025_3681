@@ -613,4 +613,13 @@ public class RobotContainer {
     public Drive getDrive() {
         return drive;
     }
+    public Superstructure getSuperstructure(){
+        return superstructure;
+    }
+    public Affector getAffector(){
+        return affector;
+    }
+    public Led getLed(){
+        return led;
+    }
 }
