@@ -117,6 +117,8 @@ public class Superstructure extends SubsystemBase {
     private double transitionWristThreshold = 45.0;
     private AffectorPosition bufferedPos = new AffectorPosition(0, 0);
 
+    public boolean intakeBypassed;
+
     Intake intake;
     Climber climber;
     Affector affector;
@@ -220,7 +222,8 @@ public class Superstructure extends SubsystemBase {
 
         led.homed = affector.isElevHomed();
 
-        led.intakeSensorFault = !intake.getSensorEnabled();
+        intakeBypassed = !intake.getSensorEnabled();
+        led.intakeSensorFault = intakeBypassed;
 
         Logger.recordOutput("Drive/fieldOrientedDrive", getFOD());
 
@@ -286,7 +289,7 @@ public class Superstructure extends SubsystemBase {
     // apply current state
     private void applyStates() {
         if (scoring) {
-            if (!intake.isHolding() && intake.getSensorEnabled()) {
+            if (!intake.isHolding() && !intakeBypassed) {
                 if (currentState != CurrentSuperState.L1) {
                     endScore();
                 }
@@ -358,28 +361,28 @@ public class Superstructure extends SubsystemBase {
             case HOLDING_CORAL_AUTO:
                 break;
             case INTAKE_CORAL:
-                if (intake.isHolding() && intake.getSensorEnabled()) {
+                if (intake.isHolding() && !intakeBypassed) {
                     setWantedState(WantedSuperState.DEFAULT_STATE);
                     intake.setWantedState(Intake.WantedIntakeState.STOP);
                 }
                 break;
             case L4:
-                if (!intake.isHolding() && intake.getSensorEnabled()) {
+                if (!intake.isHolding() && !intakeBypassed) {
                     setWantedState(WantedSuperState.DEFAULT_STATE);
                 }
                 break;
             case L3:
-                if (!intake.isHolding() && intake.getSensorEnabled()) {
+                if (!intake.isHolding() && !intakeBypassed) {
                     setWantedState(WantedSuperState.DEFAULT_STATE);
                 }
                 break;
             case L2:
-                if (!intake.isHolding() && intake.getSensorEnabled()) {
+                if (!intake.isHolding() && !intakeBypassed) {
                     setWantedState(WantedSuperState.DEFAULT_STATE);
                 }
                 break;
             case L1:
-                if (!intake.isHolding() && intake.getSensorEnabled() && !scoring) {
+                if (!intake.isHolding() && !intakeBypassed && !scoring) {
                     setWantedState(WantedSuperState.DEFAULT_STATE);
                 }
                 if (affectorTransition) {
@@ -405,7 +408,7 @@ public class Superstructure extends SubsystemBase {
         switch (state) {
             case DEFAULT_STATE:
                 affectorTransition = true;
-                if (intake.getSensorEnabled()) {
+                if (!intakeBypassed) {
                     bufferedPos = intake.isHolding() ? Constants.Affector.HOLD_POSITION
                             : Constants.Affector.STOW_POSITION;
                 } else {
@@ -420,7 +423,7 @@ public class Superstructure extends SubsystemBase {
                 affector.stop();
                 break;
             case INTAKE_CORAL:
-                if ((!intake.isHolding() || !intake.getSensorEnabled())
+                if ((!intake.isHolding() || !!intakeBypassed)
                         && bufferedPos != Constants.Affector.STATION_POSITION) {
                     affectorTransition = true;
                     bufferedPos = Constants.Affector.STATION_POSITION;
@@ -428,28 +431,28 @@ public class Superstructure extends SubsystemBase {
                 }
                 break;
             case L1:
-                if ((intake.isHolding() || !intake.getSensorEnabled())
+                if ((intake.isHolding() || !!intakeBypassed)
                         && bufferedPos != Constants.Affector.L1_POSITION) {
                     affectorTransition = true;
                     bufferedPos = Constants.Affector.L1_POSITION;
                 }
                 break;
             case L2:
-                if ((intake.isHolding() || !intake.getSensorEnabled())
+                if ((intake.isHolding() || !!intakeBypassed)
                         && bufferedPos != Constants.Affector.L2_POSITION) {
                     affectorTransition = true;
                     bufferedPos = Constants.Affector.L2_POSITION;
                 }
                 break;
             case L3:
-                if ((intake.isHolding() || !intake.getSensorEnabled())
+                if ((intake.isHolding() || !!intakeBypassed)
                         && bufferedPos != Constants.Affector.L3_POSITION) {
                     affectorTransition = true;
                     bufferedPos = Constants.Affector.L3_POSITION;
                 }
                 break;
             case L4:
-                if ((intake.isHolding() || !intake.getSensorEnabled())
+                if ((intake.isHolding() || !!intakeBypassed)
                         && bufferedPos != Constants.Affector.L4_POSITION) {
                     affectorTransition = true;
                     bufferedPos = Constants.Affector.L4_POSITION;
@@ -525,7 +528,7 @@ public class Superstructure extends SubsystemBase {
     public boolean isReady() {
         return affector.isElevHomed()// elevator homed
                 && affector.atSetpoint()// in pos
-                && (isAffectorPosScoring(affector.getPositionSet()) ? intake.isHolding() || !intake.getSensorEnabled()
+                && (isAffectorPosScoring(affector.getPositionSet()) ? intake.isHolding() || !!intakeBypassed
                         : true)// holding if in scoring pos or bypass(hold lock override assumes sensor is non
                                // functional)
                 && (affector.getPositionSet() == Constants.Affector.STATION_POSITION ? intake.isIntaking() : true);// intaking
@@ -595,5 +598,8 @@ public class Superstructure extends SubsystemBase {
     public void endScore() {
         scoring = false;
         intake.setWantedState(WantedIntakeState.STOP);
+    }
+    public boolean isHolding(){
+        return intake.isHolding();
     }
 }

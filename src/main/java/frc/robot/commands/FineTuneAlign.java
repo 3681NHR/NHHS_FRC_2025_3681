@@ -38,11 +38,14 @@ public class FineTuneAlign extends Command {
         this.drive = drive;
         this.led = led;
 
+        System.out.println("fine tune made");
+
         addRequirements(drive);
     }
 
     @Override
     public void initialize() {
+        System.out.println("fine tune init");
 
         state = new PathPlannerTrajectoryState();
         state.pose = target.get();

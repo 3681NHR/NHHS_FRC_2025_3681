@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.7881393191375141,
-        "y": 0.8785685267076417
+        "x": 1.8672792699368514,
+        "y": 0.7252429474818018
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.1491838962750918,
-        "y": 2.8378464265143686
+        "x": 2.3421430614016545,
+        "y": 2.955365311964832
       },
       "isLocked": false,
       "linkedName": "rs leave"
     },
     {
       "anchor": {
-        "x": 3.5223761894648873,
-        "y": 2.7899556194440014
+        "x": 3.5176516478282243,
+        "y": 2.80362484129515
       },
       "prevControl": {
-        "x": 2.854641905092085,
-        "y": 1.9180991927811353
+        "x": 2.9940090804449255,
+        "y": 1.753129197607958
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,8 +33,8 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.0,
-    "maxAcceleration": 3.5,
+    "maxVelocity": 3.6,
+    "maxAcceleration": 5.0,
     "maxAngularVelocity": 597.8815,
     "maxAngularAcceleration": 500.0,
     "nominalVoltage": 11.5,
