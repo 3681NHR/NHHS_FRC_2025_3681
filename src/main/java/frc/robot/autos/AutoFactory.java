@@ -138,9 +138,6 @@ public class AutoFactory {
             throw new RuntimeException("Failed to create R5 Auto", e);
         }
     }
-    public Pair<PathPlannerTrajectory, Command> test(){
-        return Pair.of(null, robotContainer.getSuperstructure().getAutoAlignLeft());//FIXME no fine tune
-    }
 
     // --------------------------------------------
     // seasonal compositions

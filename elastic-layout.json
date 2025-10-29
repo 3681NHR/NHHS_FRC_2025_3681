@@ -1,0 +1,528 @@
+{
+  "version": 1.0,
+  "grid_size": 20,
+  "tabs": [
+    {
+      "name": "Enabled",
+      "grid_layout": {
+        "layouts": [
+          {
+            "title": "overrides",
+            "x": 1660.0,
+            "y": 0.0,
+            "width": 260.0,
+            "height": 940.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "useVisionOdometry",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 140.0,
+                "height": 140.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "overrides/useVisionOdometry",
+                  "period": 0.02,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "LED override",
+                "x": 1320.0,
+                "y": 760.0,
+                "width": 140.0,
+                "height": 140.0,
+                "type": "Toggle Switch",
+                "properties": {
+                  "topic": "LED override",
+                  "period": 0.02,
+                  "data_type": "boolean"
+                }
+              },
+              {
+                "title": "elevatorLimits",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 140.0,
+                "height": 140.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "overrides/elevatorLimits",
+                  "period": 0.02,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "wristLimits",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 140.0,
+                "height": 140.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "overrides/wristLimits",
+                  "period": 0.02,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "use intake sensor",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 140.0,
+                "height": 140.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "overrides/use intake sensor",
+                  "period": 0.02,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              }
+            ]
+          }
+        ],
+        "containers": [
+          {
+            "title": "field",
+            "x": 280.0,
+            "y": 0.0,
+            "width": 860.0,
+            "height": 420.0,
+            "type": "Field",
+            "properties": {
+              "topic": "/SmartDashboard/field",
+              "period": 0.02,
+              "field_game": "Reefscape",
+              "robot_width": 0.85,
+              "robot_length": 0.85,
+              "show_other_objects": true,
+              "show_trajectories": true,
+              "field_rotation": 0.0,
+              "robot_color": 4294198070,
+              "trajectory_color": 4294967295
+            }
+          },
+          {
+            "title": "swerve",
+            "x": 1360.0,
+            "y": 520.0,
+            "width": 300.0,
+            "height": 320.0,
+            "type": "YAGSL Swerve Drive",
+            "properties": {
+              "topic": "/SmartDashboard/swerve",
+              "period": 0.02,
+              "show_robot_rotation": true,
+              "show_desired_states": true,
+              "angle_offset": 0.0
+            }
+          },
+          {
+            "title": "CurrentCommand",
+            "x": 280.0,
+            "y": 420.0,
+            "width": 300.0,
+            "height": 140.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Drive/CurrentCommand",
+              "period": 0.02,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "currentState",
+            "x": 580.0,
+            "y": 420.0,
+            "width": 280.0,
+            "height": 140.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Superstructure/currentState",
+              "period": 0.02,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "RemainingTime",
+            "x": 860.0,
+            "y": 420.0,
+            "width": 280.0,
+            "height": 140.0,
+            "type": "Match Time",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/time/RemainingTime",
+              "period": 0.02,
+              "data_type": "double",
+              "time_display_mode": "Minutes and Seconds",
+              "red_start_time": 15,
+              "yellow_start_time": 30
+            }
+          },
+          {
+            "title": "resetOdometry",
+            "x": 280.0,
+            "y": 560.0,
+            "width": 300.0,
+            "height": 140.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "resetOdometry",
+              "period": 0.02,
+              "data_type": "boolean"
+            }
+          },
+          {
+            "title": "Alerts",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 280.0,
+            "height": 920.0,
+            "type": "Alerts",
+            "properties": {
+              "topic": "/SmartDashboard/Alerts",
+              "period": 0.02
+            }
+          },
+          {
+            "title": "bl-processed",
+            "x": 1140.0,
+            "y": 260.0,
+            "width": 260.0,
+            "height": 260.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/bl-processed",
+              "period": 0.02,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "br-processed",
+            "x": 1400.0,
+            "y": 260.0,
+            "width": 260.0,
+            "height": 260.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/br-processed",
+              "period": 0.02,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "fl-processed",
+            "x": 1140.0,
+            "y": 0.0,
+            "width": 260.0,
+            "height": 260.0,
+            "type": "Camera Stream",
+            "properties": {
+              "topic": "/CameraPublisher/fl-processed",
+              "period": 0.02,
+              "rotation_turns": 0
+            }
+          },
+          {
+            "title": "speed",
+            "x": 580.0,
+            "y": 560.0,
+            "width": 320.0,
+            "height": 300.0,
+            "type": "Radial Gauge",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/Drive/speed",
+              "period": 0.02,
+              "data_type": "double",
+              "start_angle": -140.0,
+              "end_angle": 140.0,
+              "min_value": 0.0,
+              "max_value": 5.0,
+              "number_of_labels": 10,
+              "wrap_value": false,
+              "show_pointer": true,
+              "show_ticks": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Pre Match",
+      "grid_layout": {
+        "layouts": [
+          {
+            "title": "list",
+            "x": 1600.0,
+            "y": 0.0,
+            "width": 300.0,
+            "height": 660.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Auto selected",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 140.0,
+                "height": 140.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/auto/list/Auto selected",
+                  "period": 0.02,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "FMS connected",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 140.0,
+                "height": 140.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/auto/list/FMS connected",
+                  "period": 0.02,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "Joysticks connected",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 140.0,
+                "height": 140.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/auto/list/Joysticks connected",
+                  "period": 0.02,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "Robot in position",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 140.0,
+                "height": 140.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/auto/list/Robot in position",
+                  "period": 0.02,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "No alerts",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 140.0,
+                "height": 140.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/auto/list/No alerts",
+                  "period": 0.02,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "Controller ports",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 140.0,
+                "height": 140.0,
+                "type": "Large Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/auto/list/Controller ports",
+                  "period": 0.02,
+                  "data_type": "string"
+                }
+              },
+              {
+                "title": "Auto set",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 140.0,
+                "height": 140.0,
+                "type": "Large Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/auto/list/Auto set",
+                  "period": 0.02,
+                  "data_type": "string"
+                }
+              },
+              {
+                "title": "Odometry correct",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 140.0,
+                "height": 140.0,
+                "type": "Large Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/auto/list/Odometry correct",
+                  "period": 0.02,
+                  "data_type": "string"
+                }
+              },
+              {
+                "title": "DS secure",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 140.0,
+                "height": 140.0,
+                "type": "Large Text Display",
+                "properties": {
+                  "topic": "/AdvantageKit/RealOutputs/auto/list/DS secure",
+                  "period": 0.02,
+                  "data_type": "string"
+                }
+              }
+            ]
+          }
+        ],
+        "containers": [
+          {
+            "title": "Auto Program",
+            "x": 900.0,
+            "y": 400.0,
+            "width": 700.0,
+            "height": 120.0,
+            "type": "Split Button Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Auto Program",
+              "period": 0.02
+            }
+          },
+          {
+            "title": "Alerts",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 280.0,
+            "height": 920.0,
+            "type": "Alerts",
+            "properties": {
+              "topic": "/SmartDashboard/Alerts",
+              "period": 0.02
+            }
+          },
+          {
+            "title": "autoPath",
+            "x": 280.0,
+            "y": 0.0,
+            "width": 620.0,
+            "height": 660.0,
+            "type": "Field",
+            "properties": {
+              "topic": "/SmartDashboard/auto/autoPath",
+              "period": 0.02,
+              "field_game": "zoom test",
+              "robot_width": 0.85,
+              "robot_length": 0.85,
+              "show_other_objects": true,
+              "show_trajectories": true,
+              "field_rotation": -90.0,
+              "robot_color": 4294198070,
+              "trajectory_color": 4294967295
+            }
+          },
+          {
+            "title": "selected time",
+            "x": 900.0,
+            "y": 140.0,
+            "width": 280.0,
+            "height": 140.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/auto/selected time",
+              "period": 0.02,
+              "data_type": "double"
+            }
+          },
+          {
+            "title": "total time",
+            "x": 900.0,
+            "y": 0.0,
+            "width": 280.0,
+            "height": 140.0,
+            "type": "Large Text Display",
+            "properties": {
+              "topic": "/AdvantageKit/RealOutputs/auto/total time",
+              "period": 0.02,
+              "data_type": "double"
+            }
+          },
+          {
+            "title": "time",
+            "x": 900.0,
+            "y": 520.0,
+            "width": 700.0,
+            "height": 140.0,
+            "type": "Number Slider",
+            "properties": {
+              "topic": "auto/time",
+              "period": 0.02,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 1.0,
+              "divisions": 2,
+              "update_continuously": true
+            }
+          },
+          {
+            "title": "recalculate autos",
+            "x": 900.0,
+            "y": 280.0,
+            "width": 280.0,
+            "height": 120.0,
+            "type": "Toggle Button",
+            "properties": {
+              "topic": "recalculate autos",
+              "period": 0.02,
+              "data_type": "boolean"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

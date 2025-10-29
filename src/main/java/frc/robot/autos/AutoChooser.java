@@ -59,8 +59,7 @@ public class AutoChooser {
     private List<AutoProgram> AUTO_PROGRAMS = List.of(
             new AutoProgram("idle",  AutoFactory::createIdleAuto),
             new AutoProgram("right 5", AutoFactory::createR5Auto),
-            new AutoProgram("anti-jack(silly)", AutoFactory::createExampleChoreoAuto),
-            new AutoProgram("test", AutoFactory::test)
+            new AutoProgram("anti-jack(silly)", AutoFactory::createExampleChoreoAuto)
     );
 
 

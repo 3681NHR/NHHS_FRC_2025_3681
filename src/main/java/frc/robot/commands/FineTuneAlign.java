@@ -67,7 +67,6 @@ public class FineTuneAlign extends Command {
                 drive.getPose().getTranslation().getDistance(target.get().getTranslation()));
         Logger.recordOutput("Drive/Align/Fine tune/angle to target",
                 Math.abs(drive.getPose().getRotation().minus(target.get().getRotation()).getDegrees()));
-        Logger.recordOutput("Drive/Align/Fine tune/good", false);
         Logger.recordOutput("Drive/Align/Fine tune/target", target.get());
     }
 
