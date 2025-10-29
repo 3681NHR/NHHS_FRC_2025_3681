@@ -34,12 +34,26 @@
       "rotationDegrees": 26.703353715653943
     }
   ],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.8885887913571846,
+      "maxWaypointRelativePos": 1.0,
+      "constraints": {
+        "maxVelocity": 3.6,
+        "maxAcceleration": 2.0,
+        "maxAngularVelocity": 597.8815,
+        "maxAngularAcceleration": 500.0,
+        "nominalVoltage": 11.5,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.6,
-    "maxAcceleration": 5.0,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 597.8815,
     "maxAngularAcceleration": 500.0,
     "nominalVoltage": 11.5,

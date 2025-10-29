@@ -164,6 +164,10 @@ public class AutoFactory {
                     path
                 ).withName("follow path and station intake");
     }
+    private Command waitforAffector(){
+        return Commands.waitUntil(() -> robotContainer.getSuperstructure().isReady()).
+        andThen(Commands.waitSeconds(0.1)).withName("wait for affector");
+    }
 
     private Command alignThenScore(BranchSide side, ReefLevel level) {
         return Commands.sequence(
@@ -189,6 +193,7 @@ public class AutoFactory {
                     }
                 })
             ),
+            waitforAffector(),
             score()
         ).withName("align to " + (side == BranchSide.LEFT ? "left" : "right") + " branch, then score");
     }

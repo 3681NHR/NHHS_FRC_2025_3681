@@ -28,6 +28,8 @@ import frc.utils.SparkOdometryThread;
 import java.util.Queue;
 import java.util.function.DoubleSupplier;
 
+import org.littletonrobotics.junction.Logger;
+
 /**
  * Module IO implementation for Spark Flex drive motor controller, Spark Max
  * turn motor controller,
@@ -163,6 +165,8 @@ public class ModuleIOSpark implements ModuleIO {
     public void updateInputs(ModuleIOInputs inputs) {
         drivePositionRad = driveEncoder.getPosition();
 
+        // Logger.recordOutput("turn goal", turnGoal);
+
         driveVelocityRadPerSecond = driveEncoder.getVelocity();
         turnVelocityRadPerSecond = turnEncoder.getVelocity();
 
@@ -194,6 +198,7 @@ public class ModuleIOSpark implements ModuleIO {
         ifOk(turnSpark, turnSpark::getOutputCurrent, (value) -> inputs.turnCurrentAmps = value);
         inputs.turnConnected = turnConnectedDebounce.calculate(!sparkStickyFault);
 
+        inputs.turnPositionRad = turnEncoder.getPosition();
         // Update odometry inputs
         inputs.odometryTimestamps = timestampQueue.stream().mapToDouble((Double value) -> value).toArray();
         inputs.odometryDrivePositionsRad = drivePositionQueue.stream().mapToDouble((Double value) -> value).toArray();
