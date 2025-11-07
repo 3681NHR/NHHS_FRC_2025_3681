@@ -3,6 +3,9 @@ package frc.robot.subsystems.physButtons;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj.DigitalInput;
 
+/**
+ * Button IO implementation for Digital Input on real robot
+ */
 public class ButtonIODIO implements ButtonIO {
 
     private final DigitalInput dio;
@@ -15,7 +18,8 @@ public class ButtonIODIO implements ButtonIO {
 
     @Override
     public void updateInputs(ButtonIOInputs inputs) {
+        // debounce button press to account for noise
         inputs.pressed = debouncer.calculate(dio.get());
     }
-    
+
 }

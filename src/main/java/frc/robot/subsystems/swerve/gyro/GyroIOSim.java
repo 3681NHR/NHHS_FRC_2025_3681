@@ -6,27 +6,27 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import frc.utils.SparkUtil;
 
-public class GyroIOSim implements GyroIO{
-    
-  private final GyroSimulation gyro;
+public class GyroIOSim implements GyroIO {
 
-  public GyroIOSim(GyroSimulation gyro) {
-    this.gyro = gyro;
-  }
+    private final GyroSimulation gyro;
 
-  public void reset(double heading){
-    gyro.setRotation(new Rotation2d(heading));
-  }
+    public GyroIOSim(GyroSimulation gyro) {
+        this.gyro = gyro;
+    }
 
-  @Override
-  public void updateInputs(GyroIOInputs inputs) {
-    inputs.connected = true;
-    inputs.yawPosition = gyro.getGyroReading();
-    inputs.yawVelocityRadPerSec = gyro.getMeasuredAngularVelocity().baseUnitMagnitude();
+    public void reset(double heading) {
+        gyro.setRotation(new Rotation2d(heading));
+    }
 
-    inputs.odometryYawPositions = gyro.getCachedGyroReadings();
-    inputs.odometryYawTimestamps = SparkUtil.getSimulationOdometryTimeStamps();
+    @Override
+    public void updateInputs(GyroIOInputs inputs) {
+        inputs.connected = true;
+        inputs.yawPosition = gyro.getGyroReading();
+        inputs.yawVelocityRadPerSec = gyro.getMeasuredAngularVelocity().baseUnitMagnitude();
 
-    inputs.angle = new Rotation3d(0, 0, inputs.yawPositionRad);
-  }
+        inputs.odometryYawPositions = gyro.getCachedGyroReadings();
+        inputs.odometryYawTimestamps = SparkUtil.getSimulationOdometryTimeStamps();
+
+        inputs.angle = new Rotation3d(0, 0, inputs.yawPositionRad);
+    }
 }
